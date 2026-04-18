@@ -1,0 +1,401 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0f1923;
+  --card: #1a2633;
+  --card2: #223344;
+  --green: #00c853;
+  --green2: #00e676;
+  --orange: #ff6d00;
+  --red: #e24b4a;
+  --text: #e8edf2;
+  --muted: #8899aa;
+  --border: #2a3a4a;
+  --lock-bg: #2a1a1a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Pick sheet — mirrors nfl-ats-pickem-sheet.html design spec (§9.1) */
+@layer components {
+  .ps-shell {
+    padding: 2rem;
+    min-height: 100vh;
+  }
+  .ps-container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .ps-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .ps-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .ps-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .ps-week-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ps-week-btn {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .ps-week-btn:hover {
+    border-color: var(--muted);
+  }
+  .ps-week-btn.active {
+    background: var(--green);
+    color: var(--bg);
+    font-weight: 700;
+    border-color: var(--green);
+  }
+
+  .ps-slot-group {
+    margin-bottom: 1.5rem;
+  }
+  .ps-slot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 8px 8px 0 0;
+    background: var(--card2);
+    border: 0.5px solid var(--border);
+    border-bottom: none;
+  }
+  .ps-slot-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .ps-slot-status {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+  .ps-slot-status.locked {
+    background: rgba(226, 75, 74, 0.15);
+    color: var(--red);
+  }
+  .ps-slot-status.live {
+    background: rgba(0, 200, 83, 0.15);
+    color: var(--green2);
+    animation: ps-pulse 2s infinite;
+  }
+  .ps-slot-status.open {
+    background: rgba(136, 153, 170, 0.12);
+    color: var(--muted);
+  }
+
+  @keyframes ps-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  .ps-game-row {
+    display: grid;
+    grid-template-columns: 36px 1fr 90px 70px;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-top: none;
+    gap: 10px;
+    transition: background 0.15s;
+  }
+  .ps-game-row:last-child {
+    border-radius: 0 0 8px 8px;
+  }
+  .ps-game-row.locked {
+    background: var(--lock-bg);
+    opacity: 0.7;
+  }
+  .ps-game-row:not(.locked):hover {
+    background: var(--card2);
+  }
+
+  .ps-conf {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--green);
+    text-align: center;
+    min-width: 28px;
+  }
+  .ps-conf.unlocked {
+    color: var(--green2);
+  }
+  .ps-conf.used {
+    color: var(--muted);
+    opacity: 0.4;
+  }
+
+  .ps-matchup {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .ps-team-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .ps-team-name {
+    min-width: 36px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .ps-team-record {
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .ps-spread {
+    font-size: 12px;
+    color: var(--muted);
+    min-width: 50px;
+    text-align: center;
+    font-weight: 500;
+  }
+
+  .ps-pick-btn {
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 0.5px solid var(--border);
+    background: var(--card2);
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    font-family: inherit;
+    font-weight: 500;
+  }
+  .ps-pick-btn:hover:not(.locked) {
+    transform: scale(1.02);
+    border-color: var(--green);
+  }
+  .ps-pick-btn.selected {
+    background: var(--green);
+    color: var(--bg);
+    font-weight: 700;
+    border-color: var(--green);
+  }
+  .ps-pick-btn.correct {
+    background: rgba(0, 200, 83, 0.2);
+    color: var(--green2);
+    border-color: var(--green);
+  }
+  .ps-pick-btn.incorrect {
+    background: rgba(226, 75, 74, 0.15);
+    color: var(--red);
+    border-color: var(--red);
+    text-decoration: line-through;
+  }
+  .ps-pick-btn.push-state {
+    background: rgba(136, 153, 170, 0.15);
+    color: var(--muted);
+    border-color: var(--muted);
+  }
+  .ps-pick-btn.locked {
+    cursor: default;
+  }
+
+  .ps-result-col {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .ps-result-live {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .ps-result-pending {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .ps-pts-earned {
+    color: var(--green2);
+  }
+  .ps-pts-zero {
+    color: var(--red);
+  }
+  .ps-pts-push {
+    color: var(--muted);
+  }
+
+  .ps-tiebreaker {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .ps-tb-label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .ps-tb-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .ps-tb-input {
+    background: var(--card2);
+    border: 0.5px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    width: 80px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  .ps-tb-input:focus {
+    outline: none;
+    border-color: var(--green);
+  }
+
+  .ps-confidence-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 1.25rem;
+    padding: 10px 14px;
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+  }
+  .ps-conf-chip {
+    width: 30px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 4px;
+    background: var(--card2);
+    color: var(--green);
+    transition: all 0.15s;
+  }
+  .ps-conf-chip.used {
+    opacity: 0.25;
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  .ps-bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.25rem;
+    padding: 14px 18px;
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+  }
+  .ps-score-display {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .ps-score-display strong {
+    color: var(--green2);
+    font-size: 20px;
+  }
+  .ps-score-sub {
+    font-size: 11px;
+  }
+
+  .ps-submit-btn {
+    background: var(--green);
+    color: var(--bg);
+    border: none;
+    padding: 10px 28px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .ps-submit-btn:hover {
+    background: var(--green2);
+    transform: translateY(-1px);
+  }
+  .ps-submit-btn:active {
+    transform: translateY(0);
+  }
+
+  .ps-countdown {
+    font-size: 11px;
+    color: var(--orange);
+    margin-left: 8px;
+    font-weight: 500;
+  }
+  .ps-paid-badge {
+    display: inline-block;
+    font-size: 10px;
+    background: rgba(0, 200, 83, 0.15);
+    color: var(--green);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .ps-section-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
