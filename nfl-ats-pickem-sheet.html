@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFL ATS Pick'em Sheet — Week 7</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0F1923;--card:#1A2633;--card2:#223344;--green:#00C853;--green2:#00E676;--orange:#FF6D00;--red:#E24B4A;--text:#E8EDF2;--muted:#8899AA;--border:#2A3A4A;--lock-bg:#2A1A1A}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:2rem;min-height:100vh}
+.container{max-width:720px;margin:0 auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.title{font-size:22px;font-weight:700;color:var(--text)}
+.subtitle{font-size:13px;color:var(--muted);margin-top:2px}
+.week-nav{display:flex;align-items:center;gap:8px}
+.week-btn{background:var(--card);border:0.5px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit;transition:all 0.15s}
+.week-btn:hover{border-color:var(--muted)}
+.week-btn.active{background:var(--green);color:var(--bg);font-weight:700;border-color:var(--green)}
+.slot-group{margin-bottom:1.5rem}
+.slot-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:8px 8px 0 0;background:var(--card2);border:0.5px solid var(--border);border-bottom:none}
+.slot-label{font-size:13px;font-weight:500;color:var(--text);text-transform:uppercase;letter-spacing:0.5px}
+.slot-status{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:500}
+.slot-status.locked{background:rgba(226,75,74,0.15);color:var(--red)}
+.slot-status.live{background:rgba(0,200,83,0.15);color:var(--green2);animation:pulse 2s infinite}
+.slot-status.open{background:rgba(136,153,170,0.12);color:var(--muted)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+.game-row{display:grid;grid-template-columns:36px 1fr 90px 70px;align-items:center;padding:10px 14px;background:var(--card);border:0.5px solid var(--border);border-top:none;gap:10px;transition:background 0.15s}
+.game-row:last-child{border-radius:0 0 8px 8px}
+.game-row.locked{background:var(--lock-bg);opacity:0.7}
+.game-row:not(.locked):hover{background:var(--card2)}
+.conf{font-size:17px;font-weight:700;color:var(--green);text-align:center;min-width:28px}
+.conf.used{color:var(--muted);opacity:0.4}
+.matchup{display:flex;flex-direction:column;gap:3px}
+.team-row{display:flex;align-items:center;gap:8px;font-size:13px}
+.team-name{min-width:36px;font-weight:700;letter-spacing:0.3px}
+.team-record{color:var(--muted);font-size:11px}
+.spread{font-size:12px;color:var(--muted);min-width:50px;text-align:center;font-weight:500}
+.pick-btn{padding:6px 16px;border-radius:6px;border:0.5px solid var(--border);background:var(--card2);color:var(--muted);font-size:12px;cursor:pointer;text-align:center;transition:all 0.15s;font-family:inherit;font-weight:500}
+.pick-btn:hover:not(.locked){transform:scale(1.02);border-color:var(--green)}
+.pick-btn.selected{background:var(--green);color:var(--bg);font-weight:700;border-color:var(--green)}
+.pick-btn.correct{background:rgba(0,200,83,0.2);color:var(--green2);border-color:var(--green)}
+.pick-btn.incorrect{background:rgba(226,75,74,0.15);color:var(--red);border-color:var(--red);text-decoration:line-through}
+.pick-btn.push-state{background:rgba(136,153,170,0.15);color:var(--muted);border-color:var(--muted)}
+.pick-btn.locked{cursor:default}
+.result-col{text-align:center;font-size:13px;font-weight:700}
+.pts-earned{color:var(--green2)}
+.pts-zero{color:var(--red)}
+.pts-push{color:var(--muted)}
+.tiebreaker{background:var(--card);border:0.5px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:1rem;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tb-label{font-size:13px;color:var(--muted)}
+.tb-input{background:var(--card2);border:0.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;width:80px;text-align:center;font-size:15px;font-weight:700;font-family:inherit;transition:border-color 0.15s}
+.tb-input:focus{outline:none;border-color:var(--green)}
+.confidence-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:1.25rem;padding:10px 14px;background:var(--card);border:0.5px solid var(--border);border-radius:8px}
+.conf-chip{width:30px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border-radius:4px;background:var(--card2);color:var(--green);transition:all 0.15s}
+.conf-chip.used{opacity:0.25;color:var(--muted);text-decoration:line-through}
+.bottom-bar{display:flex;justify-content:space-between;align-items:center;margin-top:1.25rem;padding:14px 18px;background:var(--card);border:0.5px solid var(--border);border-radius:8px}
+.score-display{font-size:14px;color:var(--muted)}
+.score-display strong{color:var(--green2);font-size:20px}
+.submit-btn{background:var(--green);color:var(--bg);border:none;padding:10px 28px;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:all 0.15s}
+.submit-btn:hover{background:var(--green2);transform:translateY(-1px)}
+.submit-btn:active{transform:translateY(0)}
+.countdown{font-size:11px;color:var(--orange);margin-left:8px;font-weight:500}
+.paid-badge{display:inline-block;font-size:10px;background:rgba(0,200,83,0.15);color:var(--green);padding:2px 8px;border-radius:4px;margin-left:6px;vertical-align:middle;font-weight:700;letter-spacing:0.3px}
+.section-label{font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="header">
+  <div>
+    <div class="title">week 7 pick sheet</div>
+    <div class="subtitle">Jared's ATS League <span class="paid-badge">$ paid</span> — 47/50 picks in</div>
+  </div>
+  <div class="week-nav">
+    <button class="week-btn">6</button>
+    <button class="week-btn active">7</button>
+    <button class="week-btn">8</button>
+  </div>
+</div>
+
+<div class="section-label">confidence points available</div>
+<div class="confidence-pool">
+  <div class="conf-chip used">16</div>
+  <div class="conf-chip used">15</div>
+  <div class="conf-chip used">14</div>
+  <div class="conf-chip">13</div>
+  <div class="conf-chip">12</div>
+  <div class="conf-chip">11</div>
+  <div class="conf-chip">10</div>
+  <div class="conf-chip">9</div>
+  <div class="conf-chip">8</div>
+  <div class="conf-chip">7</div>
+  <div class="conf-chip">6</div>
+  <div class="conf-chip">5</div>
+  <div class="conf-chip">4</div>
+  <div class="conf-chip">3</div>
+  <div class="conf-chip">2</div>
+  <div class="conf-chip">1</div>
+</div>
+
+<!-- THURSDAY NIGHT — LOCKED -->
+<div class="slot-group">
+  <div class="slot-header">
+    <span class="slot-label">thursday night</span>
+    <div><span class="slot-status locked">locked</span></div>
+  </div>
+  <div class="game-row locked">
+    <div class="conf used">16</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">DEN</span><span class="team-record">4-2</span><span class="spread">+3.5</span></div>
+      <div class="team-row"><span class="team-name">NO</span><span class="team-record">3-3</span><span class="spread">-3.5</span></div>
+    </div>
+    <div class="pick-btn correct locked">DEN ✓</div>
+    <div class="result-col pts-earned">+16</div>
+  </div>
+</div>
+
+<!-- INTERNATIONAL — LOCKED -->
+<div class="slot-group">
+  <div class="slot-header">
+    <span class="slot-label">international (london)</span>
+    <div><span class="slot-status locked">locked</span></div>
+  </div>
+  <div class="game-row locked">
+    <div class="conf used">14</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">JAX</span><span class="team-record">2-4</span><span class="spread">+6.5</span></div>
+      <div class="team-row"><span class="team-name">CHI</span><span class="team-record">3-3</span><span class="spread">-6.5</span></div>
+    </div>
+    <div class="pick-btn incorrect locked">JAX ✗</div>
+    <div class="result-col pts-zero">0</div>
+  </div>
+  <div class="game-row locked">
+    <div class="conf used">15</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">NYJ</span><span class="team-record">2-4</span><span class="spread">+2.5</span></div>
+      <div class="team-row"><span class="team-name">NE</span><span class="team-record">1-5</span><span class="spread">-2.5</span></div>
+    </div>
+    <div class="pick-btn push-state locked">PUSH</div>
+    <div class="result-col pts-push">0</div>
+  </div>
+</div>
+
+<!-- SUNDAY EARLY — LIVE -->
+<div class="slot-group">
+  <div class="slot-header">
+    <span class="slot-label">sunday 1:00 PM ET</span>
+    <div><span class="slot-status live">live — Q3 2:41</span></div>
+  </div>
+  <div class="game-row">
+    <div class="conf">13</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">BUF</span><span class="team-record">5-1</span><span class="spread">-7.0</span></div>
+      <div class="team-row"><span class="team-name">TEN</span><span class="team-record">1-5</span><span class="spread">+7.0</span></div>
+    </div>
+    <div class="pick-btn selected locked">BUF</div>
+    <div class="result-col" style="color:var(--muted);font-size:11px">24-10</div>
+  </div>
+  <div class="game-row">
+    <div class="conf">11</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">KC</span><span class="team-record">5-1</span><span class="spread">-3.0</span></div>
+      <div class="team-row"><span class="team-name">SF</span><span class="team-record">3-3</span><span class="spread">+3.0</span></div>
+    </div>
+    <div class="pick-btn selected locked">SF</div>
+    <div class="result-col" style="color:var(--muted);font-size:11px">14-17</div>
+  </div>
+  <div class="game-row">
+    <div class="conf">8</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">CIN</span><span class="team-record">2-4</span><span class="spread">+1.5</span></div>
+      <div class="team-row"><span class="team-name">CLE</span><span class="team-record">1-5</span><span class="spread">-1.5</span></div>
+    </div>
+    <div class="pick-btn selected locked">CIN</div>
+    <div class="result-col" style="color:var(--muted);font-size:11px">10-7</div>
+  </div>
+  <div class="game-row">
+    <div class="conf">5</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">HOU</span><span class="team-record">5-1</span><span class="spread">-4.5</span></div>
+      <div class="team-row"><span class="team-name">GB</span><span class="team-record">4-2</span><span class="spread">+4.5</span></div>
+    </div>
+    <div class="pick-btn selected locked">GB</div>
+    <div class="result-col" style="color:var(--muted);font-size:11px">13-21</div>
+  </div>
+  <div class="game-row">
+    <div class="conf">3</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">PHI</span><span class="team-record">3-3</span><span class="spread">-2.0</span></div>
+      <div class="team-row"><span class="team-name">NYG</span><span class="team-record">2-4</span><span class="spread">+2.0</span></div>
+    </div>
+    <div class="pick-btn selected locked">PHI</div>
+    <div class="result-col" style="color:var(--muted);font-size:11px">17-3</div>
+  </div>
+</div>
+
+<!-- SUNDAY LATE — OPEN -->
+<div class="slot-group">
+  <div class="slot-header">
+    <span class="slot-label">sunday 4:05 PM ET</span>
+    <div><span class="slot-status open">open</span><span class="countdown">locks in 1h 24m</span></div>
+  </div>
+  <div class="game-row">
+    <div class="conf" style="color:var(--green2)">12</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">DAL</span><span class="team-record">3-3</span><span class="spread">+3.0</span></div>
+      <div class="team-row"><span class="team-name">DET</span><span class="team-record">4-2</span><span class="spread">-3.0</span></div>
+    </div>
+    <div class="pick-btn selected">DAL</div>
+    <div class="result-col" style="font-size:11px;color:var(--muted)">—</div>
+  </div>
+  <div class="game-row">
+    <div class="conf" style="color:var(--green2)">9</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">SEA</span><span class="team-record">4-2</span><span class="spread">-1.5</span></div>
+      <div class="team-row"><span class="team-name">ATL</span><span class="team-record">4-2</span><span class="spread">+1.5</span></div>
+    </div>
+    <div class="pick-btn">SEA</div>
+    <div class="result-col" style="font-size:11px;color:var(--muted)">—</div>
+  </div>
+  <div class="game-row">
+    <div class="conf" style="color:var(--green2)">4</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">LAR</span><span class="team-record">2-4</span><span class="spread">+5.5</span></div>
+      <div class="team-row"><span class="team-name">LV</span><span class="team-record">2-4</span><span class="spread">-5.5</span></div>
+    </div>
+    <div class="pick-btn selected">LAR</div>
+    <div class="result-col" style="font-size:11px;color:var(--muted)">—</div>
+  </div>
+</div>
+
+<!-- SUNDAY NIGHT — OPEN -->
+<div class="slot-group">
+  <div class="slot-header">
+    <span class="slot-label">sunday night</span>
+    <div><span class="slot-status open">open</span><span class="countdown">locks in 5h 34m</span></div>
+  </div>
+  <div class="game-row">
+    <div class="conf" style="color:var(--green2)">10</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">PIT</span><span class="team-record">4-2</span><span class="spread">+2.5</span></div>
+      <div class="team-row"><span class="team-name">BAL</span><span class="team-record">4-2</span><span class="spread">-2.5</span></div>
+    </div>
+    <div class="pick-btn selected">PIT</div>
+    <div class="result-col" style="font-size:11px;color:var(--muted)">—</div>
+  </div>
+</div>
+
+<!-- MONDAY NIGHT — OPEN -->
+<div class="slot-group">
+  <div class="slot-header">
+    <span class="slot-label">monday night</span>
+    <div><span class="slot-status open">open</span><span class="countdown">locks in 29h 10m</span></div>
+  </div>
+  <div class="game-row">
+    <div class="conf" style="color:var(--green2)">7</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">TB</span><span class="team-record">3-3</span><span class="spread">-1.0</span></div>
+      <div class="team-row"><span class="team-name">ARI</span><span class="team-record">2-4</span><span class="spread">+1.0</span></div>
+    </div>
+    <div class="pick-btn selected">ARI</div>
+    <div class="result-col" style="font-size:11px;color:var(--muted)">—</div>
+  </div>
+  <div class="game-row">
+    <div class="conf" style="color:var(--green2)">6</div>
+    <div class="matchup">
+      <div class="team-row"><span class="team-name">LAC</span><span class="team-record">3-2</span><span class="spread">-3.5</span></div>
+      <div class="team-row"><span class="team-name">WAS</span><span class="team-record">4-2</span><span class="spread">+3.5</span></div>
+    </div>
+    <div class="pick-btn">LAC</div>
+    <div class="result-col" style="font-size:11px;color:var(--muted)">—</div>
+  </div>
+</div>
+
+<!-- MNF TIEBREAKER -->
+<div class="tiebreaker">
+  <div>
+    <div class="tb-label">monday night tiebreaker</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px">predict total combined points (TB @ ARI)</div>
+  </div>
+  <input type="number" class="tb-input" value="44" min="0" max="150">
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <div class="score-display">
+    week 7 points: <strong>16</strong> / 136 possible<br>
+    <span style="font-size:11px">season rank: 4th of 50</span>
+  </div>
+  <button class="submit-btn">save picks</button>
+</div>
+
+</div>
+
+</body>
+</html>
