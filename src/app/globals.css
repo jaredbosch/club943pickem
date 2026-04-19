@@ -313,22 +313,87 @@ body {
     border-radius: 8px;
   }
   .ps-conf-chip {
-    width: 30px;
-    height: 26px;
+    min-width: 38px;
+    padding: 4px 6px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    gap: 1px;
     font-weight: 700;
     border-radius: 4px;
     background: var(--card2);
+    border: 1px solid transparent;
     color: var(--green);
     transition: all 0.15s;
   }
-  .ps-conf-chip.used {
-    opacity: 0.25;
+  .ps-conf-chip .ps-conf-chip-n {
+    font-size: 12px;
+    line-height: 1;
+  }
+  .ps-conf-chip .ps-conf-chip-tag {
+    font-size: 9px;
+    letter-spacing: 0.3px;
     color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .ps-conf-chip.free {
+    border-color: rgba(0, 200, 83, 0.35);
+  }
+  .ps-conf-chip.used {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--muted);
+  }
+  .ps-conf-chip.used .ps-conf-chip-n {
     text-decoration: line-through;
+  }
+  .ps-conf-chip.used.locked {
+    background: var(--lock-bg);
+    border-color: rgba(226, 75, 74, 0.35);
+  }
+
+  .ps-conf-select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .ps-conf-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--card2);
+    color: var(--green);
+    border: 1px solid rgba(0, 200, 83, 0.35);
+    border-radius: 6px;
+    padding: 6px 22px 6px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: inherit;
+    min-width: 64px;
+    cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+      linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position:
+      calc(100% - 12px) 50%,
+      calc(100% - 7px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+  .ps-conf-select:focus {
+    outline: none;
+    border-color: var(--green);
+  }
+  .ps-conf-select-wrap:not(.has-value) .ps-conf-select {
+    color: var(--muted);
+    border-color: var(--border);
+  }
+  .ps-conf-select option {
+    background: var(--card);
+    color: var(--text);
+  }
+  .ps-conf-select option:disabled {
+    color: var(--muted);
   }
 
   .ps-bottom-bar {

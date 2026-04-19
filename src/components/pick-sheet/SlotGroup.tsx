@@ -1,18 +1,20 @@
-import type { Slot } from "./types";
+import type { ConfidenceUsage, Slot } from "./types";
 import { GameRow } from "./GameRow";
 
 type Props = {
   slot: Slot;
   onTogglePick: (gameId: string) => void;
   onConfidenceChange?: (gameId: string, value: number) => void;
-  maxConfidence?: number;
+  confidenceValues?: number[];
+  usage?: Map<number, ConfidenceUsage>;
 };
 
 export function SlotGroup({
   slot,
   onTogglePick,
   onConfidenceChange,
-  maxConfidence,
+  confidenceValues,
+  usage,
 }: Props) {
   return (
     <div className="ps-slot-group">
@@ -34,7 +36,8 @@ export function SlotGroup({
           slotStatus={slot.status}
           onTogglePick={onTogglePick}
           onConfidenceChange={onConfidenceChange}
-          maxConfidence={maxConfidence}
+          confidenceValues={confidenceValues}
+          usage={usage}
         />
       ))}
     </div>

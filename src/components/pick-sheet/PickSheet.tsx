@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { ConfidencePool } from "./ConfidencePool";
 import { SlotGroup } from "./SlotGroup";
-import type { Slot } from "./types";
+import type { ConfidenceUsage, Slot } from "./types";
 
 type Props = {
   leagueId: string;
@@ -47,14 +47,20 @@ export function PickSheet(props: Props) {
     [totalGames],
   );
 
-  const usedConfidence = useMemo(() => {
-    const used = new Set<number>();
+  const usage = useMemo(() => {
+    const m = new Map<number, ConfidenceUsage>();
     for (const s of slots) {
       for (const g of s.games) {
-        if (g.pickedTeam && g.confidence > 0) used.add(g.confidence);
+        if (g.confidence > 0) {
+          m.set(g.confidence, {
+            gameId: g.id,
+            gameLabel: `${g.away.abbr}@${g.home.abbr}`,
+            locked: s.status !== "open",
+          });
+        }
       }
     }
-    return used;
+    return m;
   }, [slots]);
 
   const togglePick = (gameId: string) => {
@@ -156,7 +162,7 @@ export function PickSheet(props: Props) {
         </div>
 
         <div className="ps-section-label">confidence points available</div>
-        <ConfidencePool values={confidenceValues} used={usedConfidence} />
+        <ConfidencePool values={confidenceValues} usage={usage} />
 
         {slots.map((slot) => (
           <SlotGroup
@@ -164,7 +170,8 @@ export function PickSheet(props: Props) {
             slot={slot}
             onTogglePick={togglePick}
             onConfidenceChange={setConfidence}
-            maxConfidence={totalGames}
+            confidenceValues={confidenceValues}
+            usage={usage}
           />
         ))}
 

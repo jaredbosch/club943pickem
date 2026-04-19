@@ -1,13 +1,14 @@
 "use client";
 
-import type { Game, SlotStatus, Team } from "./types";
+import type { ConfidenceUsage, Game, SlotStatus, Team } from "./types";
 
 type Props = {
   game: Game;
   slotStatus: SlotStatus;
   onTogglePick: (gameId: string) => void;
   onConfidenceChange?: (gameId: string, value: number) => void;
-  maxConfidence?: number;
+  confidenceValues?: number[];
+  usage?: Map<number, ConfidenceUsage>;
 };
 
 export function GameRow({
@@ -15,35 +16,21 @@ export function GameRow({
   slotStatus,
   onTogglePick,
   onConfidenceChange,
-  maxConfidence,
+  confidenceValues,
+  usage,
 }: Props) {
   const isLocked = slotStatus !== "open";
   const isRowLocked = slotStatus === "locked";
 
-  const confClass =
-    isLocked && (game.result || game.liveScore)
-      ? "ps-conf used"
-      : slotStatus === "open"
-        ? "ps-conf unlocked"
-        : "ps-conf";
-
   return (
     <div className={`ps-game-row${isRowLocked ? " locked" : ""}`}>
-      {slotStatus === "open" && onConfidenceChange ? (
-        <input
-          type="number"
-          className={confClass}
-          value={game.confidence || ""}
-          min={1}
-          max={maxConfidence ?? 18}
-          onChange={(e) =>
-            onConfidenceChange(game.id, Number(e.target.value) || 0)
-          }
-          style={{ width: 44, textAlign: "center" }}
-        />
-      ) : (
-        <div className={confClass}>{game.confidence || "—"}</div>
-      )}
+      <ConfidenceCell
+        game={game}
+        slotStatus={slotStatus}
+        onConfidenceChange={onConfidenceChange}
+        confidenceValues={confidenceValues}
+        usage={usage}
+      />
 
       <div className="ps-matchup">
         <TeamRow team={game.away} />
@@ -57,6 +44,62 @@ export function GameRow({
       />
 
       <ResultCell game={game} slotStatus={slotStatus} />
+    </div>
+  );
+}
+
+function ConfidenceCell({
+  game,
+  slotStatus,
+  onConfidenceChange,
+  confidenceValues,
+  usage,
+}: {
+  game: Game;
+  slotStatus: SlotStatus;
+  onConfidenceChange?: (gameId: string, value: number) => void;
+  confidenceValues?: number[];
+  usage?: Map<number, ConfidenceUsage>;
+}) {
+  // Locked/live slots: read-only badge.
+  if (slotStatus !== "open" || !onConfidenceChange || !confidenceValues || !usage) {
+    const confClass =
+      slotStatus !== "open" && (game.result || game.liveScore)
+        ? "ps-conf used"
+        : "ps-conf";
+    return <div className={confClass}>{game.confidence || "—"}</div>;
+  }
+
+  const current = game.confidence;
+  const hasValue = current > 0;
+
+  return (
+    <div className={`ps-conf-select-wrap${hasValue ? " has-value" : ""}`}>
+      <select
+        className="ps-conf-select"
+        aria-label="confidence"
+        value={hasValue ? String(current) : ""}
+        onChange={(e) =>
+          onConfidenceChange(game.id, Number(e.target.value) || 0)
+        }
+      >
+        <option value="">— pick</option>
+        {confidenceValues.map((n) => {
+          const u = usage.get(n);
+          const isOwn = u?.gameId === game.id;
+          const isTakenElsewhere = !!u && !isOwn;
+          const label = isOwn
+            ? `${n} ✓`
+            : u
+              ? `${n} · ${u.gameLabel}${u.locked ? " (locked)" : ""}`
+              : `${n}`;
+          return (
+            <option key={n} value={String(n)} disabled={isTakenElsewhere}>
+              {label}
+            </option>
+          );
+        })}
+      </select>
     </div>
   );
 }

@@ -27,3 +27,13 @@ export type Slot = {
   countdown?: string;
   games: Game[];
 };
+
+/**
+ * How a given confidence value is being used. `locked` = assigned inside
+ * an already-locked slot, so it can't be freed by the player.
+ */
+export type ConfidenceUsage = {
+  gameId: string;
+  gameLabel: string; // e.g. "DAL@DET"
+  locked: boolean;
+};
