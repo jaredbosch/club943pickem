@@ -1,5 +1,6 @@
 -- Club 943 Pick'em — initial schema (spec §5)
--- users.id is the Clerk user ID (e.g. "user_abc123") so RLS can key off auth.jwt()->>'sub'.
+-- Auth is handled by Supabase Auth. `public.users` mirrors `auth.users` for app
+-- profile data, with the PK equal to the auth user's UUID.
 
 set search_path = public;
 
@@ -35,11 +36,11 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------
--- users — synced from Clerk via /api/webhooks/clerk
+-- users — PK = auth.users.id, synced by trigger below.
 -- ---------------------------------------------------------------------------
 
 create table users (
-  id text primary key,
+  id uuid primary key references auth.users(id) on delete cascade,
   email text unique not null,
   display_name text,
   avatar_url text,
@@ -51,6 +52,32 @@ create trigger users_set_updated_at
 before update on users
 for each row execute function set_updated_at();
 
+-- Mirror new auth.users rows into public.users. Pulls display_name / avatar_url
+-- from Supabase Auth's raw_user_meta_data when present (set at sign-up time
+-- via supabase.auth.signUp({ options: { data: { display_name, avatar_url } } })).
+create or replace function handle_new_auth_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.users (id, email, display_name, avatar_url)
+  values (
+    new.id,
+    new.email,
+    nullif(new.raw_user_meta_data ->> 'display_name', ''),
+    nullif(new.raw_user_meta_data ->> 'avatar_url', '')
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute function handle_new_auth_user();
+
 -- ---------------------------------------------------------------------------
 -- leagues
 -- ---------------------------------------------------------------------------
@@ -59,7 +86,7 @@ create table leagues (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   invite_code text unique not null,
-  commissioner_id text not null references users(id) on delete restrict,
+  commissioner_id uuid not null references users(id) on delete restrict,
   season_year int not null,
   entry_fee_cents int not null default 30000,
   max_players int not null default 50,
@@ -85,7 +112,7 @@ for each row execute function set_updated_at();
 
 create table league_members (
   id uuid primary key default gen_random_uuid(),
-  user_id text not null references users(id) on delete cascade,
+  user_id uuid not null references users(id) on delete cascade,
   league_id uuid not null references leagues(id) on delete cascade,
   is_paid boolean not null default false,
   paid_at timestamptz,
@@ -141,7 +168,7 @@ for each row execute function set_updated_at();
 
 create table picks (
   id uuid primary key default gen_random_uuid(),
-  user_id text not null references users(id) on delete cascade,
+  user_id uuid not null references users(id) on delete cascade,
   league_id uuid not null references leagues(id) on delete cascade,
   game_id uuid not null references games(id) on delete cascade,
   week int not null check (week between 1 and 18),
@@ -170,7 +197,7 @@ for each row execute function set_updated_at();
 
 create table mnf_tiebreakers (
   id uuid primary key default gen_random_uuid(),
-  user_id text not null references users(id) on delete cascade,
+  user_id uuid not null references users(id) on delete cascade,
   league_id uuid not null references leagues(id) on delete cascade,
   week int not null check (week between 1 and 18),
   predicted_total int not null check (predicted_total >= 0),
@@ -194,7 +221,7 @@ for each row execute function set_updated_at();
 
 create table standings (
   id uuid primary key default gen_random_uuid(),
-  user_id text not null references users(id) on delete cascade,
+  user_id uuid not null references users(id) on delete cascade,
   league_id uuid not null references leagues(id) on delete cascade,
   week int not null check (week between 0 and 18),
   total_points int not null default 0,
@@ -218,7 +245,7 @@ for each row execute function set_updated_at();
 create table payouts (
   id uuid primary key default gen_random_uuid(),
   league_id uuid not null references leagues(id) on delete cascade,
-  user_id text not null references users(id) on delete restrict,
+  user_id uuid not null references users(id) on delete restrict,
   week int check (week is null or week between 1 and 18),
   amount_cents int not null check (amount_cents > 0),
   payout_type payout_type not null,

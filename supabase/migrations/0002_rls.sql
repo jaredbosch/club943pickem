@@ -1,18 +1,10 @@
--- Row Level Security — Clerk JWT third-party auth.
--- auth.jwt()->>'sub' = Clerk user ID (matches users.id).
--- service_role bypasses RLS for cron / webhook writes.
+-- Row Level Security — Supabase Auth.
+-- auth.uid() returns the signed-in user's UUID (= public.users.id).
+-- service_role bypasses RLS for cron / trigger / webhook writes.
 
 -- ---------------------------------------------------------------------------
 -- Helpers
 -- ---------------------------------------------------------------------------
-
-create or replace function auth_user_id()
-returns text
-language sql
-stable
-as $$
-  select nullif(auth.jwt() ->> 'sub', '')::text;
-$$;
 
 create or replace function is_member_of(target_league uuid)
 returns boolean
@@ -24,7 +16,7 @@ as $$
   select exists (
     select 1 from league_members
     where league_id = target_league
-      and user_id = auth_user_id()
+      and user_id = auth.uid()
   );
 $$;
 
@@ -38,7 +30,7 @@ as $$
   select exists (
     select 1 from league_members
     where league_id = target_league
-      and user_id = auth_user_id()
+      and user_id = auth.uid()
       and is_commissioner
   );
 $$;
@@ -68,10 +60,11 @@ using (true);
 create policy "users_update_self"
 on users for update
 to authenticated
-using (id = auth_user_id())
-with check (id = auth_user_id());
+using (id = auth.uid())
+with check (id = auth.uid());
 
--- insert/delete handled by service-role webhook only.
+-- Insert is handled by the on_auth_user_created trigger (service-definer);
+-- delete cascades from auth.users on account removal.
 
 -- ---------------------------------------------------------------------------
 -- leagues
@@ -85,7 +78,7 @@ using (is_member_of(id));
 create policy "leagues_insert_authenticated"
 on leagues for insert
 to authenticated
-with check (commissioner_id = auth_user_id());
+with check (commissioner_id = auth.uid());
 
 create policy "leagues_update_commissioner"
 on leagues for update
@@ -107,13 +100,14 @@ on league_members for select
 to authenticated
 using (is_member_of(league_id));
 
--- A user can add themselves to a league. is_commissioner must be false on self-join
--- (commissioner row is created server-side with service role during league creation).
+-- A user can add themselves to a league. is_commissioner must be false on
+-- self-join; the commissioner row is created server-side with service role
+-- during league creation.
 create policy "league_members_insert_self"
 on league_members for insert
 to authenticated
 with check (
-  user_id = auth_user_id()
+  user_id = auth.uid()
   and is_commissioner = false
 );
 
@@ -127,7 +121,7 @@ create policy "league_members_delete_self_or_commissioner"
 on league_members for delete
 to authenticated
 using (
-  user_id = auth_user_id()
+  user_id = auth.uid()
   or is_commissioner_of(league_id)
 );
 
@@ -150,7 +144,7 @@ create policy "picks_select_self_or_locked_league"
 on picks for select
 to authenticated
 using (
-  user_id = auth_user_id()
+  user_id = auth.uid()
   or (is_locked and is_member_of(league_id))
 );
 
@@ -158,7 +152,7 @@ create policy "picks_insert_self"
 on picks for insert
 to authenticated
 with check (
-  user_id = auth_user_id()
+  user_id = auth.uid()
   and is_member_of(league_id)
   and is_locked = false
 );
@@ -166,13 +160,13 @@ with check (
 create policy "picks_update_self_unlocked"
 on picks for update
 to authenticated
-using (user_id = auth_user_id() and is_locked = false)
-with check (user_id = auth_user_id() and is_locked = false);
+using (user_id = auth.uid() and is_locked = false)
+with check (user_id = auth.uid() and is_locked = false);
 
 create policy "picks_delete_self_unlocked"
 on picks for delete
 to authenticated
-using (user_id = auth_user_id() and is_locked = false);
+using (user_id = auth.uid() and is_locked = false);
 
 -- ---------------------------------------------------------------------------
 -- mnf_tiebreakers — same pattern as picks.
@@ -182,7 +176,7 @@ create policy "mnf_select_self_or_locked_league"
 on mnf_tiebreakers for select
 to authenticated
 using (
-  user_id = auth_user_id()
+  user_id = auth.uid()
   or (is_locked and is_member_of(league_id))
 );
 
@@ -190,7 +184,7 @@ create policy "mnf_insert_self"
 on mnf_tiebreakers for insert
 to authenticated
 with check (
-  user_id = auth_user_id()
+  user_id = auth.uid()
   and is_member_of(league_id)
   and is_locked = false
 );
@@ -198,13 +192,13 @@ with check (
 create policy "mnf_update_self_unlocked"
 on mnf_tiebreakers for update
 to authenticated
-using (user_id = auth_user_id() and is_locked = false)
-with check (user_id = auth_user_id() and is_locked = false);
+using (user_id = auth.uid() and is_locked = false)
+with check (user_id = auth.uid() and is_locked = false);
 
 create policy "mnf_delete_self_unlocked"
 on mnf_tiebreakers for delete
 to authenticated
-using (user_id = auth_user_id() and is_locked = false);
+using (user_id = auth.uid() and is_locked = false);
 
 -- ---------------------------------------------------------------------------
 -- standings — read-only for league members; written by scoring cron.

@@ -1,24 +1,29 @@
-import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-/**
- * Supabase client for RSCs and route handlers.
- * Forwards the Clerk session JWT via the third-party auth integration —
- * RLS policies read auth.jwt()->>'sub' as the Clerk user ID.
- */
-export function createServerSupabaseClient() {
-  return createClient(
+export function createClient() {
+  const cookieStore = cookies();
+
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
-      },
-      accessToken: async () => {
-        const { getToken } = await auth();
-        return (await getToken()) ?? null;
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(
+          cookiesToSet: { name: string; value: string; options: CookieOptions }[],
+        ) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options),
+            );
+          } catch {
+            // Called from a Server Component; the middleware refreshes the
+            // session so mutation here is a no-op.
+          }
+        },
       },
     },
   );
