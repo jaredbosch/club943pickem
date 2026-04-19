@@ -1,6 +1,11 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+/**
+ * Supabase client for use in RSCs and route handlers.
+ * Reads the session from cookies; cookie writes during RSC render are no-ops
+ * (middleware is responsible for refreshing the session).
+ */
 export function createClient() {
   const cookieStore = cookies();
 
@@ -13,15 +18,18 @@ export function createClient() {
           return cookieStore.getAll();
         },
         setAll(
-          cookiesToSet: { name: string; value: string; options: CookieOptions }[],
+          cookiesToSet: {
+            name: string;
+            value: string;
+            options: CookieOptions;
+          }[],
         ) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options),
             );
           } catch {
-            // Invoked from a Server Component; mutation is a no-op.
-            // Middleware refreshes the session so this is fine.
+            // RSC render — cookie mutation is not allowed. Middleware handles refresh.
           }
         },
       },

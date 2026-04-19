@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/cron/sync-games", "schedule": "0 9 * * *" },
+    { "path": "/api/cron/lock-slots", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/score-games", "schedule": "*/5 * * * *" }
+  ]
+}

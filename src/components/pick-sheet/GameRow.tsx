@@ -6,9 +6,17 @@ type Props = {
   game: Game;
   slotStatus: SlotStatus;
   onTogglePick: (gameId: string) => void;
+  onConfidenceChange?: (gameId: string, value: number) => void;
+  maxConfidence?: number;
 };
 
-export function GameRow({ game, slotStatus, onTogglePick }: Props) {
+export function GameRow({
+  game,
+  slotStatus,
+  onTogglePick,
+  onConfidenceChange,
+  maxConfidence,
+}: Props) {
   const isLocked = slotStatus !== "open";
   const isRowLocked = slotStatus === "locked";
 
@@ -21,7 +29,21 @@ export function GameRow({ game, slotStatus, onTogglePick }: Props) {
 
   return (
     <div className={`ps-game-row${isRowLocked ? " locked" : ""}`}>
-      <div className={confClass}>{game.confidence}</div>
+      {slotStatus === "open" && onConfidenceChange ? (
+        <input
+          type="number"
+          className={confClass}
+          value={game.confidence || ""}
+          min={1}
+          max={maxConfidence ?? 18}
+          onChange={(e) =>
+            onConfidenceChange(game.id, Number(e.target.value) || 0)
+          }
+          style={{ width: 44, textAlign: "center" }}
+        />
+      ) : (
+        <div className={confClass}>{game.confidence || "—"}</div>
+      )}
 
       <div className="ps-matchup">
         <TeamRow team={game.away} />

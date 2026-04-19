@@ -1,14 +1,16 @@
 # Club 943 Pick'em
 
-NFL ATS confidence pick'em platform. See `nfl-pickem-product-spec.docx` for the full
-product spec and `nfl-ats-pickem-sheet.html` for the pick sheet design reference.
+NFL ATS confidence pick'em platform. See `nfl-pickem-product-spec.docx` for the
+full product spec and `nfl-ats-pickem-sheet.html` for the pick sheet design
+reference.
 
 ## Stack
 
 - **Next.js 14** (App Router, React Server Components)
 - **Tailwind CSS** with design tokens from §9.1 of the spec
-- **Clerk** (`@clerk/nextjs` v6) for auth
-- **Supabase** (`@supabase/ssr`) for database + realtime
+- **Supabase** (`@supabase/ssr`) for auth + database + realtime
+- **The Odds API** for live NFL ATS lines + scores
+- **Vercel Cron** for the automation schedule (§8)
 
 ## Getting started
 
@@ -18,65 +20,100 @@ cp .env.local.example .env.local   # fill in keys
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — redirects to `/picks`.
+Open [http://localhost:3000](http://localhost:3000) — signed-out users go to
+`/sign-in`; signed-in users land on `/leagues`.
 
 ### Required env vars
 
-See `.env.local.example`. You'll need:
+See `.env.local.example`:
 
-- Clerk publishable + secret keys
-- Supabase URL + anon key (+ service role key for cron / admin routes)
-- Odds API key (§4.1) — not used yet, in place for Phase 1
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (cron / admin routes)
+- `ODDS_API_KEY` for The Odds API
+- `CRON_SECRET` — bearer token required by `/api/cron/*`
+
+### Database
+
+Apply `supabase/migrations/0001_init.sql` via the Supabase SQL editor or CLI.
+The migration creates all tables from §5 plus a trigger that mirrors
+`auth.users` into `public.users`, so no extra webhook is needed for
+sign-ups.
 
 ## Routes
 
-| Route              | Auth       | Status                                          |
-| ------------------ | ---------- | ----------------------------------------------- |
-| `/`                | public     | redirects to `/picks`                           |
-| `/picks`           | protected  | Pick sheet — mirrors HTML mockup, Week 7 fixture |
-| `/sign-in`         | public     | Clerk sign-in                                   |
-| `/sign-up`         | public     | Clerk sign-up                                   |
+| Route                         | Auth         | Purpose                                       |
+| ----------------------------- | ------------ | --------------------------------------------- |
+| `/`                           | —            | redirect: `/sign-in` or `/leagues`            |
+| `/sign-in`, `/sign-up`        | public       | Supabase Auth (email + password)              |
+| `/leagues`                    | protected    | List of your leagues                          |
+| `/leagues/new`                | protected    | Create league → commissioner                  |
+| `/leagues/join`               | protected    | Join by invite code                           |
+| `/picks?league=…&week=…`      | protected    | Pick sheet, loads live games + your picks     |
+| `/admin/[leagueId]`           | commissioner | Roster + payment toggle                       |
+| `/api/leagues`                | user         | POST create                                   |
+| `/api/leagues/join`           | user         | POST join                                     |
+| `/api/leagues/:id/standings`  | member       | GET standings (?week=N, 0=season)             |
+| `/api/leagues/:id/members`    | member       | GET roster                                    |
+| `/api/picks`                  | user         | GET / POST picks for league+week              |
+| `/api/tiebreaker`             | user         | POST MNF total prediction                     |
+| `/api/admin/members/:id/paid` | commissioner | PATCH `{ is_paid }`                           |
+| `/api/admin/payouts/:id/distribute` | commissioner | PATCH mark distributed                    |
+| `/api/cron/sync-games`        | bearer       | Daily: upsert games + spreads                 |
+| `/api/cron/lock-slots`        | bearer       | Every 5m: lock slots ≤ 5m before kickoff      |
+| `/api/cron/score-games`       | bearer       | Every 5m: pull scores, grade picks, re-rank   |
 
-Protected routes are enforced in `middleware.ts` via `createRouteMatcher`.
+`vercel.json` wires the cron schedules. All `/api/cron/*` routes require
+`Authorization: Bearer $CRON_SECRET`.
 
 ## Structure
 
 ```
 src/
 ├── app/
-│   ├── layout.tsx          # ClerkProvider + DM Sans
-│   ├── globals.css         # Tailwind + pick-sheet component classes
-│   ├── page.tsx            # redirect -> /picks
-│   ├── picks/page.tsx      # /picks
-│   ├── sign-in/[[...sign-in]]/page.tsx
-│   └── sign-up/[[...sign-up]]/page.tsx
-├── components/
-│   └── pick-sheet/         # PickSheet + sub-components
+│   ├── admin/[leagueId]/          # commissioner panel
+│   ├── api/
+│   │   ├── admin/…                # paid toggle, payouts
+│   │   ├── cron/                  # sync-games, lock-slots, score-games
+│   │   ├── leagues/               # create, join, standings, members
+│   │   ├── picks/                 # GET/POST picks
+│   │   └── tiebreaker/            # MNF prediction
+│   ├── leagues/                   # list, new, join pages
+│   ├── picks/                     # live pick sheet (RSC → PickSheet)
+│   ├── sign-in/, sign-up/         # Supabase Auth forms
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/pick-sheet/         # PickSheet, SlotGroup, GameRow, ConfidencePool
 └── lib/
-    └── supabase/
-        ├── client.ts       # browser
-        ├── server.ts       # RSC / route handlers (anon + cookie auth)
-        └── admin.ts        # service-role (cron / webhooks only)
+    ├── auth.ts                    # getUserId / requireUserId
+    ├── cron-auth.ts               # bearer-token gate for /api/cron/*
+    ├── db-types.ts                # row types mirroring the schema
+    ├── format.ts                  # spread + countdown formatters
+    ├── invite-code.ts             # 6-char unambiguous alphabet
+    ├── nfl-week.ts                # season-year + week computation
+    ├── odds-api.ts                # The Odds API client
+    ├── scoring.ts                 # ATS grading
+    ├── slots.ts                   # time-slot helpers + 5-min lock lead
+    └── supabase/                  # client, server, admin
+supabase/
+└── migrations/0001_init.sql
 ```
 
-## Pick sheet
+## Phase 1 scope (per §12)
 
-`/picks` renders `PickSheet` with Week 7 fixture data that mirrors the mockup
-pixel-for-pixel (same slot groups, same games, same confidence chips, same
-live / locked / open states). Styling lives in `globals.css` under the `ps-*`
-class namespace so the React markup maps 1:1 to the HTML reference.
+Delivered:
 
-Open (unlocked) games are interactive — clicking the pick button toggles
-between away and home team. Locked and live games are display-only.
+- Supabase Auth (sign-up / sign-in) + automatic user mirror trigger
+- Invite-code league create & join
+- Commissioner admin panel with per-member `is_paid` toggle
+- Games sync + live spreads via The Odds API
+- Slot locking at `kickoff - 5m`, including auto-fill of missing picks with
+  the lowest remaining confidence (per §2.4) and MNF tiebreaker lock
+- Per-game scoring (home/away/push) + weekly + season standings recompute
+- Pick sheet driven by Supabase data for the authenticated member
+- MNF tiebreaker prediction stored per (user, league, week)
+- Vercel cron schedule
 
-Replace `src/components/pick-sheet/week7-data.ts` with a loader that pulls from
-Supabase + the Odds API once the data pipeline is wired up (§8).
-
-## Next steps (Phase 1, per §12)
-
-- Sync Clerk users into Supabase `users` table on sign-up webhook
-- Game sync job against The Odds API
-- Slot-locking cron (5 min before kickoff, §2.3)
-- League create / join via invite code
-- Commissioner admin panel (payment toggle, payout distribution)
-- Auto-scoring + standings recompute
+Still pending for Phase 1 polish: email/SMS reminders (Resend, Twilio),
+weekly payout record generation, drag-and-drop confidence ranking (the
+current UI uses numeric inputs with duplicate detection).

@@ -4,9 +4,16 @@ import { GameRow } from "./GameRow";
 type Props = {
   slot: Slot;
   onTogglePick: (gameId: string) => void;
+  onConfidenceChange?: (gameId: string, value: number) => void;
+  maxConfidence?: number;
 };
 
-export function SlotGroup({ slot, onTogglePick }: Props) {
+export function SlotGroup({
+  slot,
+  onTogglePick,
+  onConfidenceChange,
+  maxConfidence,
+}: Props) {
   return (
     <div className="ps-slot-group">
       <div className="ps-slot-header">
@@ -26,6 +33,8 @@ export function SlotGroup({ slot, onTogglePick }: Props) {
           game={game}
           slotStatus={slot.status}
           onTogglePick={onTogglePick}
+          onConfidenceChange={onConfidenceChange}
+          maxConfidence={maxConfidence}
         />
       ))}
     </div>

@@ -1,19 +1,20 @@
-import { confidenceValues, usedConfidence } from "./week7-data";
+type Props = {
+  values: number[];
+  used: Set<number>;
+};
 
-export function ConfidencePool() {
+export function ConfidencePool({ values, used }: Props) {
+  if (values.length === 0) return null;
   return (
-    <>
-      <div className="ps-section-label">confidence points available</div>
-      <div className="ps-confidence-pool">
-        {confidenceValues.map((n) => (
-          <div
-            key={n}
-            className={`ps-conf-chip${usedConfidence.has(n) ? " used" : ""}`}
-          >
-            {n}
-          </div>
-        ))}
-      </div>
-    </>
+    <div className="ps-confidence-pool">
+      {values.map((n) => (
+        <div
+          key={n}
+          className={`ps-conf-chip${used.has(n) ? " used" : ""}`}
+        >
+          {n}
+        </div>
+      ))}
+    </div>
   );
 }

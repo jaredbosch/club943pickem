@@ -1,17 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ConfidencePool } from "./ConfidencePool";
 import { SlotGroup } from "./SlotGroup";
-import { week7Slots } from "./week7-data";
 import type { Slot } from "./types";
 
-const WEEK = 7;
-const WEEKS_NAV = [6, 7, 8];
+type Props = {
+  leagueId: string;
+  leagueName: string;
+  week: number;
+  isPaid: boolean;
+  isCommissioner: boolean;
+  initialSlots: Slot[];
+  initialTiebreaker: number;
+  tiebreakerLocked: boolean;
+  pointsSoFar: number;
+  maxPossible: number;
+  seasonRank: number | null;
+  totalGames: number;
+};
 
-export function PickSheet() {
-  const [slots, setSlots] = useState<Slot[]>(week7Slots);
-  const [tiebreaker, setTiebreaker] = useState(44);
+export function PickSheet(props: Props) {
+  const {
+    leagueId,
+    leagueName,
+    week,
+    isPaid,
+    initialSlots,
+    initialTiebreaker,
+    tiebreakerLocked,
+    pointsSoFar,
+    maxPossible,
+    seasonRank,
+    totalGames,
+  } = props;
+
+  const [slots, setSlots] = useState<Slot[]>(initialSlots);
+  const [tiebreaker, setTiebreaker] = useState(initialTiebreaker);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+  const confidenceValues = useMemo(
+    () =>
+      Array.from({ length: totalGames }, (_, i) => totalGames - i), // N..1 desc
+    [totalGames],
+  );
+
+  const usedConfidence = useMemo(() => {
+    const used = new Set<number>();
+    for (const s of slots) {
+      for (const g of s.games) {
+        if (g.pickedTeam && g.confidence > 0) used.add(g.confidence);
+      }
+    }
+    return used;
+  }, [slots]);
 
   const togglePick = (gameId: string) => {
     setSlots((prev) =>
@@ -31,65 +75,148 @@ export function PickSheet() {
     );
   };
 
+  const setConfidence = (gameId: string, value: number) => {
+    setSlots((prev) =>
+      prev.map((slot) =>
+        slot.status !== "open"
+          ? slot
+          : {
+              ...slot,
+              games: slot.games.map((g) =>
+                g.id === gameId ? { ...g, confidence: value } : g,
+              ),
+            },
+      ),
+    );
+  };
+
+  async function savePicks() {
+    setSaving(true);
+    setSaveError(null);
+    setSaveMessage(null);
+
+    const outgoing: Array<{
+      game_id: string;
+      picked_team: string;
+      confidence: number;
+    }> = [];
+    for (const s of slots) {
+      if (s.status !== "open") continue;
+      for (const g of s.games) {
+        if (!g.pickedTeam || g.confidence <= 0) continue;
+        outgoing.push({
+          game_id: g.id,
+          picked_team: g.pickedTeam,
+          confidence: g.confidence,
+        });
+      }
+    }
+
+    const res = await fetch("/api/picks", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ league_id: leagueId, week, picks: outgoing }),
+    });
+
+    // Save tiebreaker in parallel (not awaited above to keep call count low).
+    if (!tiebreakerLocked && tiebreaker > 0) {
+      await fetch("/api/tiebreaker", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          league_id: leagueId,
+          week,
+          predicted_total: tiebreaker,
+        }),
+      });
+    }
+
+    setSaving(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setSaveError(body.error ?? "failed to save picks");
+      return;
+    }
+    setSaveMessage("saved");
+  }
+
+  const mondaySlot = slots.find((s) => s.id === "monday");
+
   return (
     <div className="ps-shell">
       <div className="ps-container">
         <div className="ps-header">
           <div>
-            <div className="ps-title">week {WEEK} pick sheet</div>
+            <div className="ps-title">week {week} pick sheet</div>
             <div className="ps-subtitle">
-              Jared&apos;s ATS League{" "}
-              <span className="ps-paid-badge">$ paid</span> — 47/50 picks in
+              {leagueName}
+              {isPaid && <span className="ps-paid-badge">$ paid</span>}
             </div>
-          </div>
-          <div className="ps-week-nav">
-            {WEEKS_NAV.map((w) => (
-              <button
-                key={w}
-                type="button"
-                className={`ps-week-btn${w === WEEK ? " active" : ""}`}
-              >
-                {w}
-              </button>
-            ))}
           </div>
         </div>
 
-        <ConfidencePool />
+        <div className="ps-section-label">confidence points available</div>
+        <ConfidencePool values={confidenceValues} used={usedConfidence} />
 
         {slots.map((slot) => (
-          <SlotGroup key={slot.id} slot={slot} onTogglePick={togglePick} />
+          <SlotGroup
+            key={slot.id}
+            slot={slot}
+            onTogglePick={togglePick}
+            onConfidenceChange={setConfidence}
+            maxConfidence={totalGames}
+          />
         ))}
 
-        <div className="ps-tiebreaker">
-          <div>
-            <div className="ps-tb-label">monday night tiebreaker</div>
-            <div className="ps-tb-sub">
-              predict total combined points (TB @ ARI)
+        {mondaySlot && (
+          <div className="ps-tiebreaker">
+            <div>
+              <div className="ps-tb-label">monday night tiebreaker</div>
+              <div className="ps-tb-sub">
+                predict total combined points
+                {tiebreakerLocked && " (locked)"}
+              </div>
             </div>
+            <input
+              type="number"
+              className="ps-tb-input"
+              value={tiebreaker}
+              min={0}
+              max={150}
+              disabled={tiebreakerLocked}
+              onChange={(e) => setTiebreaker(Number(e.target.value))}
+            />
           </div>
-          <input
-            type="number"
-            className="ps-tb-input"
-            value={tiebreaker}
-            min={0}
-            max={150}
-            onChange={(e) => setTiebreaker(Number(e.target.value))}
-          />
-        </div>
+        )}
 
         <div className="ps-bottom-bar">
           <div className="ps-score-display">
-            week {WEEK} points: <strong>16</strong> / 136 possible
+            week {week} points: <strong>{pointsSoFar}</strong> / {maxPossible} possible
             <br />
-            <span className="ps-score-sub">season rank: 4th of 50</span>
+            <span className="ps-score-sub">
+              {seasonRank ? `season rank: ${ordinal(seasonRank)}` : "season rank: —"}
+            </span>
           </div>
-          <button type="button" className="ps-submit-btn">
-            save picks
-          </button>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+            {saveError && <div className="ps-auth-error">{saveError}</div>}
+            {saveMessage && <div className="ps-auth-message">{saveMessage}</div>}
+            <button
+              type="button"
+              className="ps-submit-btn"
+              onClick={savePicks}
+              disabled={saving}
+            >
+              {saving ? "saving…" : "save picks"}
+            </button>
+          </div>
         </div>
-
       </div>
     </div>
   );
+}
+
+function ordinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }

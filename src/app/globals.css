@@ -398,4 +398,79 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
+
+  .ps-auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 12px;
+  }
+  .ps-auth-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  .ps-auth-input {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .ps-auth-input:focus {
+    outline: none;
+    border-color: var(--green);
+  }
+  .ps-auth-error { color: var(--red); font-size: 13px; }
+  .ps-auth-message { color: var(--green); font-size: 13px; }
+  .ps-auth-alt { font-size: 13px; color: var(--muted); text-align: center; }
+  .ps-auth-alt a { color: var(--green2); text-decoration: none; }
+  .ps-auth-alt a:hover { text-decoration: underline; }
+
+  .ps-empty {
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--muted);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+  .ps-league-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ps-league-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .ps-league-card:hover { border-color: var(--green); }
+  .ps-league-name { font-weight: 700; }
+  .ps-league-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .ps-foot-links {
+    max-width: 760px;
+    margin: 0 auto 32px;
+    padding: 8px 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .ps-foot-links a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .ps-foot-links a:hover { color: var(--green2); }
 }
