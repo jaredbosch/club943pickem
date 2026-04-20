@@ -32,8 +32,9 @@ See `.env.local.example`. You'll need:
 | ------------------ | ---------- | ----------------------------------------------- |
 | `/`                | public     | redirects to `/picks`                           |
 | `/picks`           | protected  | Pick sheet — mirrors HTML mockup, Week 7 fixture |
-| `/sign-in`         | public     | Clerk sign-in                                   |
-| `/sign-up`         | public     | Clerk sign-up                                   |
+| `/sign-in`         | public     | Supabase email/password sign-in                 |
+| `/sign-up`         | public     | Supabase email/password sign-up                 |
+| `/auth/callback`   | public     | Exchanges email confirmation code for session   |
 
 Protected routes are enforced in `middleware.ts` via Supabase session check.
 
@@ -72,6 +73,7 @@ Supabase + the Odds API once the data pipeline is wired up (§8).
 
 ## Next steps (Phase 1, per §12)
 
+- Supabase schema + RLS policies (users, leagues, games, picks, scores)
 - Game sync job against The Odds API
 - Slot-locking cron (5 min before kickoff, §2.3)
 - League create / join via invite code
