@@ -7,8 +7,7 @@ product spec and `nfl-ats-pickem-sheet.html` for the pick sheet design reference
 
 - **Next.js 14** (App Router, React Server Components)
 - **Tailwind CSS** with design tokens from §9.1 of the spec
-- **Clerk** (`@clerk/nextjs` v6) for auth
-- **Supabase** (`@supabase/ssr`) for database + realtime
+- **Supabase Auth** (`@supabase/ssr`) for auth, database + realtime
 
 ## Getting started
 
@@ -24,7 +23,6 @@ Open [http://localhost:3000](http://localhost:3000) — redirects to `/picks`.
 
 See `.env.local.example`. You'll need:
 
-- Clerk publishable + secret keys
 - Supabase URL + anon key (+ service role key for cron / admin routes)
 - Odds API key (§4.1) — not used yet, in place for Phase 1
 
@@ -37,14 +35,14 @@ See `.env.local.example`. You'll need:
 | `/sign-in`         | public     | Clerk sign-in                                   |
 | `/sign-up`         | public     | Clerk sign-up                                   |
 
-Protected routes are enforced in `middleware.ts` via `createRouteMatcher`.
+Protected routes are enforced in `middleware.ts` via Supabase session check.
 
 ## Structure
 
 ```
 src/
 ├── app/
-│   ├── layout.tsx          # ClerkProvider + DM Sans
+│   ├── layout.tsx          # DM Sans
 │   ├── globals.css         # Tailwind + pick-sheet component classes
 │   ├── page.tsx            # redirect -> /picks
 │   ├── picks/page.tsx      # /picks
@@ -74,7 +72,6 @@ Supabase + the Odds API once the data pipeline is wired up (§8).
 
 ## Next steps (Phase 1, per §12)
 
-- Sync Clerk users into Supabase `users` table on sign-up webhook
 - Game sync job against The Odds API
 - Slot-locking cron (5 min before kickoff, §2.3)
 - League create / join via invite code
