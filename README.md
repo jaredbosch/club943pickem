@@ -56,7 +56,17 @@ src/
         ├── client.ts       # browser
         ├── server.ts       # RSC / route handlers (anon + cookie auth)
         └── admin.ts        # service-role (cron / webhooks only)
+
+supabase/
+├── README.md               # schema + RLS overview
+└── migrations/             # timestamped SQL migrations (spec §5.1)
 ```
+
+## Database
+
+Schema lives in [`supabase/migrations/`](./supabase/README.md). Apply with
+`supabase db push` (CLI) or paste each file into the Supabase dashboard SQL
+Editor in filename order.
 
 ## Pick sheet
 
