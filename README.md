@@ -68,6 +68,27 @@ Schema lives in [`supabase/migrations/`](./supabase/README.md). Apply with
 `supabase db push` (CLI) or paste each file into the Supabase dashboard SQL
 Editor in filename order.
 
+## Odds sync
+
+`GET /api/cron/sync-games` pulls the current NFL slate from
+[The Odds API](https://the-odds-api.com) and upserts it into `public.games`
+via the service-role client. Authentication is `Authorization: Bearer
+$CRON_SECRET` (Vercel Cron convention).
+
+The schedule is declared in `vercel.json`. Default is once a day at 12:00
+UTC — Vercel Hobby caps crons at daily. On Pro you can swap to something
+like `0 */2 * * 4,5,6,0,1` (every two hours Thu–Mon ET) for live spread
+updates. Each invocation is one Odds API request; the free tier is 500/month.
+
+Test locally:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  http://localhost:3000/api/cron/sync-games
+```
+
+Returns `{ ok, fetched, upserted, skipped }`.
+
 ## Pick sheet
 
 `/picks` renders `PickSheet` with Week 7 fixture data that mirrors the mockup
@@ -83,9 +104,9 @@ Supabase + the Odds API once the data pipeline is wired up (§8).
 
 ## Next steps (Phase 1, per §12)
 
-- Supabase schema + RLS policies (users, leagues, games, picks, scores)
-- Game sync job against The Odds API
+- ~~Supabase schema + RLS policies~~ (done, PR #4)
+- ~~Game sync job against The Odds API~~ (done)
 - Slot-locking cron (5 min before kickoff, §2.3)
-- League create / join via invite code
+- League create / join via invite code (UI for the `create_league` / `join_league_by_code` RPCs)
 - Commissioner admin panel (payment toggle, payout distribution)
 - Auto-scoring + standings recompute
