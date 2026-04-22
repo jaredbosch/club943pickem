@@ -10,6 +10,7 @@ Files in `migrations/` are timestamped SQL scripts applied in filename order.
 | ---- | ------- |
 | `20260420000001_initial_schema.sql` | Enums, tables, indexes, `updated_at` triggers, `auth.users` → `public.users` sync, `create_league` / `join_league_by_code` RPCs |
 | `20260420000002_rls_policies.sql`   | Enables RLS on every table, plus `is_league_member` / `is_league_commissioner` helpers and per-table policies |
+| `20260422000001_lock_slots.sql`     | `public.lock_slots()` — flips games/picks/MNF tiebreakers when kickoff is within 5 minutes (spec §2.3). Called by `/api/cron/lock-slots`. |
 
 Tables follow spec §5.1. Notable deltas from the spec:
 

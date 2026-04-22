@@ -102,11 +102,25 @@ between away and home team. Locked and live games are display-only.
 Replace `src/components/pick-sheet/week7-data.ts` with a loader that pulls from
 Supabase + the Odds API once the data pipeline is wired up (§8).
 
+## Slot locking
+
+`GET /api/cron/lock-slots` calls the `public.lock_slots()` SQL function, which
+flips `games.status` to `locked` (snapshotting `spread_home` into
+`locked_spread_home`), sets `picks.is_locked = true`, and locks any MNF
+tiebreakers whose week has a Monday game at kickoff. The threshold is
+`kickoff_time <= now() + 5 minutes` per spec §2.3.
+
+Auth matches `sync-games` (`Authorization: Bearer $CRON_SECRET`). Scheduled
+in `vercel.json` at `*/5 * * * *` — Vercel Hobby caps crons at daily, so
+this cadence requires Pro. Each run is a single RPC call; no external API.
+
+Returns `{ ok, games_locked, picks_locked, tiebreakers_locked }`.
+
 ## Next steps (Phase 1, per §12)
 
 - ~~Supabase schema + RLS policies~~ (done, PR #4)
 - ~~Game sync job against The Odds API~~ (done)
-- Slot-locking cron (5 min before kickoff, §2.3)
+- ~~Slot-locking cron (5 min before kickoff, §2.3)~~ (done)
 - League create / join via invite code (UI for the `create_league` / `join_league_by_code` RPCs)
 - Commissioner admin panel (payment toggle, payout distribution)
 - Auto-scoring + standings recompute
