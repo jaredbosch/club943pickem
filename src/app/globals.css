@@ -131,113 +131,120 @@ body {
     }
   }
 
-  .ps-game-row {
+  /* New game row layout */
+  .ps-game-row2 {
     display: grid;
-    grid-template-columns: 36px 1fr 90px 70px;
+    grid-template-columns: 56px 1fr 52px;
     align-items: center;
-    padding: 10px 14px;
+    padding: 12px 14px;
     background: var(--card);
     border: 0.5px solid var(--border);
     border-top: none;
-    gap: 10px;
+    gap: 12px;
     transition: background 0.15s;
   }
-  .ps-game-row:last-child {
-    border-radius: 0 0 8px 8px;
-  }
-  .ps-game-row.locked {
-    background: var(--lock-bg);
-    opacity: 0.7;
-  }
-  .ps-game-row:not(.locked):hover {
-    background: var(--card2);
-  }
+  .ps-game-row2:last-child { border-radius: 0 0 8px 8px; }
+  .ps-game-row2.locked { background: var(--lock-bg); opacity: 0.75; }
 
-  .ps-conf {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--green);
-    text-align: center;
-    min-width: 28px;
-  }
-  .ps-conf.unlocked {
-    color: var(--green2);
-  }
-  .ps-conf.used {
-    color: var(--muted);
-    opacity: 0.4;
-  }
-
-  .ps-matchup {
+  /* Confidence column */
+  .ps-conf-col { display: flex; align-items: center; justify-content: center; }
+  .ps-conf-btn {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    align-items: center;
+    background: rgba(0, 200, 83, 0.1);
+    border: 1px solid rgba(0, 200, 83, 0.35);
+    border-radius: 8px;
+    padding: 5px 8px;
+    cursor: pointer;
+    width: 48px;
+    transition: background 0.15s, border-color 0.15s;
+    user-select: none;
   }
-  .ps-team-row {
+  .ps-conf-btn:hover { background: rgba(0, 200, 83, 0.2); border-color: var(--green); }
+  .ps-conf-static {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 8px;
+    width: 48px;
+  }
+  .ps-conf-static.correct { background: rgba(0,200,83,0.12); border-color: var(--green); }
+  .ps-conf-static.incorrect { background: rgba(226,75,74,0.1); border-color: var(--red); }
+  .ps-conf-num { font-size: 18px; font-weight: 700; color: var(--green); line-height: 1; }
+  .ps-conf-static .ps-conf-num { color: var(--muted); }
+  .ps-conf-static.correct .ps-conf-num { color: var(--green); }
+  .ps-conf-static.incorrect .ps-conf-num { color: var(--red); }
+  .ps-conf-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-top: 1px; }
+  .ps-conf-overlay-select {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Two-team pick buttons */
+  .ps-team-picks {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
   }
-  .ps-team-name {
-    min-width: 36px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-  }
-  .ps-team-record {
-    color: var(--muted);
-    font-size: 11px;
-  }
-  .ps-spread {
-    font-size: 12px;
-    color: var(--muted);
-    min-width: 50px;
-    text-align: center;
-    font-weight: 500;
-  }
-
-  .ps-pick-btn {
-    padding: 6px 16px;
-    border-radius: 6px;
-    border: 0.5px solid var(--border);
+  .ps-team-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
     background: var(--card2);
-    color: var(--muted);
-    font-size: 12px;
     cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
     font-family: inherit;
-    font-weight: 500;
+    transition: all 0.15s;
   }
-  .ps-pick-btn:hover:not(.locked) {
-    transform: scale(1.02);
-    border-color: var(--green);
-  }
-  .ps-pick-btn.selected {
+  .ps-team-btn:hover { border-color: var(--green); background: rgba(0,200,83,0.06); }
+  .ps-team-btn.picked {
     background: var(--green);
-    color: var(--bg);
-    font-weight: 700;
     border-color: var(--green);
   }
-  .ps-pick-btn.correct {
-    background: rgba(0, 200, 83, 0.2);
-    color: var(--green2);
-    border-color: var(--green);
-  }
-  .ps-pick-btn.incorrect {
-    background: rgba(226, 75, 74, 0.15);
-    color: var(--red);
-    border-color: var(--red);
-    text-decoration: line-through;
-  }
-  .ps-pick-btn.push-state {
-    background: rgba(136, 153, 170, 0.15);
+  .ps-team-btn-abbr {
+    font-size: 15px;
+    font-weight: 800;
     color: var(--muted);
-    border-color: var(--muted);
+    letter-spacing: 0.5px;
   }
-  .ps-pick-btn.locked {
-    cursor: default;
+  .ps-team-btn.picked .ps-team-btn-abbr { color: #0f1923; }
+  .ps-team-btn-spread {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
   }
+  .ps-team-btn.picked .ps-team-btn-spread { color: rgba(15,25,35,0.7); }
+  .ps-vs { font-size: 10px; color: var(--muted); font-weight: 600; flex-shrink: 0; }
+
+  /* Locked matchup display */
+  .ps-matchup-locked { display: flex; flex-direction: column; gap: 4px; }
+  .ps-locked-team {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 0;
+  }
+  .ps-locked-abbr { font-size: 13px; font-weight: 700; color: var(--muted); min-width: 36px; }
+  .ps-locked-spread { font-size: 11px; color: var(--muted); }
+  .ps-locked-team.picked .ps-locked-abbr { color: var(--text); }
+  .ps-locked-team.correct .ps-locked-abbr { color: var(--green); }
+  .ps-locked-team.incorrect .ps-locked-abbr { color: var(--red); text-decoration: line-through; }
+  .ps-pick-mark { font-size: 12px; font-weight: 700; margin-left: 4px; }
+  .ps-locked-team.correct .ps-pick-mark { color: var(--green); }
+  .ps-locked-team.incorrect .ps-pick-mark { color: var(--red); }
 
   .ps-result-col {
     text-align: center;
@@ -250,6 +257,16 @@ body {
     font-size: 11px;
   }
   .ps-result-pending {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .ps-result-col {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .ps-result-live {
     text-align: center;
     color: var(--muted);
     font-size: 11px;
@@ -390,6 +407,62 @@ body {
     vertical-align: middle;
     font-weight: 700;
     letter-spacing: 0.3px;
+  }
+  .ps-sample-banner {
+    background: rgba(255, 109, 0, 0.1);
+    border: 1px solid rgba(255, 109, 0, 0.3);
+    border-radius: 8px;
+    color: var(--orange);
+    font-size: 12px;
+    padding: 8px 14px;
+    margin-bottom: 1rem;
+  }
+  .ps-saving {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .ps-empty {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    margin-top: 1rem;
+  }
+  .ps-empty-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .ps-empty-sub {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  /* Confidence select on open games */
+  .ps-conf-select-wrap {
+    position: relative;
+    cursor: pointer;
+  }
+  .ps-conf-select {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: var(--green);
+    font-size: 17px;
+    font-weight: 700;
+    font-family: inherit;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+  }
+  .ps-conf-select option {
+    background: var(--card2);
+    color: var(--text);
+    font-size: 14px;
   }
   .ps-section-label {
     font-size: 12px;

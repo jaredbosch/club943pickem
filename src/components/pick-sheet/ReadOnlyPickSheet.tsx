@@ -49,7 +49,7 @@ export function ReadOnlyPickSheet({ playerName }: Props) {
               </div>
             </div>
           ) : (
-            <SlotGroup key={slot.id} slot={slot} onTogglePick={noop} />
+            <SlotGroup key={slot.id} slot={slot} onPickTeam={noop} />
           )
         )}
       </div>
