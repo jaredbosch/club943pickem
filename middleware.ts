@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const protectedRoutes = [
   "/picks",
   "/admin",
+  "/league",
   "/leagues",
   "/api/picks",
   "/api/leagues",
