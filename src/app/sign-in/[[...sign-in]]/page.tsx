@@ -22,7 +22,7 @@ export default function SignInPage() {
       setError(error.message);
       setLoading(false);
     } else {
-      router.push("/picks");
+      router.push("/");
     }
   }
 
@@ -41,7 +41,7 @@ export default function SignInPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full rounded border border-border bg-card px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-green"
             />
           </div>
           <div>
@@ -54,21 +54,21 @@ export default function SignInPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full rounded border border-border bg-card px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-green"
             />
           </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && <p className="text-sm text-red">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90 disabled:opacity-50"
+            className="w-full rounded bg-green px-4 py-2 text-sm font-semibold text-bg hover:opacity-90 disabled:opacity-50"
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
-        <p className="text-center text-sm text-text/60">
+        <p className="text-center text-sm text-muted">
           No account?{" "}
-          <Link href="/sign-up" className="text-accent hover:underline">
+          <Link href="/sign-up" className="text-green hover:underline">
             Sign up
           </Link>
         </p>
