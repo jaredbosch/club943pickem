@@ -14,5 +14,5 @@ export default async function Home() {
     .limit(1)
     .maybeSingle();
 
-  redirect(membership ? "/picks" : "/league");
+  redirect(membership ? "/dashboard" : "/league");
 }

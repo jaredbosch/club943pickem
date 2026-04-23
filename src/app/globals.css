@@ -399,6 +399,188 @@ body {
     letter-spacing: 0.5px;
   }
 
+  /* Dashboard wide layout */
+  .dash-wide-container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .dash-columns {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.25rem;
+    align-items: start;
+  }
+  .dash-main { min-width: 0; }
+  .dash-sidebar { min-width: 0; }
+  @media (max-width: 800px) {
+    .dash-columns { grid-template-columns: 1fr; }
+  }
+
+  /* Notes panel */
+  .notes-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .notes-header {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .notes-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-height: 480px;
+    overflow-y: auto;
+  }
+  .notes-empty {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 16px;
+    margin: 0;
+    text-align: center;
+  }
+  .notes-post {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .notes-post-pinned {
+    background: rgba(0, 200, 83, 0.06);
+    border-left: 3px solid var(--green);
+  }
+  .notes-pin-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--green);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .notes-post-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 5px;
+  }
+  .notes-author {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .notes-time {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .notes-body {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .notes-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .notes-action-btn {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+    transition: color 0.15s;
+  }
+  .notes-action-btn:hover { color: var(--text); }
+  .notes-action-delete:hover { color: var(--red); }
+  .notes-compose {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .notes-textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+    line-height: 1.5;
+  }
+  .notes-textarea:focus { border-color: var(--green); }
+  .notes-textarea::placeholder { color: var(--muted); }
+  .notes-post-btn {
+    align-self: flex-end;
+    padding: 7px 18px;
+    background: var(--green);
+    color: #0f1923;
+    font-weight: 700;
+    font-size: 13px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .notes-post-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Dashboard row links */
+  .dash-row-link { cursor: pointer; }
+  .dash-player-link {
+    color: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .dash-player-link:hover { color: var(--text); }
+  .dash-th-arrow { width: 28px; }
+  .dash-td-arrow { text-align: right; }
+  .dash-arrow {
+    color: var(--muted);
+    font-size: 14px;
+    text-decoration: none;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+  .dash-row-link:hover .dash-arrow { opacity: 1; color: var(--green); }
+
+  /* Back link + picks hidden */
+  .dash-back-link {
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .dash-back-link:hover { color: var(--text); }
+  .dash-picks-hidden {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 16px;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+  }
+
   /* League setup */
   .league-shell {
     min-height: 100vh;
@@ -560,5 +742,139 @@ body {
     text-align: center;
     color: var(--green);
     margin-bottom: 1.25rem;
+  }
+
+  /* League dashboard */
+  .dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+  .dash-picks-btn {
+    background: var(--green);
+    color: #0f1923;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .dash-picks-btn:hover {
+    opacity: 0.85;
+  }
+  .dash-invite {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 1.25rem;
+  }
+  .dash-invite-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  .dash-invite-code {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--green);
+    flex: 1;
+  }
+  .dash-invite-copy {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .dash-invite-copy:hover {
+    color: var(--text);
+    border-color: var(--text);
+  }
+  .dash-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .dash-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    padding: 14px 16px 10px;
+  }
+  .dash-empty {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 0 16px 16px;
+    margin: 0;
+  }
+  .dash-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .dash-th {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--muted);
+    padding: 6px 16px 8px;
+    text-align: left;
+    border-top: 1px solid var(--border);
+  }
+  .dash-th-rank { width: 36px; }
+  .dash-th-name { }
+  .dash-th-num { width: 52px; text-align: right; }
+  .dash-row {
+    border-top: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .dash-row:hover { background: var(--card2); }
+  .dash-row-me { background: rgba(0, 200, 83, 0.06); }
+  .dash-row-me:hover { background: rgba(0, 200, 83, 0.1); }
+  .dash-td {
+    padding: 11px 16px;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .dash-td-rank {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .dash-td-name { font-weight: 500; }
+  .dash-td-num { text-align: right; font-variant-numeric: tabular-nums; }
+  .dash-you {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(0, 200, 83, 0.12);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .dash-paid {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--green);
+    margin-left: 5px;
+    vertical-align: middle;
   }
 }
