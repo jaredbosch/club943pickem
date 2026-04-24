@@ -25,6 +25,28 @@ function formatSpread(value: number): string {
   return value > 0 ? `+${value.toFixed(1)}` : `${value.toFixed(1)}`;
 }
 
+function formatGameTime(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const day = d.toLocaleDateString("en-US", { weekday: "short", timeZone: "America/New_York" }).toUpperCase();
+    const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York", hour12: true });
+    return `${day} ${time.replace(" AM", "A").replace(" PM", "P")}`;
+  } catch {
+    return "";
+  }
+}
+
+const SLOT_NETWORK: Record<string, string> = {
+  thursday: "TNF",
+  intl: "NFL+",
+  sunday_early: "CBS",
+  sunday_late: "FOX",
+  sunday_night: "NBC",
+  monday: "ESPN",
+};
+
+const SLOT_PRIMETIME = new Set(["thursday", "sunday_night", "monday"]);
+
 const SLOT_LABELS: Record<string, string> = {
   thursday: "thursday night",
   intl: "international",
@@ -81,6 +103,9 @@ export function transformGamesAndPicks(games: DbGame[], picks: DbPick[]): Slot[]
           : p?.is_correct === false ? "incorrect"
           : undefined,
         pointsEarned: p?.points_earned ?? undefined,
+        gameTime: g.kickoff_time ? formatGameTime(g.kickoff_time) : undefined,
+        network: SLOT_NETWORK[g.time_slot],
+        isPrimetime: SLOT_PRIMETIME.has(g.time_slot),
       };
     });
 

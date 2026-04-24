@@ -9,21 +9,14 @@ type Props = {
   usedConfidence?: Set<number>;
 };
 
-export function SlotGroup({
-  slot,
-  onPickTeam,
-  onConfidenceChange,
-  totalGames = 16,
-  usedConfidence = new Set(),
-}: Props) {
+export function SlotGroup({ slot, onPickTeam, onConfidenceChange, totalGames = 16 }: Props) {
   return (
     <div className="ps-slot-group">
       <div className="ps-slot-header">
         <span className="ps-slot-label">{slot.label}</span>
-        <div>
-          <span className={`ps-slot-status ${slot.status}`}>{slot.statusText}</span>
-          {slot.countdown && <span className="ps-countdown">{slot.countdown}</span>}
-        </div>
+        <span className="ps-slot-spacer" />
+        <span className={`ps-slot-status ${slot.status}`}>{slot.statusText}</span>
+        {slot.countdown && <span className="ps-countdown">{slot.countdown}</span>}
       </div>
       {slot.games.map((game) => (
         <GameRow
@@ -33,7 +26,6 @@ export function SlotGroup({
           onPickTeam={onPickTeam}
           onConfidenceChange={onConfidenceChange}
           totalGames={totalGames}
-          usedConfidence={usedConfidence}
         />
       ))}
     </div>

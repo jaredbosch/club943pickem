@@ -1,6 +1,7 @@
 "use client";
 
-import type { Game, SlotStatus } from "./types";
+import type { Game, SlotStatus, PickResult } from "./types";
+import { teamColor } from "@/lib/nfl-colors";
 
 type Props = {
   game: Game;
@@ -8,132 +9,159 @@ type Props = {
   onPickTeam: (gameId: string, team: string) => void;
   onConfidenceChange?: (gameId: string, value: number) => void;
   totalGames?: number;
-  usedConfidence?: Set<number>;
 };
 
-export function GameRow({
-  game,
-  slotStatus,
-  onPickTeam,
-  onConfidenceChange,
-  totalGames = 16,
-  usedConfidence = new Set(),
-}: Props) {
+export function GameRow({ game, slotStatus, onPickTeam, onConfidenceChange, totalGames = 16 }: Props) {
   const isOpen = slotStatus === "open";
-  const isLocked = slotStatus === "locked";
+  const hasPick = !!game.pickedTeam;
+  const conf = game.confidence;
+  const isHighConf = hasPick && conf !== null && conf >= 13;
+
+  const pickedAway = game.pickedTeam === game.away.abbr;
+  const pickedHome = game.pickedTeam === game.home.abbr;
+
+  function handleRank(delta: number) {
+    if (!onConfidenceChange || conf === null) return;
+    const next = conf + delta;
+    if (next < 1 || next > totalGames) return;
+    onConfidenceChange(game.id, next);
+  }
 
   return (
-    <div className={`ps-game-row2${isLocked ? " locked" : ""}`}>
-      {/* Confidence */}
-      <div className="ps-conf-col">
-        {isOpen && onConfidenceChange ? (
-          <label className="ps-conf-btn" title="Assign confidence points">
-            <span className="ps-conf-num">{game.confidence ?? "–"}</span>
-            <span className="ps-conf-label">pts</span>
-            <select
-              className="ps-conf-overlay-select"
-              value={game.confidence ?? ""}
-              onChange={(e) => onConfidenceChange(game.id, parseInt(e.target.value))}
-            >
-              <option value="" disabled>–</option>
-              {Array.from({ length: totalGames }, (_, i) => totalGames - i).map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
-          </label>
-        ) : (
-          <div className={`ps-conf-static${game.result === "correct" ? " correct" : game.result === "incorrect" ? " incorrect" : ""}`}>
-            <span className="ps-conf-num">{game.confidence ?? "–"}</span>
-            <span className="ps-conf-label">pts</span>
+    <div className={`pp-pick-row${!isOpen ? " locked" : ""}${hasPick ? " has-pick" : ""}`}>
+      <div className="pp-pick-inner">
+
+        {/* Left: confidence rail */}
+        <div className={`pp-pick-conf${hasPick ? " has-pick" : ""}${isHighConf ? " high" : ""}`}>
+          <div className="pp-pick-conf-num">{conf ?? "—"}</div>
+          <div className="pp-pick-conf-tag">CONF</div>
+        </div>
+
+        {/* Center: meta strip + team sides */}
+        <div className="pp-pick-center">
+          <div className="pp-pick-meta">
+            {game.gameTime && <span className="pp-pick-meta-time">{game.gameTime}</span>}
+            {game.network && <span className="pp-pick-meta-net">{game.network}</span>}
+            <span className="pp-pick-meta-label">SPREAD</span>
+            <span className="pp-pick-meta-val">{game.home.spread}</span>
+            <span className="pp-pick-meta-spacer" />
+            {game.isPrimetime && <span className="pp-pick-meta-prime">★ PRIME</span>}
+            {!isOpen && game.result === "correct" && (
+              <span className="pp-pick-meta-won">🔒 +{game.pointsEarned ?? conf}</span>
+            )}
+            {!isOpen && game.result === "incorrect" && (
+              <span className="pp-pick-meta-lost">🔒 0 pts</span>
+            )}
+            {slotStatus === "live" && game.liveScore && (
+              <span className="pp-pick-meta-live">{game.liveScore}</span>
+            )}
           </div>
-        )}
+
+          <div className="pp-pick-teams">
+            <TeamSide
+              game={game}
+              abbr={game.away.abbr}
+              spread={game.away.spread}
+              side="away"
+              picked={pickedAway}
+              result={pickedAway ? game.result : undefined}
+              locked={!isOpen}
+              onClick={() => isOpen && onPickTeam(game.id, game.away.abbr)}
+            />
+            <div className="pp-pick-at">@</div>
+            <TeamSide
+              game={game}
+              abbr={game.home.abbr}
+              spread={game.home.spread}
+              side="home"
+              picked={pickedHome}
+              result={pickedHome ? game.result : undefined}
+              locked={!isOpen}
+              onClick={() => isOpen && onPickTeam(game.id, game.home.abbr)}
+            />
+          </div>
+        </div>
+
+        {/* Right: rank buttons */}
+        <div className="pp-pick-rank">
+          {isOpen && onConfidenceChange ? (
+            <>
+              <button
+                type="button"
+                className="pp-pick-rank-btn"
+                onClick={() => handleRank(1)}
+                disabled={conf === null || conf >= totalGames}
+                title="More confident"
+              >▲</button>
+              <span className="pp-pick-rank-label">RANK</span>
+              <button
+                type="button"
+                className="pp-pick-rank-btn"
+                onClick={() => handleRank(-1)}
+                disabled={conf === null || conf <= 1}
+                title="Less confident"
+              >▼</button>
+            </>
+          ) : (
+            <span className="pp-pick-rank-label">
+              {!isOpen ? "LOCKED" : "RANK"}
+            </span>
+          )}
+        </div>
+
       </div>
-
-      {/* Team pick buttons or locked display */}
-      {isOpen ? (
-        <div className="ps-team-picks">
-          <button
-            type="button"
-            className={`ps-team-btn${game.pickedTeam === game.away.abbr ? " picked" : ""}`}
-            onClick={() => onPickTeam(game.id, game.away.abbr)}
-          >
-            <span className="ps-team-btn-abbr">{game.away.abbr}</span>
-            <span className="ps-team-btn-spread">{game.away.spread}</span>
-          </button>
-          <span className="ps-vs">vs</span>
-          <button
-            type="button"
-            className={`ps-team-btn${game.pickedTeam === game.home.abbr ? " picked" : ""}`}
-            onClick={() => onPickTeam(game.id, game.home.abbr)}
-          >
-            <span className="ps-team-btn-abbr">{game.home.abbr}</span>
-            <span className="ps-team-btn-spread">{game.home.spread}</span>
-          </button>
-        </div>
-      ) : (
-        <div className="ps-matchup-locked">
-          <LockedTeamRow
-            abbr={game.away.abbr}
-            spread={game.away.spread}
-            picked={game.pickedTeam === game.away.abbr}
-            result={game.pickedTeam === game.away.abbr ? game.result : undefined}
-          />
-          <LockedTeamRow
-            abbr={game.home.abbr}
-            spread={game.home.spread}
-            picked={game.pickedTeam === game.home.abbr}
-            result={game.pickedTeam === game.home.abbr ? game.result : undefined}
-          />
-        </div>
-      )}
-
-      {/* Result / score */}
-      <ResultCell game={game} slotStatus={slotStatus} />
     </div>
   );
 }
 
-function LockedTeamRow({
+function TeamSide({
+  game,
   abbr,
   spread,
+  side,
   picked,
   result,
+  locked,
+  onClick,
 }: {
+  game: Game;
   abbr: string;
   spread: string;
+  side: "away" | "home";
   picked: boolean;
-  result?: string;
+  result?: PickResult;
+  locked: boolean;
+  onClick: () => void;
 }) {
-  const cls = picked
-    ? result === "correct"
-      ? "ps-locked-team correct"
-      : result === "incorrect"
-        ? "ps-locked-team incorrect"
-        : "ps-locked-team picked"
-    : "ps-locked-team";
+  const color = teamColor(abbr);
+  const gradDir = side === "away" ? "90deg" : "270deg";
+  const logoGradient = `linear-gradient(145deg, ${color}, color-mix(in oklab, ${color} 70%, #000))`;
+  const pickedBg = `linear-gradient(${gradDir}, color-mix(in oklab, ${color} 28%, transparent), color-mix(in oklab, ${color} 8%, transparent))`;
+
+  const resultCls = result === "correct" ? " correct" : result === "incorrect" ? " incorrect" : "";
 
   return (
-    <div className={cls}>
-      <span className="ps-locked-abbr">{abbr}</span>
-      <span className="ps-locked-spread">{spread}</span>
-      {picked && result === "correct" && <span className="ps-pick-mark">✓</span>}
-      {picked && result === "incorrect" && <span className="ps-pick-mark">✗</span>}
-      {picked && result === "push" && <span className="ps-pick-mark">P</span>}
-    </div>
+    <button
+      type="button"
+      className={`pp-pick-side ${side}${picked ? " picked" : ""}${locked ? " locked" : ""}${resultCls}`}
+      onClick={onClick}
+      style={{ background: picked ? pickedBg : "transparent" }}
+    >
+      {picked && (
+        <div className="pp-pick-side-edge" style={{ background: color }} />
+      )}
+      <div className="pp-pick-logo" style={{ background: logoGradient }}>
+        {abbr}
+      </div>
+      <div className="pp-pick-team-info">
+        <span className="pp-pick-abbr">{abbr}</span>
+        <span className="pp-pick-spread">{spread}</span>
+      </div>
+      {picked && (
+        <span className="pp-pick-result-mark">
+          {result === "correct" ? "✓" : result === "incorrect" ? "✗" : result === "push" ? "P" : null}
+        </span>
+      )}
+    </button>
   );
-}
-
-function ResultCell({ game, slotStatus }: { game: Game; slotStatus: SlotStatus }) {
-  if (slotStatus === "locked") {
-    if (game.result === "correct")
-      return <div className="ps-result-col ps-pts-earned">+{game.pointsEarned ?? game.confidence}</div>;
-    if (game.result === "incorrect")
-      return <div className="ps-result-col ps-pts-zero">0</div>;
-    if (game.result === "push")
-      return <div className="ps-result-col ps-pts-push">–</div>;
-    return <div className="ps-result-col ps-pts-zero" />;
-  }
-  if (slotStatus === "live" && game.liveScore)
-    return <div className="ps-result-live">{game.liveScore}</div>;
-  return <div className="ps-result-pending" />;
 }

@@ -41,11 +41,7 @@ function mergeSlots(slots: Slot[], picks: Map<string, PickState>): Slot[] {
     ...slot,
     games: slot.games.map((g) => {
       const p = picks.get(g.id);
-      return {
-        ...g,
-        pickedTeam: p?.pickedTeam ?? undefined,
-        confidence: p?.confidence ?? null,
-      };
+      return { ...g, pickedTeam: p?.pickedTeam ?? undefined, confidence: p?.confidence ?? null };
     }),
   }));
 }
@@ -64,22 +60,15 @@ export function PickSheet({
   const router = useRouter();
   const supabase = createClient();
 
-  const [picks, setPicks] = useState<Map<string, PickState>>(
-    () => buildPickState(slots),
-  );
+  const [picks, setPicks] = useState<Map<string, PickState>>(() => buildPickState(slots));
   const [saving, setSaving] = useState(false);
 
   const allGames = slots.flatMap((s) => s.games);
   const totalGames = allGames.length;
 
-  // Confidence values assigned so far
   const usedConfidence = new Set(
     [...picks.values()].map((p) => p.confidence).filter(Boolean) as number[],
   );
-  const availableConfidence = Array.from(
-    { length: totalGames },
-    (_, i) => totalGames - i,
-  ).filter((n) => !usedConfidence.has(n));
 
   async function upsertPick(gameId: string, state: PickState) {
     if (isSampleData) return;
@@ -102,17 +91,11 @@ export function PickSheet({
     (gameId: string, team: string) => {
       setPicks((prev) => {
         const current = prev.get(gameId) ?? { pickedTeam: null, confidence: null };
-        if (current.pickedTeam === team) return prev; // no-op if already picked
+        if (current.pickedTeam === team) return prev;
         const updated = { ...current, pickedTeam: team };
-        // Auto-assign lowest available confidence if none set
         if (!updated.confidence) {
-          const used = new Set(
-            [...prev.values()].map((p) => p.confidence).filter(Boolean) as number[],
-          );
-          const avail = Array.from(
-            { length: allGames.length },
-            (_, i) => i + 1,
-          ).filter((n) => !used.has(n));
+          const used = new Set([...prev.values()].map((p) => p.confidence).filter(Boolean) as number[]);
+          const avail = Array.from({ length: allGames.length }, (_, i) => i + 1).filter((n) => !used.has(n));
           if (avail.length > 0) updated.confidence = avail[0];
         }
         const newMap = new Map(prev);
@@ -129,7 +112,6 @@ export function PickSheet({
     (gameId: string, value: number) => {
       setPicks((prev) => {
         const newMap = new Map(prev);
-        // Find game currently holding this confidence value and swap
         for (const [gid, p] of newMap) {
           if (gid !== gameId && p.confidence === value) {
             const displaced = newMap.get(gameId)?.confidence ?? null;
@@ -150,44 +132,40 @@ export function PickSheet({
   );
 
   const mergedSlots = mergeSlots(slots, picks);
-
   const picksIn = [...picks.values()].filter((p) => p.pickedTeam).length;
-  const totalPoints = [...picks.values()].reduce(
-    (sum, p) => sum + (p.confidence ?? 0),
-    0,
-  );
+  const weeksToShow = availableWeeks.length > 0 ? availableWeeks : [week];
 
   function goToWeek(w: number) {
     router.push(`/picks?week=${w}`);
   }
 
-  const weeksToShow =
-    availableWeeks.length > 0
-      ? availableWeeks
-      : [week];
-
   return (
-    <div className="ps-shell">
+    <div className="ps-shell pp-gridbg">
       <div className="ps-container">
-        <div className="ps-header">
+
+        {/* Hero */}
+        <div className="ps-hero pp-hero-grad">
           <div>
-            <div className="ps-title">week {week} pick sheet</div>
-            <div className="ps-subtitle">
-              {leagueName}{" "}
-              {saving && <span className="ps-saving">saving…</span>}
+            <div className="ps-hero-week">WEEK {week} · {seasonYear} · CONFIDENCE PICKS</div>
+            <div className="ps-hero-title">LOCK IT IN</div>
+            <div className="ps-hero-sub">
+              {leagueName}
+              {saving && <span className="ps-saving"> · saving…</span>}
             </div>
           </div>
-          <div className="ps-week-nav">
-            {weeksToShow.map((w) => (
-              <button
-                key={w}
-                type="button"
-                className={`ps-week-btn${w === week ? " active" : ""}`}
-                onClick={() => goToWeek(w)}
-              >
-                {w}
-              </button>
-            ))}
+          <div className="ps-hero-right">
+            <div className="ps-week-nav">
+              {weeksToShow.map((w) => (
+                <button
+                  key={w}
+                  type="button"
+                  className={`ps-week-btn${w === week ? " active" : ""}`}
+                  onClick={() => goToWeek(w)}
+                >
+                  {w}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -198,52 +176,54 @@ export function PickSheet({
         )}
 
         {!hasGames ? (
-          <div className="ps-empty">
-            <div className="ps-empty-title">No games this week yet</div>
-            <div className="ps-empty-sub">
-              Games sync automatically once the schedule is released.
+          <div className="ps-pick-list">
+            <div className="ps-empty">
+              <div className="ps-empty-title">No games this week yet</div>
+              <div className="ps-empty-sub">Games sync automatically once the schedule is released.</div>
             </div>
           </div>
         ) : (
           <>
-            {/* Confidence pool */}
-            <div className="ps-section-label">confidence points available</div>
-            <div className="ps-confidence-pool">
-              {Array.from({ length: totalGames }, (_, i) => totalGames - i).map((n) => (
-                <div
-                  key={n}
-                  className={`ps-conf-chip${usedConfidence.has(n) ? " used" : ""}`}
-                >
-                  {n}
-                </div>
-              ))}
+            {/* Confidence budget */}
+            <div className="ps-budget">
+              <div className="ps-budget-header">
+                <span className="tag">CONFIDENCE BUDGET · 1–{totalGames}</span>
+                <span className="ps-budget-used mono">used {usedConfidence.size}/{totalGames}</span>
+              </div>
+              <div className="ps-budget-chips">
+                {Array.from({ length: totalGames }, (_, i) => totalGames - i).map((n) => (
+                  <div key={n} className={`ps-budget-chip${usedConfidence.has(n) ? " used" : ""}`}>
+                    {n}
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {mergedSlots.map((slot) => (
-              <SlotGroup
-                key={slot.id}
-                slot={slot}
-                onPickTeam={pickTeam}
-                onConfidenceChange={setConfidence}
-                totalGames={totalGames}
-                usedConfidence={usedConfidence}
-              />
-            ))}
-
-            <div className="ps-bottom-bar">
-              <div className="ps-score-display">
-                week {week}: <strong>{picksIn}</strong> of {totalGames} picks in
-                <br />
-                <span className="ps-score-sub">
-                  {totalPoints} confidence pts assigned
-                </span>
-              </div>
-              <a href="/dashboard" className="ps-submit-btn">
-                ← Standings
-              </a>
+            {/* Pick rows */}
+            <div className="ps-pick-list">
+              {mergedSlots.map((slot) => (
+                <SlotGroup
+                  key={slot.id}
+                  slot={slot}
+                  onPickTeam={pickTeam}
+                  onConfidenceChange={setConfidence}
+                  totalGames={totalGames}
+                  usedConfidence={usedConfidence}
+                />
+              ))}
             </div>
           </>
         )}
+
+        {/* Bottom bar */}
+        <div className="ps-bottom-bar">
+          <div className="ps-score-display">
+            <strong>{picksIn}</strong> of {totalGames} picks in
+          </div>
+          <div className="ps-score-spacer" />
+          <a href="/dashboard" className="pp-btn ghost">← Standings</a>
+        </div>
+
       </div>
     </div>
   );

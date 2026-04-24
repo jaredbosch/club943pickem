@@ -17,6 +17,9 @@ export type Game = {
   result?: PickResult;
   pointsEarned?: number;
   liveScore?: string;
+  gameTime?: string;
+  network?: string;
+  isPrimetime?: boolean;
 };
 
 export type Slot = {
