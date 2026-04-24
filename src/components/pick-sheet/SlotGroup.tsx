@@ -3,29 +3,29 @@ import { GameRow } from "./GameRow";
 
 type Props = {
   slot: Slot;
-  onTogglePick: (gameId: string) => void;
+  onPickTeam: (gameId: string, team: string) => void;
+  onConfidenceChange?: (gameId: string, value: number) => void;
+  totalGames?: number;
+  usedConfidence?: Set<number>;
 };
 
-export function SlotGroup({ slot, onTogglePick }: Props) {
+export function SlotGroup({ slot, onPickTeam, onConfidenceChange, totalGames = 16 }: Props) {
   return (
     <div className="ps-slot-group">
       <div className="ps-slot-header">
         <span className="ps-slot-label">{slot.label}</span>
-        <div>
-          <span className={`ps-slot-status ${slot.status}`}>
-            {slot.statusText}
-          </span>
-          {slot.countdown && (
-            <span className="ps-countdown">{slot.countdown}</span>
-          )}
-        </div>
+        <span className="ps-slot-spacer" />
+        <span className={`ps-slot-status ${slot.status}`}>{slot.statusText}</span>
+        {slot.countdown && <span className="ps-countdown">{slot.countdown}</span>}
       </div>
       {slot.games.map((game) => (
         <GameRow
           key={game.id}
           game={game}
           slotStatus={slot.status}
-          onTogglePick={onTogglePick}
+          onPickTeam={onPickTeam}
+          onConfidenceChange={onConfidenceChange}
+          totalGames={totalGames}
         />
       ))}
     </div>

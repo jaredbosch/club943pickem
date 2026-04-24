@@ -12,11 +12,14 @@ export type Game = {
   id: string;
   away: Team;
   home: Team;
-  confidence: number;
+  confidence: number | null;
   pickedTeam?: string;
   result?: PickResult;
   pointsEarned?: number;
   liveScore?: string;
+  gameTime?: string;
+  network?: string;
+  isPrimetime?: boolean;
 };
 
 export type Slot = {

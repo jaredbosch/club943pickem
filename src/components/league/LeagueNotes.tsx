@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type Post = {
@@ -32,7 +32,7 @@ export function LeagueNotes({ leagueId, initialPosts, isCommissioner, currentUse
   const supabase = createClient();
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [body, setBody] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Realtime subscription
@@ -79,12 +79,15 @@ export function LeagueNotes({ leagueId, initialPosts, isCommissioner, currentUse
     const text = body.trim();
     if (!text) return;
 
-    startTransition(async () => {
-      await supabase.from("league_posts").insert({ league_id: leagueId, user_id: currentUserId, body: text });
-      setBody("");
-      textareaRef.current?.focus();
-      fetchPosts();
-    });
+    setIsPending(true);
+    supabase.from("league_posts")
+      .insert({ league_id: leagueId, user_id: currentUserId, body: text })
+      .then(() => {
+        setBody("");
+        setIsPending(false);
+        textareaRef.current?.focus();
+        fetchPosts();
+      });
   }
 
   async function deletePost(id: string) {

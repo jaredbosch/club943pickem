@@ -1,0 +1,38 @@
+export const NFL_COLORS: Record<string, { primary: string; name: string }> = {
+  ARI: { primary: '#97233F', name: 'Cardinals' },
+  ATL: { primary: '#A71930', name: 'Falcons' },
+  BAL: { primary: '#241773', name: 'Ravens' },
+  BUF: { primary: '#00338D', name: 'Bills' },
+  CAR: { primary: '#0085CA', name: 'Panthers' },
+  CHI: { primary: '#0B162A', name: 'Bears' },
+  CIN: { primary: '#FB4F14', name: 'Bengals' },
+  CLE: { primary: '#FF3C00', name: 'Browns' },
+  DAL: { primary: '#003594', name: 'Cowboys' },
+  DEN: { primary: '#FB4F14', name: 'Broncos' },
+  DET: { primary: '#0076B6', name: 'Lions' },
+  GB:  { primary: '#203731', name: 'Packers' },
+  HOU: { primary: '#03202F', name: 'Texans' },
+  IND: { primary: '#002C5F', name: 'Colts' },
+  JAX: { primary: '#006778', name: 'Jaguars' },
+  KC:  { primary: '#E31837', name: 'Chiefs' },
+  LV:  { primary: '#1a1a1a', name: 'Raiders' },
+  LAC: { primary: '#0080C6', name: 'Chargers' },
+  LAR: { primary: '#003594', name: 'Rams' },
+  MIA: { primary: '#008E97', name: 'Dolphins' },
+  MIN: { primary: '#4F2683', name: 'Vikings' },
+  NE:  { primary: '#002244', name: 'Patriots' },
+  NO:  { primary: '#8B7355', name: 'Saints' },
+  NYG: { primary: '#0B2265', name: 'Giants' },
+  NYJ: { primary: '#125740', name: 'Jets' },
+  PHI: { primary: '#004C54', name: 'Eagles' },
+  PIT: { primary: '#FFB612', name: 'Steelers' },
+  SF:  { primary: '#AA0000', name: '49ers' },
+  SEA: { primary: '#002244', name: 'Seahawks' },
+  TB:  { primary: '#D50A0A', name: 'Buccaneers' },
+  TEN: { primary: '#0C2340', name: 'Titans' },
+  WAS: { primary: '#5A1414', name: 'Commanders' },
+};
+
+export function teamColor(abbr: string): string {
+  return NFL_COLORS[abbr]?.primary ?? '#333333';
+}
