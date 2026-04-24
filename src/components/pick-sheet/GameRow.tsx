@@ -13,6 +13,7 @@ type Props = {
 
 export function GameRow({ game, slotStatus, onPickTeam, onConfidenceChange, totalGames = 16 }: Props) {
   const isOpen = slotStatus === "open";
+  const isLive = slotStatus === "live";
   const hasPick = !!game.pickedTeam;
   const conf = game.confidence;
   const isHighConf = hasPick && conf !== null && conf >= 13;
@@ -20,21 +21,31 @@ export function GameRow({ game, slotStatus, onPickTeam, onConfidenceChange, tota
   const pickedAway = game.pickedTeam === game.away.abbr;
   const pickedHome = game.pickedTeam === game.home.abbr;
 
-  function handleRank(delta: number) {
-    if (!onConfidenceChange || conf === null) return;
-    const next = conf + delta;
-    if (next < 1 || next > totalGames) return;
-    onConfidenceChange(game.id, next);
-  }
+  const resultCls = game.result === "correct" ? " result-correct"
+    : game.result === "incorrect" ? " result-incorrect"
+    : "";
 
   return (
-    <div className={`pp-pick-row${!isOpen ? " locked" : ""}${hasPick ? " has-pick" : ""}`}>
+    <div className={`pp-pick-row${!isOpen ? " locked" : ""}${hasPick ? " has-pick" : ""}${resultCls}`}>
       <div className="pp-pick-inner">
 
-        {/* Left: confidence rail */}
+        {/* Left: confidence rail with select overlay for open games */}
         <div className={`pp-pick-conf${hasPick ? " has-pick" : ""}${isHighConf ? " high" : ""}`}>
           <div className="pp-pick-conf-num">{conf ?? "—"}</div>
           <div className="pp-pick-conf-tag">CONF</div>
+          {isOpen && onConfidenceChange && (
+            <select
+              className="pp-pick-conf-select"
+              value={conf ?? ""}
+              onChange={(e) => onConfidenceChange(game.id, Number(e.target.value))}
+              title="Set confidence"
+            >
+              <option value="" disabled>—</option>
+              {Array.from({ length: totalGames }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Center: meta strip + team sides */}
@@ -42,37 +53,40 @@ export function GameRow({ game, slotStatus, onPickTeam, onConfidenceChange, tota
           <div className="pp-pick-meta">
             {game.gameTime && <span className="pp-pick-meta-time">{game.gameTime}</span>}
             {game.network && <span className="pp-pick-meta-net">{game.network}</span>}
-            <span className="pp-pick-meta-label">SPREAD</span>
-            <span className="pp-pick-meta-val">{game.home.spread}</span>
-            <span className="pp-pick-meta-spacer" />
             {game.isPrimetime && <span className="pp-pick-meta-prime">★ PRIME</span>}
+            <span className="pp-pick-meta-spacer" />
             {!isOpen && game.result === "correct" && (
-              <span className="pp-pick-meta-won">🔒 +{game.pointsEarned ?? conf}</span>
+              <span className="pp-pick-meta-won">+{game.pointsEarned ?? conf} pts</span>
             )}
             {!isOpen && game.result === "incorrect" && (
-              <span className="pp-pick-meta-lost">🔒 0 pts</span>
+              <span className="pp-pick-meta-lost">0 pts</span>
             )}
-            {slotStatus === "live" && game.liveScore && (
-              <span className="pp-pick-meta-live">{game.liveScore}</span>
-            )}
+            {isLive && <span className="pp-pick-meta-live">LIVE</span>}
           </div>
 
           <div className="pp-pick-teams">
             <TeamSide
               game={game}
               abbr={game.away.abbr}
-              spread={game.away.spread}
               side="away"
               picked={pickedAway}
               result={pickedAway ? game.result : undefined}
               locked={!isOpen}
               onClick={() => isOpen && onPickTeam(game.id, game.away.abbr)}
             />
-            <div className="pp-pick-at">@</div>
+
+            {/* Center: spread + live score, or @ for open games */}
+            <div className="pp-pick-at">
+              <div className="pp-pick-spread-center">{game.home.spread}</div>
+              {isLive && game.liveScore
+                ? <div className="pp-pick-live-center">{game.liveScore}</div>
+                : <div className="pp-pick-at-vs">@</div>
+              }
+            </div>
+
             <TeamSide
               game={game}
               abbr={game.home.abbr}
-              spread={game.home.spread}
               side="home"
               picked={pickedHome}
               result={pickedHome ? game.result : undefined}
@@ -80,33 +94,6 @@ export function GameRow({ game, slotStatus, onPickTeam, onConfidenceChange, tota
               onClick={() => isOpen && onPickTeam(game.id, game.home.abbr)}
             />
           </div>
-        </div>
-
-        {/* Right: rank buttons */}
-        <div className="pp-pick-rank">
-          {isOpen && onConfidenceChange ? (
-            <>
-              <button
-                type="button"
-                className="pp-pick-rank-btn"
-                onClick={() => handleRank(1)}
-                disabled={conf === null || conf >= totalGames}
-                title="More confident"
-              >▲</button>
-              <span className="pp-pick-rank-label">RANK</span>
-              <button
-                type="button"
-                className="pp-pick-rank-btn"
-                onClick={() => handleRank(-1)}
-                disabled={conf === null || conf <= 1}
-                title="Less confident"
-              >▼</button>
-            </>
-          ) : (
-            <span className="pp-pick-rank-label">
-              {!isOpen ? "LOCKED" : "RANK"}
-            </span>
-          )}
         </div>
 
       </div>
@@ -117,7 +104,6 @@ export function GameRow({ game, slotStatus, onPickTeam, onConfidenceChange, tota
 function TeamSide({
   game,
   abbr,
-  spread,
   side,
   picked,
   result,
@@ -126,7 +112,6 @@ function TeamSide({
 }: {
   game: Game;
   abbr: string;
-  spread: string;
   side: "away" | "home";
   picked: boolean;
   result?: PickResult;
@@ -155,13 +140,8 @@ function TeamSide({
       </div>
       <div className="pp-pick-team-info">
         <span className="pp-pick-abbr">{abbr}</span>
-        <span className="pp-pick-spread">{spread}</span>
+        <span className="pp-pick-record">{side === "away" ? game.away.record : game.home.record}</span>
       </div>
-      {picked && (
-        <span className="pp-pick-result-mark">
-          {result === "correct" ? "✓" : result === "incorrect" ? "✗" : result === "push" ? "P" : null}
-        </span>
-      )}
     </button>
   );
 }

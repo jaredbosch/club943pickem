@@ -135,6 +135,12 @@ export function PickSheet({
   const picksIn = [...picks.values()].filter((p) => p.pickedTeam).length;
   const weeksToShow = availableWeeks.length > 0 ? availableWeeks : [week];
 
+  const totalPointsEarned = mergedSlots.flatMap((s) => s.games).reduce((sum, g) => {
+    if (g.result === "correct") return sum + (g.pointsEarned ?? g.confidence ?? 0);
+    return sum;
+  }, 0);
+  const gamesScored = mergedSlots.flatMap((s) => s.games).filter((g) => g.result).length;
+
   function goToWeek(w: number) {
     router.push(`/picks?week=${w}`);
   }
@@ -154,6 +160,18 @@ export function PickSheet({
             </div>
           </div>
           <div className="ps-hero-right">
+            {gamesScored > 0 && (
+              <div className="ps-hero-kpis">
+                <div className="ps-hero-kpi">
+                  <div className="ps-hero-kpi-val">{totalPointsEarned}</div>
+                  <div className="ps-hero-kpi-label">PTS THIS WEEK</div>
+                </div>
+                <div className="ps-hero-kpi">
+                  <div className="ps-hero-kpi-val">{gamesScored}</div>
+                  <div className="ps-hero-kpi-label">GRADED</div>
+                </div>
+              </div>
+            )}
             <div className="ps-week-nav">
               {weeksToShow.map((w) => (
                 <button
