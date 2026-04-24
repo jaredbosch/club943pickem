@@ -62,6 +62,7 @@ export function PickSheet({
 
   const [picks, setPicks] = useState<Map<string, PickState>>(() => buildPickState(slots));
   const [saving, setSaving] = useState(false);
+  const [openPickerId, setOpenPickerId] = useState<string | null>(null);
 
   const allGames = slots.flatMap((s) => s.games);
   const totalGames = allGames.length;
@@ -230,6 +231,8 @@ export function PickSheet({
                   onConfidenceChange={setConfidence}
                   totalGames={totalGames}
                   usedConfidenceMap={usedConfidenceMap}
+                  openPickerId={openPickerId}
+                  onOpenPicker={setOpenPickerId}
                 />
               ))}
             </div>

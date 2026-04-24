@@ -492,7 +492,6 @@ body {
   .pp-pick-row.warn-no-conf { border-color: color-mix(in oklab, var(--accent) 55%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 20%, transparent); }
   .pp-pick-row.result-correct { border-color: var(--good); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--good) 40%, transparent); }
   .pp-pick-row.result-incorrect { border-color: var(--bad); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--bad) 30%, transparent); }
-  .pp-pick-row.picker-open { overflow: visible; z-index: 10; position: relative; }
 
   .pp-pick-inner {
     display: grid;
@@ -516,17 +515,15 @@ body {
   .pp-pick-conf.high { background: var(--accent); }
   .pp-pick-conf.clickable:hover { filter: brightness(1.2); }
 
-  /* Custom confidence picker popover */
+  /* Custom confidence picker — rendered via React portal at fixed position */
   .pp-conf-picker-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 99;
+    z-index: 999;
   }
   .pp-conf-picker {
-    position: absolute;
-    left: calc(100% + 6px);
-    top: -1px;
-    z-index: 100;
+    position: fixed;
+    z-index: 1000;
     background: var(--bg2);
     border: 1px solid var(--line2);
     border-radius: 6px;

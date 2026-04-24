@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef } from "react";
+import { createPortal } from "react-dom";
 import type { Game, SlotStatus, PickResult } from "./types";
 import { teamColor } from "@/lib/nfl-colors";
 
@@ -11,79 +12,112 @@ type Props = {
   onConfidenceChange?: (gameId: string, value: number) => void;
   totalGames?: number;
   usedConfidenceMap?: Map<number, string>;
+  isPickerOpen?: boolean;
+  onOpenPicker?: (id: string | null) => void;
 };
 
-export function GameRow({ game, slotStatus, onPickTeam, onConfidenceChange, totalGames = 16, usedConfidenceMap }: Props) {
+export function GameRow({
+  game,
+  slotStatus,
+  onPickTeam,
+  onConfidenceChange,
+  totalGames = 16,
+  usedConfidenceMap,
+  isPickerOpen = false,
+  onOpenPicker,
+}: Props) {
   const isOpen = slotStatus === "open";
   const isLive = slotStatus === "live";
   const hasPick = !!game.pickedTeam;
   const conf = game.confidence;
   const isHighConf = hasPick && conf !== null && conf >= Math.ceil(totalGames * 0.8);
-  const [pickerOpen, setPickerOpen] = useState(false);
 
   const pickedAway = game.pickedTeam === game.away.abbr;
   const pickedHome = game.pickedTeam === game.home.abbr;
+  const canOpenPicker = isOpen && !!onConfidenceChange && !!onOpenPicker;
+
+  const confRailRef = useRef<HTMLDivElement>(null);
+  const pickerCoordsRef = useRef<{ top: number; left: number } | null>(null);
+
+  function handleConfClick() {
+    if (!canOpenPicker) return;
+    if (!isPickerOpen) {
+      const rect = confRailRef.current?.getBoundingClientRect();
+      if (rect) {
+        pickerCoordsRef.current = { top: rect.top, left: rect.right + 8 };
+      }
+      onOpenPicker!(game.id);
+    } else {
+      onOpenPicker!(null);
+    }
+  }
 
   const resultCls = game.result === "correct" ? " result-correct"
     : game.result === "incorrect" ? " result-incorrect"
     : "";
-  // Warn when user has picked a team but hasn't assigned a confidence value yet
   const warnCls = hasPick && conf === null && !game.result ? " warn-no-conf" : "";
 
-  const canOpenPicker = isOpen && !!onConfidenceChange;
+  const coords = pickerCoordsRef.current;
 
   return (
-    <div className={`pp-pick-row${!isOpen ? " locked" : ""}${hasPick ? " has-pick" : ""}${resultCls}${warnCls}${pickerOpen ? " picker-open" : ""}`}>
+    <div className={`pp-pick-row${!isOpen ? " locked" : ""}${hasPick ? " has-pick" : ""}${resultCls}${warnCls}`}>
       <div className="pp-pick-inner">
 
-        {/* Left: confidence rail — click opens custom picker */}
+        {/* Left: confidence rail */}
         <div
+          ref={confRailRef}
           className={`pp-pick-conf${hasPick ? " has-pick" : ""}${isHighConf ? " high" : ""}${canOpenPicker ? " clickable" : ""}`}
-          onClick={() => canOpenPicker && setPickerOpen((p) => !p)}
+          onClick={handleConfClick}
           role={canOpenPicker ? "button" : undefined}
           tabIndex={canOpenPicker ? 0 : undefined}
-          onKeyDown={(e) => { if (canOpenPicker && (e.key === "Enter" || e.key === " ")) setPickerOpen((p) => !p); }}
+          onKeyDown={(e) => { if (canOpenPicker && (e.key === "Enter" || e.key === " ")) handleConfClick(); }}
         >
           <div className="pp-pick-conf-num">{conf ?? "—"}</div>
           <div className="pp-pick-conf-tag">{canOpenPicker ? "TAP ▾" : "CONF"}</div>
-
-          {pickerOpen && (
-            <>
-              <div
-                className="pp-conf-picker-backdrop"
-                onClick={(e) => { e.stopPropagation(); setPickerOpen(false); }}
-              />
-              <div className="pp-conf-picker" onClick={(e) => e.stopPropagation()}>
-                <div className="pp-conf-picker-title">SET CONFIDENCE · 1–{totalGames}</div>
-                <div className="pp-conf-picker-legend">
-                  <span className="pp-conf-legend-avail">available</span>
-                  <span className="pp-conf-legend-used">taken (tap to steal)</span>
-                </div>
-                <div className="pp-conf-picker-grid">
-                  {Array.from({ length: totalGames }, (_, i) => totalGames - i).map((n) => {
-                    const usedBy = usedConfidenceMap?.get(n);
-                    const isCurrent = n === conf;
-                    const isUsedByOther = !!usedBy && !isCurrent;
-                    return (
-                      <button
-                        key={n}
-                        type="button"
-                        className={`pp-conf-chip${isCurrent ? " current" : isUsedByOther ? " used" : " avail"}`}
-                        onClick={() => {
-                          onConfidenceChange!(game.id, n);
-                          setPickerOpen(false);
-                        }}
-                      >
-                        <span className="pp-conf-chip-num">{n}</span>
-                        {isUsedByOther && <span className="pp-conf-chip-owner">{usedBy}</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          )}
         </div>
+
+        {/* Confidence picker — rendered in a portal to avoid overflow clipping */}
+        {isPickerOpen && canOpenPicker && coords && createPortal(
+          <>
+            <div
+              className="pp-conf-picker-backdrop"
+              onClick={() => onOpenPicker!(null)}
+            />
+            <div
+              className="pp-conf-picker"
+              style={{ top: coords.top, left: coords.left }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="pp-conf-picker-title">SET CONFIDENCE · 1–{totalGames}</div>
+              <div className="pp-conf-picker-legend">
+                <span className="pp-conf-legend-avail">available</span>
+                <span className="pp-conf-legend-used">taken — tap to steal</span>
+              </div>
+              <div className="pp-conf-picker-grid">
+                {Array.from({ length: totalGames }, (_, i) => totalGames - i).map((n) => {
+                  const usedBy = usedConfidenceMap?.get(n);
+                  const isCurrent = n === conf;
+                  const isUsedByOther = !!usedBy && !isCurrent;
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      className={`pp-conf-chip${isCurrent ? " current" : isUsedByOther ? " used" : " avail"}`}
+                      onClick={() => {
+                        onConfidenceChange!(game.id, n);
+                        onOpenPicker!(null);
+                      }}
+                    >
+                      <span className="pp-conf-chip-num">{n}</span>
+                      {isUsedByOther && <span className="pp-conf-chip-owner">{usedBy}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </>,
+          document.body,
+        )}
 
         {/* Center: meta strip + team sides */}
         <div className="pp-pick-center">
