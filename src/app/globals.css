@@ -1020,14 +1020,8 @@ body {
   .dash-row:hover { background: var(--bg3); }
   .dash-row-me { background: color-mix(in oklab, var(--accent) 8%, transparent); }
   .dash-row-me:hover { background: color-mix(in oklab, var(--accent) 12%, transparent); }
-  .dash-row-first { background: color-mix(in oklab, var(--accent) 10%, transparent); position: relative; }
-  .dash-row-first::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--accent);
-  }
+  .dash-row-first { background: color-mix(in oklab, var(--accent) 10%, transparent); }
+  .dash-row-first td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 
   .dash-td { padding: 10px 14px; color: var(--ink); vertical-align: middle; }
   .dash-td-rank {
