@@ -33,63 +33,84 @@ export default function SignUpPage() {
 
   if (confirm) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-bg">
-        <div className="w-full max-w-sm space-y-4 px-4 text-center">
-          <h1 className="text-2xl font-bold text-text">Check your email</h1>
-          <p className="text-sm text-muted">
-            We sent a confirmation link to <strong className="text-text">{email}</strong>. Click it to activate your account.
+      <main className="auth-shell pp-gridbg">
+        <div className="auth-card" style={{ textAlign: "center" }}>
+          <div className="auth-logo" style={{ justifyContent: "center" }}>
+            <div className="app-nav-badge" style={{ width: 36, height: 36, fontSize: 16 }}>TPP</div>
+          </div>
+          <div className="disp-900 auth-title" style={{ marginTop: 16 }}>Check Your Email</div>
+          <p className="tag" style={{ marginTop: 8, lineHeight: 1.6 }}>
+            We sent a confirmation link to{" "}
+            <span style={{ color: "var(--accent)" }}>{email}</span>.
+            <br />Click it to activate your account.
           </p>
+          <div style={{ marginTop: 24 }}>
+            <Link href="/sign-in" className="auth-link">Back to sign in →</Link>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-bg">
-      <div className="w-full max-w-sm space-y-6 px-4">
-        <h1 className="text-2xl font-bold text-center text-text">Create account</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <main className="auth-shell pp-gridbg">
+      <div className="auth-card">
+
+        {/* Logo */}
+        <div className="auth-logo">
+          <div className="app-nav-badge" style={{ width: 36, height: 36, fontSize: 16 }}>TPP</div>
           <div>
-            <label className="block text-sm font-medium text-text mb-1" htmlFor="email">
-              Email
-            </label>
+            <div className="app-nav-name" style={{ fontSize: 18 }}>thepickempool</div>
+            <div className="tag" style={{ marginTop: 2 }}>nfl confidence picks</div>
+          </div>
+        </div>
+
+        <div className="auth-divider" />
+
+        <div className="auth-title-block">
+          <div className="disp-900 auth-title">Create Account</div>
+          <div className="tag" style={{ marginTop: 6 }}>join your league and start picking</div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="email">Email</label>
             <input
               id="email"
               type="email"
               required
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded border border-border bg-card px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-green"
+              className="auth-input"
+              placeholder="you@example.com"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-text mb-1" htmlFor="password">
-              Password
-            </label>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="password">Password</label>
             <input
               id="password"
               type="password"
               required
               minLength={8}
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded border border-border bg-card px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-green"
+              className="auth-input"
+              placeholder="min 8 characters"
             />
           </div>
-          {error && <p className="text-sm text-red">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded bg-green px-4 py-2 text-sm font-semibold text-bg hover:opacity-90 disabled:opacity-50"
-          >
-            {loading ? "Creating account…" : "Create account"}
+
+          {error && <p className="auth-error">{error}</p>}
+
+          <button type="submit" disabled={loading} className="auth-btn">
+            {loading ? "Creating account…" : "Create Account →"}
           </button>
         </form>
-        <p className="text-center text-sm text-muted">
+
+        <p className="auth-switch">
           Already have an account?{" "}
-          <Link href="/sign-in" className="text-green hover:underline">
-            Sign in
-          </Link>
+          <Link href="/sign-in" className="auth-link">Sign in</Link>
         </p>
       </div>
     </main>
