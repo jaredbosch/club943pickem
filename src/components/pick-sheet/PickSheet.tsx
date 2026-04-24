@@ -66,9 +66,11 @@ export function PickSheet({
   const allGames = slots.flatMap((s) => s.games);
   const totalGames = allGames.length;
 
-  const usedConfidence = new Set(
-    [...picks.values()].map((p) => p.confidence).filter(Boolean) as number[],
-  );
+  // Map of confidence value → picked team abbr (for showing who has each value in the picker)
+  const usedConfidenceMap = new Map<number, string>();
+  for (const [, p] of picks) {
+    if (p.confidence !== null) usedConfidenceMap.set(p.confidence, p.pickedTeam ?? "—");
+  }
 
   async function upsertPick(gameId: string, state: PickState) {
     if (isSampleData) return;
@@ -112,11 +114,12 @@ export function PickSheet({
     (gameId: string, value: number) => {
       setPicks((prev) => {
         const newMap = new Map(prev);
+        // Clear (don't swap) any other game that already holds this value
         for (const [gid, p] of newMap) {
           if (gid !== gameId && p.confidence === value) {
-            const displaced = newMap.get(gameId)?.confidence ?? null;
-            newMap.set(gid, { ...p, confidence: displaced });
-            upsertPick(gid, { ...p, confidence: displaced });
+            const cleared = { ...p, confidence: null };
+            newMap.set(gid, cleared);
+            upsertPick(gid, cleared);
             break;
           }
         }
@@ -206,11 +209,11 @@ export function PickSheet({
             <div className="ps-budget">
               <div className="ps-budget-header">
                 <span className="tag">CONFIDENCE BUDGET · 1–{totalGames}</span>
-                <span className="ps-budget-used mono">used {usedConfidence.size}/{totalGames}</span>
+                <span className="ps-budget-used mono">used {usedConfidenceMap.size}/{totalGames}</span>
               </div>
               <div className="ps-budget-chips">
                 {Array.from({ length: totalGames }, (_, i) => totalGames - i).map((n) => (
-                  <div key={n} className={`ps-budget-chip${usedConfidence.has(n) ? " used" : ""}`}>
+                  <div key={n} className={`ps-budget-chip${usedConfidenceMap.has(n) ? " used" : ""}`}>
                     {n}
                   </div>
                 ))}
@@ -226,7 +229,7 @@ export function PickSheet({
                   onPickTeam={pickTeam}
                   onConfidenceChange={setConfidence}
                   totalGames={totalGames}
-                  usedConfidence={usedConfidence}
+                  usedConfidenceMap={usedConfidenceMap}
                 />
               ))}
             </div>

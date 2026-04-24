@@ -6,10 +6,10 @@ type Props = {
   onPickTeam: (gameId: string, team: string) => void;
   onConfidenceChange?: (gameId: string, value: number) => void;
   totalGames?: number;
-  usedConfidence?: Set<number>;
+  usedConfidenceMap?: Map<number, string>;
 };
 
-export function SlotGroup({ slot, onPickTeam, onConfidenceChange, totalGames = 16 }: Props) {
+export function SlotGroup({ slot, onPickTeam, onConfidenceChange, totalGames = 16, usedConfidenceMap }: Props) {
   return (
     <div className="ps-slot-group">
       <div className="ps-slot-header">
@@ -26,6 +26,7 @@ export function SlotGroup({ slot, onPickTeam, onConfidenceChange, totalGames = 1
           onPickTeam={onPickTeam}
           onConfidenceChange={onConfidenceChange}
           totalGames={totalGames}
+          usedConfidenceMap={usedConfidenceMap}
         />
       ))}
     </div>
