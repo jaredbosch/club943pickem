@@ -24,6 +24,35 @@ export default async function PlayerProfilePage({
   const leagueId = membership.league_id;
   const league = membership.leagues as unknown as { id: string; name: string; season_year: number };
 
+  // Handle dummy placeholder users shown when no real standings exist yet
+  const dummyNames: Record<string, string> = {
+    "dummy-1": "Matty Ice",
+    "dummy-2": "Big Ray",
+    "dummy-3": "Kayla B",
+    "dummy-4": "T-Bone",
+    "dummy-5": "Sully",
+  };
+  if (params.userId.startsWith("dummy-")) {
+    return (
+      <PlayerProfile
+        displayName={dummyNames[params.userId] ?? "Player"}
+        leagueName={league.name}
+        seasonYear={league.season_year}
+        seasonPoints={0}
+        correctPicks={0}
+        totalGraded={0}
+        rank={null}
+        totalPlayers={0}
+        leaderPoints={0}
+        weekStats={[]}
+        recentPicks={[]}
+        mostTrusted={[]}
+        blindSpots={[]}
+        isCurrentUser={false}
+      />
+    );
+  }
+
   // Subject user profile
   const { data: profile } = await supabase
     .from("users")
