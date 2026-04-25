@@ -917,11 +917,19 @@ body {
   }
   .ps-score-spacer { flex: 1; }
 
-  /* Sticky confidence budget bar */
-  .ps-budget-bar {
+  /* Sticky header wrapper — contains nav + budget bar as one unit */
+  .ps-sticky-header {
     position: sticky;
-    top: 52px; /* nav height */
-    z-index: 49;
+    top: 0;
+    z-index: 50;
+  }
+  /* Nav inside the sticky header doesn't need its own sticky */
+  .ps-sticky-header .app-nav {
+    position: static;
+  }
+
+  /* Confidence budget bar */
+  .ps-budget-bar {
     background: var(--bg3);
     border-bottom: 1px solid var(--line);
     display: flex;

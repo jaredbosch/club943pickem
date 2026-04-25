@@ -172,7 +172,8 @@ export function PickSheet({
     <div className="ps-shell pp-gridbg">
       <div className="ps-container">
 
-        {/* Nav */}
+        {/* Sticky header wrapper — nav + budget bar stick together as one unit */}
+        <div className="ps-sticky-header">
         <header className="app-nav">
           <Link href="/dashboard" className="app-nav-logo">
             <div className="app-nav-badge">TPP</div>
@@ -192,7 +193,7 @@ export function PickSheet({
           </button>
         </header>
 
-        {/* Sticky confidence budget bar */}
+        {/* Confidence budget bar */}
         {hasGames && (
           <div className="ps-budget-bar">
             <span className="ps-budget-bar-label">CONF</span>
@@ -204,6 +205,7 @@ export function PickSheet({
             <span className="ps-budget-bar-count">{usedConfidenceMap.size}/{totalGames} used</span>
           </div>
         )}
+        </div>{/* end ps-sticky-header */}
 
         {/* Hero */}
         <div className="ps-hero pp-hero-grad">
