@@ -8,6 +8,9 @@ type GameCol = {
   status: string;
   timeSlot: string;
   kickoffTime: string;
+  awayScore?: number | null;
+  homeScore?: number | null;
+  atsWinner?: string | null;
 };
 
 type PlayerRow = {
@@ -103,22 +106,34 @@ function GameHeader({ game }: { game: GameCol }) {
   const label = gameLabel(game);
   const isLive = game.status === "live" || game.status === "in_progress";
   const isFinal = game.status === "final" || game.status === "complete";
+  const hasScore = game.awayScore != null && game.homeScore != null;
 
   const awayColor = NFL_COLORS[game.away]?.primary ?? "#333";
   const homeColor = NFL_COLORS[game.home]?.primary ?? "#333";
   const awayGrad = `linear-gradient(145deg, ${awayColor}, color-mix(in oklab, ${awayColor} 70%, #000))`;
   const homeGrad = `linear-gradient(145deg, ${homeColor}, color-mix(in oklab, ${homeColor} 70%, #000))`;
 
+  const awayWon = game.atsWinner === game.away;
+  const homeWon = game.atsWinner === game.home;
+
   return (
     <div className="grid-game-header">
       <div className="grid-game-logos">
-        <div className="grid-mini-logo" style={{ background: awayGrad }}>{game.away}</div>
+        <div className={`grid-mini-logo${awayWon ? " ats-winner" : homeWon ? " ats-loser" : ""}`} style={{ background: awayGrad }}>{game.away}</div>
         <span className="grid-game-at">@</span>
-        <div className="grid-mini-logo" style={{ background: homeGrad }}>{game.home}</div>
+        <div className={`grid-mini-logo${homeWon ? " ats-winner" : awayWon ? " ats-loser" : ""}`} style={{ background: homeGrad }}>{game.home}</div>
       </div>
-      <div className="grid-game-matchup">{game.away}·{game.home}</div>
+      {(isFinal || isLive) && hasScore ? (
+        <div className="grid-game-score">
+          <span className={awayWon ? "ats-score-win" : ""}>{game.awayScore}</span>
+          <span className="grid-score-sep">–</span>
+          <span className={homeWon ? "ats-score-win" : ""}>{game.homeScore}</span>
+        </div>
+      ) : (
+        <div className="grid-game-matchup">{game.away}·{game.home}</div>
+      )}
       <div className={`grid-game-status${isLive ? " live" : isFinal ? " final" : ""}`}>
-        {label}
+        {isFinal && game.atsWinner ? `${game.atsWinner} CVR` : label}
       </div>
     </div>
   );

@@ -44,7 +44,7 @@ export default async function GridPage({
   // Games for this week
   const { data: games } = await supabase
     .from("games")
-    .select("id, home_team, away_team, status, time_slot, kickoff_time")
+    .select("id, home_team, away_team, status, time_slot, kickoff_time, home_score, away_score")
     .eq("season_year", seasonYear)
     .eq("week", currentWeek)
     .order("kickoff_time", { ascending: true });
@@ -111,6 +111,8 @@ export default async function GridPage({
 
   // Consensus: most-picked team per game
   const consensus: Record<string, { team: string; count: number; total: number }> = {};
+  // ATS winner per game: derived from any pick where is_correct = true
+  const atsWinnerMap: Record<string, string | null> = {};
   for (const gameId of gameIds) {
     const gamePicks = (allPicks ?? []).filter((p) => p.game_id === gameId && p.picked_team);
     if (!gamePicks.length) continue;
@@ -118,6 +120,8 @@ export default async function GridPage({
     for (const p of gamePicks) counts[p.picked_team!] = (counts[p.picked_team!] ?? 0) + 1;
     const [topTeam, topCount] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
     consensus[gameId] = { team: topTeam, count: topCount, total: gamePicks.length };
+    const winningPick = gamePicks.find((p) => p.is_correct === true);
+    atsWinnerMap[gameId] = winningPick?.picked_team ?? null;
   }
 
   const hasGames = (games ?? []).length > 0;
@@ -169,6 +173,9 @@ export default async function GridPage({
         status: g.status ?? "pending",
         timeSlot: g.time_slot,
         kickoffTime: g.kickoff_time,
+        awayScore: (g as Record<string, unknown>).away_score as number | null ?? null,
+        homeScore: (g as Record<string, unknown>).home_score as number | null ?? null,
+        atsWinner: atsWinnerMap[g.id] ?? null,
       }))}
       players={playerRows}
       consensus={consensus}

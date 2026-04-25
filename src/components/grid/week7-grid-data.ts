@@ -8,6 +8,9 @@ export type SampleGame = {
   status: string;
   timeSlot: string;
   kickoffTime: string;
+  awayScore?: number | null;
+  homeScore?: number | null;
+  atsWinner?: string | null;
 };
 
 export type SamplePlayer = {
@@ -21,9 +24,9 @@ export type SamplePlayer = {
 };
 
 export const sampleGames: SampleGame[] = [
-  { id: "den-no",   away: "DEN", home: "NO",  status: "final",  timeSlot: "thursday",     kickoffTime: "2025-10-16T20:15:00Z" },
-  { id: "jax-chi",  away: "JAX", home: "CHI", status: "final",  timeSlot: "intl",         kickoffTime: "2025-10-19T13:00:00Z" },
-  { id: "nyj-ne",   away: "NYJ", home: "NE",  status: "final",  timeSlot: "intl",         kickoffTime: "2025-10-19T09:30:00Z" },
+  { id: "den-no",   away: "DEN", home: "NO",  status: "final",  timeSlot: "thursday",     kickoffTime: "2025-10-16T20:15:00Z", awayScore: 31, homeScore: 10, atsWinner: "DEN" },
+  { id: "jax-chi",  away: "JAX", home: "CHI", status: "final",  timeSlot: "intl",         kickoffTime: "2025-10-19T13:00:00Z", awayScore: 16, homeScore: 35, atsWinner: "CHI" },
+  { id: "nyj-ne",   away: "NYJ", home: "NE",  status: "final",  timeSlot: "intl",         kickoffTime: "2025-10-19T09:30:00Z", awayScore: 24, homeScore: 17, atsWinner: null },
   { id: "buf-ten",  away: "BUF", home: "TEN", status: "live",   timeSlot: "sunday_early", kickoffTime: "2025-10-19T17:00:00Z" },
   { id: "kc-sf",    away: "KC",  home: "SF",  status: "live",   timeSlot: "sunday_early", kickoffTime: "2025-10-19T17:00:00Z" },
   { id: "cin-cle",  away: "CIN", home: "CLE", status: "live",   timeSlot: "sunday_early", kickoffTime: "2025-10-19T17:00:00Z" },

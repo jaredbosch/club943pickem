@@ -1244,6 +1244,20 @@ body {
   }
   .grid-game-status.live { color: var(--accent); }
   .grid-game-status.final { color: var(--good); }
+  .grid-mini-logo.ats-winner { outline: 1px solid var(--good); outline-offset: 1px; }
+  .grid-mini-logo.ats-loser  { opacity: 0.45; }
+  .grid-game-score {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-family: var(--font-disp);
+    font-weight: 800;
+    font-size: 11px;
+    color: var(--ink2);
+    letter-spacing: -0.01em;
+  }
+  .grid-score-sep { color: var(--ink3); font-size: 9px; }
+  .ats-score-win { color: var(--good); }
 
   /* Pick rows */
   .wg-pick-row {
