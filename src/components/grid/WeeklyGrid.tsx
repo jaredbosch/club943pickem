@@ -60,12 +60,17 @@ function gameLabel(game: GameCol): string {
 function HeatCell({
   pick,
   gameStatus,
+  masked,
 }: {
   pick: { pickedTeam: string; isCorrect: boolean | null; confidence: number | null } | undefined;
   gameStatus: string;
+  masked?: boolean;
 }) {
   if (!pick) {
     return <div className="grid-cell grid-cell-empty" />;
+  }
+  if (masked) {
+    return <div className="grid-cell grid-cell-masked" />;
   }
 
   const color = NFL_COLORS[pick.pickedTeam]?.primary ?? "#333";
@@ -283,13 +288,17 @@ export function WeeklyGrid({
                   key={p.userId}
                   className={`wg-pick-row${p.isCurrentUser ? " me" : ""}${i === 0 ? " first" : ""}${i % 2 === 0 ? " even" : ""}`}
                 >
-                  {games.map((g) => (
-                    <HeatCell
-                      key={g.id}
-                      pick={p.picks[g.id]}
-                      gameStatus={g.status}
-                    />
-                  ))}
+                  {games.map((g) => {
+                    const isPending = g.status !== "final" && g.status !== "complete" && g.status !== "live" && g.status !== "in_progress";
+                    return (
+                      <HeatCell
+                        key={g.id}
+                        pick={p.picks[g.id]}
+                        gameStatus={g.status}
+                        masked={isPending && !p.isCurrentUser}
+                      />
+                    );
+                  })}
                 </div>
               ))}
 
@@ -297,6 +306,8 @@ export function WeeklyGrid({
               {players.length > 0 && (
                 <div className="wg-consensus-row">
                   {games.map((g) => {
+                    const isPending = g.status !== "final" && g.status !== "complete" && g.status !== "live" && g.status !== "in_progress";
+                    if (isPending) return <div key={g.id} className="grid-cell grid-cell-masked" />;
                     const c = consensus[g.id];
                     if (!c) return <div key={g.id} className="grid-cell grid-cell-empty" />;
                     const color = NFL_COLORS[c.team]?.primary ?? "#333";

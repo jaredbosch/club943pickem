@@ -1343,6 +1343,16 @@ body {
     background: var(--bg3);
     border: 1px dashed var(--line2);
   }
+  .grid-cell-masked {
+    background: repeating-linear-gradient(
+      45deg,
+      var(--bg3),
+      var(--bg3) 3px,
+      var(--bg2) 3px,
+      var(--bg2) 7px
+    );
+    border: 1px solid var(--line);
+  }
   .grid-cell-abbr {
     font-family: var(--font-disp);
     font-weight: 700;
