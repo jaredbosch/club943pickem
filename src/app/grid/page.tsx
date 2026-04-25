@@ -37,7 +37,8 @@ export default async function GridPage({
   const availableWeeks = [...new Set((weekRows ?? []).map((r) => r.week))].sort((a, b) => a - b);
   const latestWeek = availableWeeks.at(-1) ?? null;
   const requestedWeek = searchParams.week ? parseInt(searchParams.week) : null;
-  const currentWeek = requestedWeek ?? latestWeek ?? nflWeek(now);
+  // Fall back to latest week with data, then 7 (sample week), not nflWeek(now) which overshoots in off-season
+  const currentWeek = requestedWeek ?? latestWeek ?? 7;
 
   // Games for this week
   const { data: games } = await supabase

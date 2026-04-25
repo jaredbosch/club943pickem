@@ -181,8 +181,18 @@ export function WeeklyGrid({
 
       {/* Grid */}
       {!hasGames ? (
-        <div style={{ padding: "40px 24px", textAlign: "center" }}>
-          <div className="disp-900" style={{ fontSize: 24, color: "var(--ink3)" }}>No games this week yet</div>
+        <div style={{ padding: "60px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+          <div className="disp-900" style={{ fontSize: 28, color: "var(--ink2)" }}>No picks data for Week {week}</div>
+          <div className="tag" style={{ fontSize: 11 }}>
+            {availableWeeks.length > 0
+              ? `Available weeks: ${availableWeeks.join(", ")} — use the nav above`
+              : "Games sync automatically once the season schedule is released"}
+          </div>
+          {availableWeeks.length > 0 && (
+            <Link href={`/grid?week=${availableWeeks.at(-1)}`} className="pp-btn" style={{ marginTop: 8 }}>
+              Go to Week {availableWeeks.at(-1)} →
+            </Link>
+          )}
         </div>
       ) : (
         <div className="wg-scroll-area">
