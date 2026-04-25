@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { SlotGroup } from "./SlotGroup";
 import type { Slot, Game } from "./types";
@@ -62,6 +63,7 @@ export function PickSheet({
 
   const [picks, setPicks] = useState<Map<string, PickState>>(() => buildPickState(slots));
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [openPickerId, setOpenPickerId] = useState<string | null>(null);
 
   const allGames = slots.flatMap((s) => s.games);
@@ -88,6 +90,23 @@ export function PickSheet({
       { onConflict: "user_id,league_id,game_id" },
     );
     setSaving(false);
+  }
+
+  async function saveAllPicks() {
+    if (isSampleData) return;
+    setSaving(true);
+    const rows = [...picks.entries()].map(([gameId, state]) => ({
+      user_id: userId,
+      league_id: leagueId,
+      game_id: gameId,
+      picked_team: state.pickedTeam,
+      confidence: state.confidence,
+      is_locked: false,
+    }));
+    await supabase.from("picks").upsert(rows, { onConflict: "user_id,league_id,game_id" });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
   }
 
   const pickTeam = useCallback(
@@ -152,6 +171,26 @@ export function PickSheet({
   return (
     <div className="ps-shell pp-gridbg">
       <div className="ps-container">
+
+        {/* Nav */}
+        <header className="app-nav">
+          <Link href="/dashboard" className="app-nav-logo">
+            <div className="app-nav-badge">TPP</div>
+            <span className="app-nav-name">thepickempool</span>
+          </Link>
+          <div style={{ width: 1, height: 24, background: "var(--line)" }} />
+          <span className="pp-chip solid">{leagueName}</span>
+          <div style={{ flex: 1 }} />
+          <Link href="/dashboard" className="ps-nav-back">← Standings</Link>
+          <button
+            type="button"
+            className={`ps-save-btn${saved ? " saved" : ""}${saving ? " saving" : ""}`}
+            onClick={saveAllPicks}
+            disabled={saving || isSampleData}
+          >
+            {saved ? "✓ Saved!" : saving ? "Saving…" : "Save Picks"}
+          </button>
+        </header>
 
         {/* Hero */}
         <div className="ps-hero pp-hero-grad">
@@ -242,10 +281,17 @@ export function PickSheet({
         {/* Bottom bar */}
         <div className="ps-bottom-bar">
           <div className="ps-score-display">
-            <strong>{picksIn}</strong> of {totalGames} picks in
+            <strong>{picksIn}</strong> of {totalGames} picks submitted
           </div>
           <div className="ps-score-spacer" />
-          <a href="/dashboard" className="pp-btn ghost">← Standings</a>
+          <button
+            type="button"
+            className={`ps-save-btn${saved ? " saved" : ""}${saving ? " saving" : ""}`}
+            onClick={saveAllPicks}
+            disabled={saving || isSampleData}
+          >
+            {saved ? "✓ Saved!" : saving ? "Saving…" : "Save Picks"}
+          </button>
         </div>
 
       </div>

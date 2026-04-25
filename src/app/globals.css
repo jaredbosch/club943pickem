@@ -212,6 +212,9 @@ body {
   padding: 12px 24px;
   border-bottom: 1px solid var(--line);
   background: var(--bg2);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 .app-nav-logo {
   display: flex;
@@ -913,6 +916,43 @@ body {
     margin-right: 2px;
   }
   .ps-score-spacer { flex: 1; }
+
+  /* Nav back link */
+  .ps-nav-back {
+    font-family: var(--font-code);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink2);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    transition: color 0.15s;
+  }
+  .ps-nav-back:hover { color: var(--ink); }
+
+  /* Save Picks button */
+  .ps-save-btn {
+    font-family: var(--font-disp);
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    padding: 8px 20px;
+    border-radius: 4px;
+    border: 2px solid var(--accent);
+    background: var(--accent);
+    color: #000;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s, opacity 0.15s, transform 0.1s;
+  }
+  .ps-save-btn:hover:not(:disabled) { background: color-mix(in oklab, var(--accent) 85%, #fff); transform: scale(1.02); }
+  .ps-save-btn:disabled { opacity: 0.4; cursor: default; }
+  .ps-save-btn.saving { background: transparent; color: var(--accent); }
+  .ps-save-btn.saved {
+    background: var(--good);
+    border-color: var(--good);
+    color: #000;
+  }
 
   /* Read-only hidden message */
   .dash-picks-hidden {
