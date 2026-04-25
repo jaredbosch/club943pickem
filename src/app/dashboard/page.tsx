@@ -17,20 +17,31 @@ export default async function DashboardPage() {
   if (!membership) redirect("/league");
 
   const league = membership.leagues as unknown as {
-    id: string;
-    name: string;
-    season_year: number;
-    invite_code: string;
-    status: string;
+    id: string; name: string; season_year: number; invite_code: string; status: string;
   };
 
-  // Season standings (week = 0)
-  const { data: standings } = await supabase
+  // Season standings (week=0)
+  const { data: seasonStandings } = await supabase
     .from("standings")
     .select("user_id, total_points, correct_picks, rank")
     .eq("league_id", league.id)
     .eq("week", 0)
     .order("rank", { ascending: true });
+
+  // Weekly standings for form + streak computation
+  const { data: weeklyStandings } = await supabase
+    .from("standings")
+    .select("user_id, week, total_points, correct_picks, rank")
+    .eq("league_id", league.id)
+    .gt("week", 0)
+    .order("week", { ascending: false });
+
+  // Total graded picks per user (for losses column)
+  const { data: gradedPicks } = await supabase
+    .from("picks")
+    .select("user_id, is_correct")
+    .eq("league_id", league.id)
+    .not("is_correct", "is", null);
 
   // Member profiles
   const { data: members } = await supabase
@@ -41,50 +52,66 @@ export default async function DashboardPage() {
   const memberMap = new Map(
     (members ?? []).map((m) => {
       const u = m.users as unknown as { display_name: string | null; email: string } | null;
-      return [
-        m.user_id,
-        {
-          displayName: u?.display_name ?? u?.email?.split("@")[0] ?? "Member",
-          isPaid: m.is_paid,
-        },
-      ];
+      return [m.user_id, {
+        displayName: u?.display_name ?? u?.email?.split("@")[0] ?? "Member",
+        isPaid: m.is_paid,
+      }];
     }),
   );
 
-  const rows = (standings ?? []).map((s) => ({
-    userId: s.user_id,
-    rank: s.rank ?? 0,
-    displayName: memberMap.get(s.user_id)?.displayName ?? "Member",
-    isPaid: memberMap.get(s.user_id)?.isPaid ?? false,
-    totalPoints: s.total_points,
-    correctPicks: s.correct_picks,
-    isCurrentUser: s.user_id === user.id,
-  }));
+  // Build weekly data per player
+  const weeklyByPlayer = new Map<string, Array<{ week: number; rank: number | null; points: number }>>();
+  for (const row of weeklyStandings ?? []) {
+    if (!weeklyByPlayer.has(row.user_id)) weeklyByPlayer.set(row.user_id, []);
+    weeklyByPlayer.get(row.user_id)!.push({ week: row.week, rank: row.rank, points: row.total_points });
+  }
 
-  const memberRows = Array.from(memberMap.entries()).map(([userId, m], i) => ({
-    userId,
-    rank: i + 1,
-    displayName: m.displayName,
-    isPaid: m.isPaid,
-    totalPoints: 0,
-    correctPicks: 0,
-    isCurrentUser: userId === user.id,
-  }));
+  // Total graded per player
+  const gradedByUser = new Map<string, number>();
+  for (const p of gradedPicks ?? []) {
+    gradedByUser.set(p.user_id, (gradedByUser.get(p.user_id) ?? 0) + 1);
+  }
 
-  const dummyRows = [
-    { userId: "dummy-1", rank: 2, displayName: "Matty Ice", isPaid: true, totalPoints: 0, correctPicks: 0, isCurrentUser: false },
-    { userId: "dummy-2", rank: 3, displayName: "Big Ray", isPaid: true, totalPoints: 0, correctPicks: 0, isCurrentUser: false },
-    { userId: "dummy-3", rank: 4, displayName: "Kayla B", isPaid: false, totalPoints: 0, correctPicks: 0, isCurrentUser: false },
-    { userId: "dummy-4", rank: 5, displayName: "T-Bone", isPaid: true, totalPoints: 0, correctPicks: 0, isCurrentUser: false },
-    { userId: "dummy-5", rank: 6, displayName: "Sully", isPaid: false, totalPoints: 0, correctPicks: 0, isCurrentUser: false },
-  ];
+  const totalPlayers = (members ?? []).length;
+  const midpoint = Math.ceil(totalPlayers / 2);
 
-  const displayRows =
-    rows.length > 0
-      ? rows
-      : [...memberRows, ...dummyRows].map((r, i) => ({ ...r, rank: i + 1 }));
+  const rows = (seasonStandings ?? []).map((s) => {
+    const weekly = (weeklyByPlayer.get(s.user_id) ?? []).sort((a, b) => b.week - a.week);
 
-  // League posts (pinned first, then newest)
+    // Form: last 5 weeks — W if rank <= top half
+    const form = weekly.slice(0, 5).map((w) =>
+      w.rank != null && w.rank <= midpoint ? "W" : "L"
+    ) as ("W" | "L")[];
+
+    // Streak: consecutive same result from most recent week
+    let streak = 0;
+    if (form.length > 0) {
+      const dir = form[0];
+      for (const f of form) {
+        if (f === dir) streak++;
+        else break;
+      }
+      if (dir === "L") streak = -streak;
+    }
+
+    const totalGraded = gradedByUser.get(s.user_id) ?? 0;
+    const losses = Math.max(0, totalGraded - s.correct_picks);
+
+    return {
+      userId: s.user_id,
+      rank: s.rank ?? 0,
+      displayName: memberMap.get(s.user_id)?.displayName ?? "Member",
+      isPaid: memberMap.get(s.user_id)?.isPaid ?? false,
+      totalPoints: s.total_points,
+      correctPicks: s.correct_picks,
+      losses,
+      form,
+      streak,
+      isCurrentUser: s.user_id === user.id,
+    };
+  });
+
+  // League posts
   const { data: rawPosts } = await supabase
     .from("league_posts")
     .select("id, body, is_pinned, created_at, user_id, users(display_name, email)")
@@ -96,10 +123,7 @@ export default async function DashboardPage() {
   const initialPosts = (rawPosts ?? []).map((p) => {
     const u = p.users as unknown as { display_name: string | null; email: string } | null;
     return {
-      id: p.id,
-      body: p.body,
-      is_pinned: p.is_pinned,
-      created_at: p.created_at,
+      id: p.id, body: p.body, is_pinned: p.is_pinned, created_at: p.created_at,
       user_id: p.user_id,
       authorName: u?.display_name ?? u?.email?.split("@")[0] ?? "Member",
       isCurrentUser: p.user_id === user.id,
@@ -109,7 +133,7 @@ export default async function DashboardPage() {
   return (
     <LeagueDashboard
       league={league}
-      standings={displayRows}
+      standings={rows}
       isCommissioner={membership.is_commissioner}
       currentUserId={user.id}
       initialPosts={initialPosts}
