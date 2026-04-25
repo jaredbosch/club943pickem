@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NFL_COLORS } from "@/lib/nfl-colors";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 type GameCol = {
   id: string;
@@ -180,6 +181,7 @@ export function WeeklyGrid({
         <div style={{ flex: 1 }} />
         <Link href="/dashboard" className="ps-nav-back">← Standings</Link>
         <Link href="/picks" className="dash-picks-btn">Make Picks →</Link>
+        <ThemeToggle />
       </header>
 
       {/* Hero */}

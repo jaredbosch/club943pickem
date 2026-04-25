@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { SlotGroup } from "./SlotGroup";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import type { Slot, Game } from "./types";
 
 type PickState = {
@@ -191,6 +192,7 @@ export function PickSheet({
           >
             {saved ? "✓ Saved!" : saving ? "Saving…" : "Save Picks"}
           </button>
+          <ThemeToggle />
         </header>
 
         {/* Confidence budget bar */}

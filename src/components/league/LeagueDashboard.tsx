@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { LeagueNotes } from "./LeagueNotes";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 type StandingRow = {
   userId: string;
@@ -83,6 +84,7 @@ export function LeagueDashboard({ league, standings, isCommissioner, currentUser
         <Link href="/grid" className="ps-nav-back">The Grid</Link>
         <Link href={`/picks/${currentUserId}`} className="ps-nav-back">My Profile</Link>
         <Link href="/picks" className="dash-picks-btn">Make Picks →</Link>
+        <ThemeToggle />
       </header>
 
       {/* Hero */}

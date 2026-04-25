@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NFL_COLORS } from "@/lib/nfl-colors";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 type WeekStat = {
   week: number;
@@ -102,6 +103,7 @@ export function PlayerProfile({
         <div style={{ flex: 1 }} />
         {isCurrentUser && <Link href="/picks" className="ps-nav-back">Make Picks →</Link>}
         <Link href="/dashboard" className="ps-nav-back" style={{ marginLeft: 8 }}>← Standings</Link>
+        <ThemeToggle />
       </header>
 
       {/* Hero */}
