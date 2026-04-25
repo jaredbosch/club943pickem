@@ -166,16 +166,12 @@ export function LeagueDashboard({ league, standings, isCommissioner, currentUser
                     <th className="dash-th dash-th-rank">#</th>
                     <th className="dash-th">Player</th>
                     <th className="dash-th dash-th-num">W-L</th>
-                    <th className="dash-th dash-th-form">Form</th>
-                    <th className="dash-th dash-th-num">STR</th>
                     <th className="dash-th dash-th-pts">PTS</th>
                     <th className="dash-th dash-th-arrow" />
                   </tr>
                 </thead>
                 <tbody>
                   {standings.map((row, i) => {
-                    const streakLabel = row.streak > 0 ? `W${row.streak}` : row.streak < 0 ? `L${Math.abs(row.streak)}` : "—";
-                    const streakColor = row.streak > 0 ? "var(--good)" : row.streak < 0 ? "var(--bad)" : "var(--ink3)";
                     return (
                       <tr
                         key={row.userId}
@@ -195,20 +191,12 @@ export function LeagueDashboard({ league, standings, isCommissioner, currentUser
                             </span>
                           </Link>
                         </td>
-                        <td className="dash-td dash-td-num" style={{ fontFamily: "var(--font-code)", fontSize: 11, color: "var(--ink2)" }}>
-                          <span style={{ color: "var(--good)" }}>{row.correctPicks}</span>
-                          <span style={{ color: "var(--ink3)" }}>–</span>
-                          <span style={{ color: "var(--bad)" }}>{row.losses}</span>
-                        </td>
-                        <td className="dash-td dash-td-form">
-                          <div className="dash-form-dots">
-                            {row.form.slice(0, 5).map((f, fi) => (
-                              <span key={fi} className={`dash-form-dot ${f === "W" ? "w" : "l"}`} title={f} />
-                            ))}
-                          </div>
-                        </td>
-                        <td className="dash-td dash-td-num" style={{ fontFamily: "var(--font-code)", fontSize: 11, fontWeight: 700, color: streakColor }}>
-                          {streakLabel}
+                        <td className="dash-td dash-td-num">
+                          <span className="dash-record">
+                            <span style={{ color: "var(--good)" }}>{row.correctPicks}</span>
+                            <span style={{ color: "var(--ink3)" }}>–</span>
+                            <span style={{ color: "var(--bad)" }}>{row.losses}</span>
+                          </span>
                         </td>
                         <td className="dash-td dash-td-pts">
                           <span className={`dash-pts${i === 0 ? " first" : ""}`}>{row.totalPoints}</span>

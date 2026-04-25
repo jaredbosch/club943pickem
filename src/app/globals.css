@@ -2082,19 +2082,14 @@ body {
     color: var(--ink);
   }
   .dash-pts.first { color: var(--accent); }
-  .dash-form-dots {
-    display: flex;
-    gap: 3px;
-    align-items: center;
+  .dash-record {
+    font-family: var(--font-code);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-flex;
+    gap: 2px;
   }
-  .dash-form-dot {
-    width: 10px;
-    height: 14px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-  .dash-form-dot.w { background: var(--good); }
-  .dash-form-dot.l { background: var(--bad); }
 
   .dash-row { border-top: 1px solid var(--line); transition: background 0.1s; }
   .dash-row:hover { background: var(--bg3); }
