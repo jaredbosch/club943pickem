@@ -1017,6 +1017,317 @@ body {
     color: #000;
   }
 
+  /* ── Weekly Grid ─────────────────────────────────────────────────── */
+
+  .wg-shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+  .wg-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .wg-hero-title {
+    font-family: var(--font-disp);
+    font-weight: 900;
+    font-size: 48px;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-top: 4px;
+  }
+  .wg-hero-legend {
+    display: flex;
+    gap: 14px;
+    margin-top: 8px;
+    font-family: var(--font-code);
+    font-size: 10px;
+  }
+  .wg-week-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Scrollable grid container */
+  .wg-scroll-area {
+    flex: 1;
+    overflow: auto;
+    padding: 14px 0 24px;
+  }
+  .wg-grid-wrap {
+    display: flex;
+    min-width: fit-content;
+    gap: 0;
+  }
+
+  /* Left sticky player column */
+  .wg-left-col {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    border-right: 2px solid var(--line2);
+    min-width: 280px;
+    flex-shrink: 0;
+  }
+  .wg-left-header {
+    height: 76px;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 14px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg2);
+  }
+  .wg-player-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    height: 54px;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    transition: background 0.12s;
+  }
+  .wg-player-row:hover { background: var(--bg2); }
+  .wg-player-row.even { background: color-mix(in oklab, var(--bg2) 50%, transparent); }
+  .wg-player-row.even:hover { background: var(--bg2); }
+  .wg-player-row.first { background: color-mix(in oklab, var(--accent) 8%, transparent); }
+  .wg-player-row.first:hover { background: color-mix(in oklab, var(--accent) 14%, transparent); }
+  .wg-player-row.me { box-shadow: inset 3px 0 0 var(--accent); }
+  .wg-player-leader-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+  }
+  .wg-player-rank {
+    font-family: var(--font-disp);
+    font-weight: 900;
+    font-size: 20px;
+    color: var(--ink3);
+    width: 28px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .wg-player-row.first .wg-player-rank,
+  .wg-player-row:nth-child(-n+4) .wg-player-rank { color: var(--ink); }
+  .wg-player-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 3px;
+    background: var(--bg3);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-disp);
+    font-weight: 800;
+    font-size: 10px;
+    color: var(--ink2);
+    flex-shrink: 0;
+  }
+  .wg-player-info { flex: 1; line-height: 1.1; min-width: 0; }
+  .wg-player-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .wg-you {
+    font-family: var(--font-code);
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .wg-player-bar-wrap {
+    height: 3px;
+    background: var(--bg3);
+    border-radius: 99px;
+    margin-top: 4px;
+    overflow: hidden;
+  }
+  .wg-player-bar { height: 100%; border-radius: 99px; }
+  .wg-player-pts {
+    font-family: var(--font-disp);
+    font-weight: 900;
+    font-size: 22px;
+    color: var(--ink);
+    flex-shrink: 0;
+    width: 36px;
+    text-align: right;
+    line-height: 1;
+  }
+  .wg-player-pts.accent { color: var(--accent); }
+
+  /* Right scrollable game columns */
+  .wg-right-col {
+    display: flex;
+    flex-direction: column;
+  }
+  .wg-game-headers {
+    display: flex;
+    gap: 4px;
+    padding: 0 8px 10px;
+    border-bottom: 1px solid var(--line);
+    height: 76px;
+    align-items: flex-end;
+  }
+  .grid-game-header {
+    width: 54px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .grid-game-logos {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .grid-mini-logo {
+    width: 18px;
+    height: 18px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-disp);
+    font-weight: 800;
+    font-size: 6px;
+    color: #fff;
+    letter-spacing: 0;
+  }
+  .grid-game-at {
+    font-family: var(--font-code);
+    font-size: 7px;
+    color: var(--ink3);
+  }
+  .grid-game-matchup {
+    font-family: var(--font-disp);
+    font-weight: 800;
+    font-size: 9px;
+    color: var(--ink2);
+    letter-spacing: 0.01em;
+  }
+  .grid-game-status {
+    font-family: var(--font-code);
+    font-size: 8px;
+    color: var(--ink3);
+    letter-spacing: 0.06em;
+  }
+  .grid-game-status.live { color: var(--accent); }
+  .grid-game-status.final { color: var(--good); }
+
+  /* Pick rows */
+  .wg-pick-row {
+    display: flex;
+    gap: 4px;
+    padding: 1px 8px;
+    height: 54px;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .wg-pick-row.even { background: color-mix(in oklab, var(--bg2) 50%, transparent); }
+  .wg-pick-row.first { background: color-mix(in oklab, var(--accent) 8%, transparent); }
+  .wg-pick-row.me { background: color-mix(in oklab, var(--accent) 5%, transparent); }
+
+  /* Individual pick cells */
+  .grid-cell {
+    width: 54px;
+    height: 48px;
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .grid-cell-empty {
+    background: var(--bg3);
+    border: 1px dashed var(--line2);
+  }
+  .grid-cell-abbr {
+    font-family: var(--font-disp);
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--ink2);
+  }
+  .grid-cell-win .grid-cell-abbr,
+  .grid-cell-live .grid-cell-abbr { color: #fff; }
+  .grid-cell-live { outline: 1px solid var(--accent); outline-offset: -1px; }
+  .grid-cell-icon {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .grid-cell-icon.win { color: rgba(255,255,255,0.9); }
+  .grid-cell-icon.loss { color: var(--bad); }
+  .grid-cell-dot {
+    position: absolute !important;
+    top: 3px !important;
+    left: 3px !important;
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  /* Consensus footer */
+  .wg-consensus-row {
+    display: flex;
+    gap: 4px;
+    padding: 10px 8px 4px;
+    border-top: 2px solid var(--line2);
+    margin-top: 4px;
+  }
+  .wg-consensus-cell {
+    width: 54px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .wg-consensus-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-disp);
+    font-weight: 800;
+    font-size: 7px;
+    color: #fff;
+  }
+  .wg-consensus-pct {
+    font-family: var(--font-disp);
+    font-weight: 900;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1;
+  }
+
   /* ── Player Profile ──────────────────────────────────────────────── */
 
   .prof-shell {

@@ -80,6 +80,7 @@ export function LeagueDashboard({ league, standings, isCommissioner, currentUser
         <div style={{ width: 1, height: 24, background: "var(--line)" }} />
         <span className="pp-chip solid">{league.season_year}</span>
         <div style={{ flex: 1 }} />
+        <Link href="/grid" className="ps-nav-back">The Grid</Link>
         <Link href={`/picks/${currentUserId}`} className="ps-nav-back">My Profile</Link>
         <Link href="/picks" className="dash-picks-btn">Make Picks →</Link>
       </header>
