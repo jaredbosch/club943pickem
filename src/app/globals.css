@@ -917,6 +917,61 @@ body {
   }
   .ps-score-spacer { flex: 1; }
 
+  /* Sticky confidence budget bar */
+  .ps-budget-bar {
+    position: sticky;
+    top: 52px; /* nav height */
+    z-index: 49;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .ps-budget-bar::-webkit-scrollbar { display: none; }
+  .ps-budget-bar-label {
+    font-family: var(--font-code);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--ink3);
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-right: 6px;
+  }
+  .ps-budget-bar-chip {
+    width: 26px;
+    height: 26px;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+    background: var(--bg2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-disp);
+    font-weight: 900;
+    font-size: 13px;
+    color: var(--ink3);
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .ps-budget-bar-chip.used {
+    background: color-mix(in oklab, var(--accent) 18%, var(--bg3));
+    border-color: color-mix(in oklab, var(--accent) 55%, transparent);
+    color: var(--accent);
+  }
+  .ps-budget-bar-count {
+    font-family: var(--font-code);
+    font-size: 9px;
+    color: var(--ink3);
+    margin-left: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
   /* Nav back link */
   .ps-nav-back {
     font-family: var(--font-code);

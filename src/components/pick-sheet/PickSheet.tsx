@@ -192,6 +192,19 @@ export function PickSheet({
           </button>
         </header>
 
+        {/* Sticky confidence budget bar */}
+        {hasGames && (
+          <div className="ps-budget-bar">
+            <span className="ps-budget-bar-label">CONF</span>
+            {Array.from({ length: totalGames }, (_, i) => totalGames - i).map((n) => (
+              <div key={n} className={`ps-budget-bar-chip${usedConfidenceMap.has(n) ? " used" : ""}`}>
+                {n}
+              </div>
+            ))}
+            <span className="ps-budget-bar-count">{usedConfidenceMap.size}/{totalGames} used</span>
+          </div>
+        )}
+
         {/* Hero */}
         <div className="ps-hero pp-hero-grad">
           <div>
@@ -245,21 +258,6 @@ export function PickSheet({
           </div>
         ) : (
           <>
-            {/* Confidence budget */}
-            <div className="ps-budget">
-              <div className="ps-budget-header">
-                <span className="tag">CONFIDENCE BUDGET · 1–{totalGames}</span>
-                <span className="ps-budget-used mono">used {usedConfidenceMap.size}/{totalGames}</span>
-              </div>
-              <div className="ps-budget-chips">
-                {Array.from({ length: totalGames }, (_, i) => totalGames - i).map((n) => (
-                  <div key={n} className={`ps-budget-chip${usedConfidenceMap.has(n) ? " used" : ""}`}>
-                    {n}
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Pick rows */}
             <div className="ps-pick-list">
               {mergedSlots.map((slot) => (
