@@ -89,6 +89,9 @@ function HeatCell({
   return (
     <div className={cellClass} style={{ background: bg }}>
       <span className="grid-cell-abbr">{pick.pickedTeam}</span>
+      {pick.confidence !== null && (
+        <span className="grid-cell-conf">{pick.confidence}</span>
+      )}
       {isWin  && <span className="grid-cell-icon win">✓</span>}
       {isLoss && <span className="grid-cell-icon loss">✗</span>}
       {isLive && !isGraded && <span className="pp-live-dot grid-cell-dot" />}

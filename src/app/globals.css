@@ -1265,8 +1265,10 @@ body {
     flex-shrink: 0;
     position: relative;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 1px;
     border-radius: 2px;
     overflow: hidden;
   }
@@ -1276,23 +1278,35 @@ body {
   }
   .grid-cell-abbr {
     font-family: var(--font-disp);
-    font-weight: 800;
-    font-size: 11px;
-    letter-spacing: 0.02em;
-    color: var(--ink2);
+    font-weight: 700;
+    font-size: 9px;
+    letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.55);
+    line-height: 1;
   }
+  .grid-cell-conf {
+    font-family: var(--font-disp);
+    font-weight: 900;
+    font-size: 18px;
+    line-height: 1;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
+  .grid-cell-loss .grid-cell-conf { color: rgba(255,255,255,0.45); }
+  .grid-cell-pending .grid-cell-conf,
+  .grid-cell-pending .grid-cell-abbr { color: rgba(255,255,255,0.6); }
   .grid-cell-win .grid-cell-abbr,
-  .grid-cell-live .grid-cell-abbr { color: #fff; }
+  .grid-cell-live .grid-cell-abbr { color: rgba(255,255,255,0.6); }
   .grid-cell-live { outline: 1px solid var(--accent); outline-offset: -1px; }
   .grid-cell-icon {
     position: absolute;
-    top: 2px;
-    right: 3px;
-    font-size: 9px;
+    top: 3px;
+    right: 4px;
+    font-size: 11px;
     font-weight: 900;
     line-height: 1;
   }
-  .grid-cell-icon.win { color: rgba(255,255,255,0.9); }
+  .grid-cell-icon.win { color: var(--good); }
   .grid-cell-icon.loss { color: var(--bad); }
   .grid-cell-dot {
     position: absolute !important;
