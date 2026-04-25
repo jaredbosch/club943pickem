@@ -44,7 +44,7 @@ export default async function GridPage({
   // Games for this week
   const { data: games } = await supabase
     .from("games")
-    .select("id, home_team, away_team, status, time_slot, kickoff_time, home_score, away_score")
+    .select("id, home_team, away_team, status, time_slot, kickoff_time, home_score, away_score, home_spread")
     .eq("season_year", seasonYear)
     .eq("week", currentWeek)
     .order("kickoff_time", { ascending: true });
@@ -176,6 +176,7 @@ export default async function GridPage({
         awayScore: (g as Record<string, unknown>).away_score as number | null ?? null,
         homeScore: (g as Record<string, unknown>).home_score as number | null ?? null,
         atsWinner: atsWinnerMap[g.id] ?? null,
+        homeSpread: (g as Record<string, unknown>).home_spread as number | null ?? null,
       }))}
       players={playerRows}
       consensus={consensus}

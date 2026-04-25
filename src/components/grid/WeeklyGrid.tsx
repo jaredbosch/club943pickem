@@ -11,6 +11,7 @@ type GameCol = {
   awayScore?: number | null;
   homeScore?: number | null;
   atsWinner?: string | null;
+  homeSpread?: number | null;
 };
 
 type PlayerRow = {
@@ -116,6 +117,13 @@ function GameHeader({ game }: { game: GameCol }) {
   const awayWon = game.atsWinner === game.away;
   const homeWon = game.atsWinner === game.home;
 
+  function spreadLabel(team: string): string {
+    if (game.homeSpread == null) return `${team} CVR`;
+    const line = team === game.home ? game.homeSpread : -game.homeSpread;
+    const fmt = line > 0 ? `+${line}` : `${line}`;
+    return `${team} ${fmt}`;
+  }
+
   return (
     <div className="grid-game-header">
       <div className="grid-game-logos">
@@ -133,7 +141,7 @@ function GameHeader({ game }: { game: GameCol }) {
         <div className="grid-game-matchup">{game.away}·{game.home}</div>
       )}
       <div className={`grid-game-status${isLive ? " live" : isFinal ? " final" : ""}`}>
-        {isFinal && game.atsWinner ? `${game.atsWinner} CVR` : label}
+        {isFinal && game.atsWinner ? spreadLabel(game.atsWinner) : label}
       </div>
     </div>
   );
