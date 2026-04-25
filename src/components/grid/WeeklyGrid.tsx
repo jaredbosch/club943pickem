@@ -30,6 +30,7 @@ type Props = {
   consensus: Record<string, { team: string; count: number; total: number }>;
   currentUserId: string;
   hasGames: boolean;
+  isSampleData?: boolean;
 };
 
 function initials(name: string) {
@@ -129,6 +130,7 @@ export function WeeklyGrid({
   players,
   consensus,
   hasGames,
+  isSampleData,
 }: Props) {
   const maxPoints = players.length > 0 ? Math.max(...players.map((p) => p.weekPoints), 1) : 1;
   const prevWeek = availableWeeks.findIndex((w) => w === week) > 0
@@ -178,6 +180,14 @@ export function WeeklyGrid({
           }
         </div>
       </div>
+
+      {/* Sample data banner */}
+      {isSampleData && (
+        <div className="wg-sample-banner">
+          <span className="tag">SAMPLE DATA</span>
+          <span>Showing Week 7 preview — live picks appear once the season starts</span>
+        </div>
+      )}
 
       {/* Grid */}
       {!hasGames ? (

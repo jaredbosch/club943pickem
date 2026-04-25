@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { WeeklyGrid } from "@/components/grid/WeeklyGrid";
-import { nflSeasonYear, nflWeek } from "@/lib/nfl/week";
+import { nflSeasonYear } from "@/lib/nfl/week";
+import { sampleGames, samplePlayers } from "@/components/grid/week7-grid-data";
 
 export default async function GridPage({
   searchParams,
@@ -120,6 +121,40 @@ export default async function GridPage({
   }
 
   const hasGames = (games ?? []).length > 0;
+
+  if (!hasGames) {
+    const sampleConsensus: Record<string, { team: string; count: number; total: number }> = {};
+    for (const g of sampleGames) {
+      const counts: Record<string, number> = {};
+      for (const p of samplePlayers) {
+        const pick = p.picks[g.id];
+        if (pick) counts[pick.pickedTeam] = (counts[pick.pickedTeam] ?? 0) + 1;
+      }
+      const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      if (entries.length) {
+        sampleConsensus[g.id] = { team: entries[0][0], count: entries[0][1], total: samplePlayers.length };
+      }
+    }
+    const sampleWithUser = samplePlayers.map((p, i) => ({
+      ...p,
+      isCurrentUser: i === 0,
+      userId: i === 0 ? user.id : p.userId,
+    }));
+    return (
+      <WeeklyGrid
+        leagueName={league.name}
+        week={7}
+        seasonYear={seasonYear}
+        availableWeeks={[7]}
+        games={sampleGames}
+        players={sampleWithUser}
+        consensus={sampleConsensus}
+        currentUserId={user.id}
+        hasGames={true}
+        isSampleData={true}
+      />
+    );
+  }
 
   return (
     <WeeklyGrid
