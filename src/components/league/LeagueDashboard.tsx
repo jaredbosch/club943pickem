@@ -83,6 +83,7 @@ export function LeagueDashboard({ league, standings, isCommissioner, currentUser
         <div style={{ flex: 1 }} />
         <Link href="/grid" className="ps-nav-back">The Grid</Link>
         <Link href={`/picks/${currentUserId}`} className="ps-nav-back">My Profile</Link>
+        {isCommissioner && <Link href="/commissioner" className="ps-nav-back">⚙ Roster</Link>}
         <Link href="/picks" className="dash-picks-btn">Make Picks →</Link>
         <ThemeToggle />
       </header>

@@ -2595,4 +2595,182 @@ body {
     margin-bottom: 1.25rem;
     text-transform: uppercase;
   }
+
+  /* ── Commissioner Panel ──────────────────────────────────────── */
+  .comm-shell {
+    min-height: 100vh;
+    background: var(--bg);
+  }
+  .comm-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  .comm-hero-title {
+    font-family: var(--font-disp);
+    font-weight: 900;
+    font-size: 42px;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 6px 0 4px;
+  }
+  .comm-hero-kpis {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+  }
+  .comm-invite-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+  .comm-invite-code {
+    font-family: var(--font-code);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.12em;
+  }
+  .comm-main {
+    padding: 24px 32px;
+    max-width: 1400px;
+  }
+  .comm-legend {
+    display: flex;
+    gap: 8px;
+  }
+  .comm-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+  .comm-th {
+    font-family: var(--font-code);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .comm-td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .comm-td-num {
+    font-family: var(--font-code);
+    font-size: 11px;
+    color: var(--ink3);
+    width: 32px;
+  }
+  .comm-td-mono {
+    font-family: var(--font-code);
+    font-size: 11px;
+  }
+  .comm-row {
+    transition: background 0.1s;
+  }
+  .comm-row:hover { background: color-mix(in oklab, var(--bg3) 60%, transparent); }
+  .comm-row.me { background: color-mix(in oklab, var(--accent) 5%, transparent); }
+  .comm-row.paid td:first-child { border-left: 2px solid var(--good); }
+  .comm-row.unpaid td:first-child { border-left: 2px solid var(--bad); }
+  .comm-player {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .comm-player-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+  }
+  .comm-field {
+    cursor: pointer;
+    border-bottom: 1px dashed var(--line2);
+    padding-bottom: 1px;
+    color: var(--ink2);
+  }
+  .comm-field:hover { color: var(--ink); border-bottom-color: var(--accent); }
+  .comm-empty { color: var(--ink3); border-bottom-color: transparent; cursor: pointer; }
+  .comm-input {
+    background: var(--bg3);
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    padding: 3px 7px;
+    font-family: var(--font-code);
+    font-size: 11px;
+    color: var(--ink);
+    width: 130px;
+    outline: none;
+  }
+  .comm-paid-btn {
+    font-family: var(--font-code);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 4px 9px;
+    border-radius: 3px;
+    border: 1px solid var(--bad);
+    background: color-mix(in oklab, var(--bad) 12%, transparent);
+    color: var(--bad);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .comm-paid-btn.is-paid {
+    border-color: var(--good);
+    background: color-mix(in oklab, var(--good) 12%, transparent);
+    color: var(--good);
+  }
+  .comm-paid-btn:hover { opacity: 0.8; }
+  .comm-paid-btn:disabled { opacity: 0.5; cursor: default; }
+  .comm-edit-btn {
+    font-family: var(--font-code);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 4px 9px;
+    border-radius: 3px;
+    border: 1px solid var(--line2);
+    background: var(--bg3);
+    color: var(--ink3);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .comm-edit-btn:hover { color: var(--ink); border-color: var(--accent); }
+  .comm-save-btn {
+    font-family: var(--font-code);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 4px 9px;
+    border-radius: 3px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #000;
+    cursor: pointer;
+  }
+  .comm-cancel-btn {
+    font-family: var(--font-code);
+    font-size: 9px;
+    padding: 4px 7px;
+    border-radius: 3px;
+    border: 1px solid var(--line2);
+    background: var(--bg3);
+    color: var(--ink3);
+    cursor: pointer;
+  }
 }
