@@ -446,9 +446,12 @@ export function LandingPage() {
           <span style={{ fontSize: 13, color: "var(--ink3)" }}>thepickempool</span>
         </div>
         <div className="lp-footer-copy">NFL ATS Confidence Pick&apos;em · Private Leagues · Built for real fans</div>
-        <Link href="/vs/yahoo-pickem" className="lp-footer-legal">vs Yahoo Pick&apos;em</Link>
-        <Link href="/vs/cbs-pickem" className="lp-footer-legal">vs CBS Pick&apos;em</Link>
-        <Link href="/vs/espn-pickem" className="lp-footer-legal">vs ESPN Pick&apos;em</Link>
+        <Link href="/vs/yahoo-pickem" className="lp-footer-legal">vs Yahoo</Link>
+        <Link href="/vs/cbs-pickem" className="lp-footer-legal">vs CBS</Link>
+        <Link href="/vs/espn-pickem" className="lp-footer-legal">vs ESPN</Link>
+        <Link href="/vs/nfl-pickem" className="lp-footer-legal">vs NFL.com</Link>
+        <Link href="/vs/sleeper-pickem" className="lp-footer-legal">vs Sleeper</Link>
+        <Link href="/vs/runyourpool" className="lp-footer-legal">vs RunYourPool</Link>
         <Link href="/privacy" className="lp-footer-legal">Privacy Policy</Link>
       </footer>
 
