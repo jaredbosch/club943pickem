@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { WeeklyGrid } from "@/components/grid/WeeklyGrid";
-import { nflSeasonYear } from "@/lib/nfl/week";
+import { nflSeasonYear, nflWeek } from "@/lib/nfl/week";
 import { sampleGames, samplePlayers } from "@/components/grid/week7-grid-data";
 
 export default async function GridPage({
@@ -35,6 +35,7 @@ export default async function GridPage({
   const leagueCode = params.code.toUpperCase();
   const now = new Date();
   const seasonYear = league.season_year;
+  const activeWeek = Math.max(1, Math.min(18, nflWeek(now, seasonYear)));
 
   const { data: weekRows } = await supabase
     .from("games")
@@ -43,9 +44,20 @@ export default async function GridPage({
     .order("week", { ascending: false });
 
   const availableWeeks = [...new Set((weekRows ?? []).map((r) => r.week))].sort((a, b) => a - b);
-  const latestWeek = availableWeeks.at(-1) ?? null;
+
+  // Default to most recent week with locked/final games (where picks are visible)
+  // Falls back to active week if no games have started yet
+  const { data: lockedRows } = await supabase
+    .from("games")
+    .select("week")
+    .eq("season_year", seasonYear)
+    .in("status", ["locked", "final", "in_progress"])
+    .order("week", { ascending: false })
+    .limit(1);
+
+  const lastActiveWeek = lockedRows?.[0]?.week ?? activeWeek;
   const requestedWeek = searchParams.week ? parseInt(searchParams.week) : null;
-  const currentWeek = requestedWeek ?? latestWeek ?? 7;
+  const currentWeek = requestedWeek ?? lastActiveWeek;
 
   const { data: games } = await supabase
     .from("games")

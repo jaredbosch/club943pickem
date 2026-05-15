@@ -80,7 +80,7 @@ export default async function PlayerProfilePage({
 
   const { data: allPicks } = await supabase
     .from("picks")
-    .select("game_id, picked_team, confidence, is_correct, points_earned")
+    .select("game_id, picked_team, confidence, is_correct, points_earned, week")
     .eq("user_id", params.userId)
     .eq("league_id", league.id);
 
@@ -122,8 +122,14 @@ export default async function PlayerProfilePage({
   const gradedPicks = (allPicks ?? []).filter((p) => p.is_correct !== null);
   const correctCount = gradedPicks.filter((p) => p.is_correct).length;
 
-  // Missed = final games where the user had no graded pick
-  const finalGameCount = (allGames ?? []).filter((g) => (g as { status: string }).status === "final").length;
+  // Missed = final games in weeks the user actually participated in (submitted at least one pick)
+  // This prevents counting entire unplayed seasons as "missed"
+  type PickRow = { game_id: string; week: number; is_correct: boolean | null };
+  const weeksWithPicks = new Set((allPicks ?? []).map((p) => (p as unknown as PickRow).week));
+  const finalGameCount = (allGames ?? []).filter(
+    (g) => (g as { status: string }).status === "final" &&
+            weeksWithPicks.has((g as { week: number }).week)
+  ).length;
   const missedGames = Math.max(0, finalGameCount - gradedPicks.length);
 
   return (
