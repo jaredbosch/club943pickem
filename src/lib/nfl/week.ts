@@ -18,6 +18,8 @@ export function seasonStartTuesdayUtc(seasonYear: number): Date {
   const daysToMonday = (1 - dow + 7) % 7;
   const tuesday = new Date(sep1);
   tuesday.setUTCDate(sep1.getUTCDate() + daysToMonday + 1);
+  // 05:00 UTC ≈ midnight EST — keeps late Monday Night games (00:xx UTC) in the correct week
+  tuesday.setUTCHours(5, 0, 0, 0);
   return tuesday;
 }
 
