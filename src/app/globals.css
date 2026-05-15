@@ -2207,9 +2207,26 @@ body {
   .wg-week-nav {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 320px;
   }
+  .wg-week-btn {
+    font-family: var(--font-code);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    background: var(--bg3);
+    color: var(--ink3);
+    text-decoration: none;
+    transition: background 0.1s, color 0.1s;
+  }
+  .wg-week-btn:hover { background: var(--bg2); color: var(--ink); }
+  .wg-week-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
 
   /* Scrollable grid container */
   .wg-scroll-area {

@@ -61,7 +61,7 @@ export default async function GridPage({
 
   const { data: games } = await supabase
     .from("games")
-    .select("id, home_team, away_team, status, time_slot, kickoff_time, home_score, away_score, home_spread")
+    .select("id, home_team, away_team, status, time_slot, kickoff_time, home_score, away_score, spread_home")
     .eq("season_year", seasonYear)
     .eq("week", currentWeek)
     .order("kickoff_time", { ascending: true });

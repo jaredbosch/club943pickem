@@ -212,15 +212,15 @@ export function WeeklyGrid({
           </div>
         </div>
         <div className="wg-week-nav">
-          {prevWeek !== null
-            ? <Link href={`/league/${leagueCode}/grid?week=${prevWeek}`} className="pp-btn ghost">← Wk {prevWeek}</Link>
-            : <span className="pp-btn ghost" style={{ opacity: 0.3, cursor: "default" }}>← Wk {week - 1}</span>
-          }
-          <span className="pp-chip solid" style={{ padding: "6px 14px", fontSize: 12 }}>WEEK {week}</span>
-          {nextWeek !== null
-            ? <Link href={`/league/${leagueCode}/grid?week=${nextWeek}`} className="pp-btn ghost">Wk {nextWeek} →</Link>
-            : <span className="pp-btn ghost" style={{ opacity: 0.3, cursor: "default" }}>Wk {week + 1} →</span>
-          }
+          {availableWeeks.map((w) => (
+            <Link
+              key={w}
+              href={`/league/${leagueCode}/grid?week=${w}`}
+              className={`wg-week-btn${w === week ? " active" : ""}`}
+            >
+              {w}
+            </Link>
+          ))}
         </div>
       </div>
 
@@ -299,7 +299,8 @@ export function WeeklyGrid({
                   className={`wg-pick-row${p.isCurrentUser ? " me" : ""}${i === 0 ? " first" : ""}${i % 2 === 0 ? " even" : ""}`}
                 >
                   {games.map((g) => {
-                    const isPending = g.status !== "final" && g.status !== "complete" && g.status !== "live" && g.status !== "in_progress";
+                    // Only mask picks for games that haven't kicked off yet
+                    const isPending = g.status === "scheduled";
                     return (
                       <HeatCell
                         key={g.id}
@@ -316,7 +317,7 @@ export function WeeklyGrid({
               {players.length > 0 && (
                 <div className="wg-consensus-row">
                   {games.map((g) => {
-                    const isPending = g.status !== "final" && g.status !== "complete" && g.status !== "live" && g.status !== "in_progress";
+                    const isPending = g.status === "scheduled";
                     if (isPending) return <div key={g.id} className="grid-cell grid-cell-masked" />;
                     const c = consensus[g.id];
                     if (!c) return <div key={g.id} className="grid-cell grid-cell-empty" />;
