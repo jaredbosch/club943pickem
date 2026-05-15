@@ -14,6 +14,7 @@ type Props = {
   usedConfidenceMap?: Map<number, string>;
   isPickerOpen?: boolean;
   onOpenPicker?: (id: string | null) => void;
+  scheduleOnly?: boolean;
 };
 
 export function GameRow({
@@ -25,8 +26,9 @@ export function GameRow({
   usedConfidenceMap,
   isPickerOpen = false,
   onOpenPicker,
+  scheduleOnly = false,
 }: Props) {
-  const isOpen = slotStatus === "open";
+  const isOpen = !scheduleOnly && slotStatus === "open";
   const isLive = slotStatus === "live";
   const hasPick = !!game.pickedTeam;
   const conf = game.confidence;
@@ -63,18 +65,20 @@ export function GameRow({
     <div className={`pp-pick-row${!isOpen ? " locked" : ""}${hasPick ? " has-pick" : ""}${resultCls}${warnCls}`}>
       <div className="pp-pick-inner">
 
-        {/* Left: confidence rail */}
-        <div
-          ref={confRailRef}
-          className={`pp-pick-conf${hasPick ? " has-pick" : ""}${isHighConf ? " high" : ""}${canOpenPicker ? " clickable" : ""}`}
-          onClick={handleConfClick}
-          role={canOpenPicker ? "button" : undefined}
-          tabIndex={canOpenPicker ? 0 : undefined}
-          onKeyDown={(e) => { if (canOpenPicker && (e.key === "Enter" || e.key === " ")) handleConfClick(); }}
-        >
-          <div className="pp-pick-conf-num">{conf ?? "—"}</div>
-          <div className="pp-pick-conf-tag">{canOpenPicker ? "TAP ▾" : "CONF"}</div>
-        </div>
+        {/* Left: confidence rail — hidden for schedule-only (future) weeks */}
+        {!scheduleOnly && (
+          <div
+            ref={confRailRef}
+            className={`pp-pick-conf${hasPick ? " has-pick" : ""}${isHighConf ? " high" : ""}${canOpenPicker ? " clickable" : ""}`}
+            onClick={handleConfClick}
+            role={canOpenPicker ? "button" : undefined}
+            tabIndex={canOpenPicker ? 0 : undefined}
+            onKeyDown={(e) => { if (canOpenPicker && (e.key === "Enter" || e.key === " ")) handleConfClick(); }}
+          >
+            <div className="pp-pick-conf-num">{conf ?? "—"}</div>
+            <div className="pp-pick-conf-tag">{canOpenPicker ? "TAP ▾" : "CONF"}</div>
+          </div>
+        )}
 
         {/* Confidence picker — rendered in a portal to avoid overflow clipping */}
         {isPickerOpen && canOpenPicker && coords && createPortal(
@@ -143,6 +147,7 @@ export function GameRow({
               picked={pickedAway}
               result={pickedAway ? game.result : undefined}
               locked={!isOpen}
+              showSpread={!scheduleOnly}
               onClick={() => isOpen && onPickTeam(game.id, game.away.abbr)}
             />
 
@@ -160,6 +165,7 @@ export function GameRow({
               picked={pickedHome}
               result={pickedHome ? game.result : undefined}
               locked={!isOpen}
+              showSpread={!scheduleOnly}
               onClick={() => isOpen && onPickTeam(game.id, game.home.abbr)}
             />
           </div>
@@ -177,6 +183,7 @@ function TeamSide({
   picked,
   result,
   locked,
+  showSpread = true,
   onClick,
 }: {
   game: Game;
@@ -185,6 +192,7 @@ function TeamSide({
   picked: boolean;
   result?: PickResult;
   locked: boolean;
+  showSpread?: boolean;
   onClick: () => void;
 }) {
   const color = teamColor(abbr);
@@ -211,10 +219,8 @@ function TeamSide({
       <div className="pp-pick-team-info">
         <span className="pp-pick-abbr">{abbr}</span>
         <span className="pp-pick-record">{side === "away" ? game.away.record : game.home.record}</span>
-        {spread && spread !== "PK" && spread !== "+0.0" && spread !== "-0.0" ? (
+        {showSpread && spread && spread !== "+0.0" && spread !== "-0.0" ? (
           <span className="pp-pick-spread">{spread}</span>
-        ) : spread === "PK" ? (
-          <span className="pp-pick-spread">PK</span>
         ) : null}
       </div>
     </button>

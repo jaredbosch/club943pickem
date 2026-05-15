@@ -29,6 +29,7 @@ type Props = {
   leagueId: string;
   leagueName: string;
   leagueCode: string;
+  activeWeek: number;
   userId: string;
   hasGames: boolean;
   isSampleData?: boolean;
@@ -67,12 +68,14 @@ export function PickSheet({
   leagueId,
   leagueName,
   leagueCode,
+  activeWeek,
   userId,
   hasGames,
   isSampleData = false,
   mnfGame = null,
   initialTiebreakerGuess = null,
 }: Props) {
+  const isFutureWeek = week > activeWeek;
   const router = useRouter();
   const supabase = createClient();
 
@@ -233,16 +236,18 @@ export function PickSheet({
             type="button"
             className={`ps-save-btn${saved ? " saved" : ""}${saving ? " saving" : ""}`}
             onClick={saveAllPicks}
-            disabled={saving || isSampleData}
+            disabled={saving || isSampleData || isFutureWeek}
+            style={isFutureWeek ? { display: "none" } : undefined}
           >
             {saved ? "✓ Saved!" : saving ? "Saving…" : "Save Picks"}
           </button>
+          {isFutureWeek && <span className="ps-future-badge">SCHEDULE ONLY</span>}
           <SignOutButton />
           <ThemeToggle />
         </header>
 
-        {/* Confidence budget bar */}
-        {hasGames && (
+        {/* Confidence budget bar — only on active week */}
+        {hasGames && !isFutureWeek && (
           <div className="ps-budget-bar">
             <span className="ps-budget-bar-label">CONF</span>
             {Array.from({ length: totalGames }, (_, i) => totalGames - i).map((n) => (
@@ -309,6 +314,11 @@ export function PickSheet({
         ) : (
           <>
             {/* Pick rows */}
+            {isFutureWeek && (
+              <div className="ps-future-banner">
+                Schedule for Week {week} — picks and spreads open once Week {activeWeek} wraps up.
+              </div>
+            )}
             <div className="ps-pick-list">
               {mergedSlots.map((slot) => (
                 <SlotGroup
@@ -320,14 +330,15 @@ export function PickSheet({
                   usedConfidenceMap={usedConfidenceMap}
                   openPickerId={openPickerId}
                   onOpenPicker={setOpenPickerId}
+                  scheduleOnly={isFutureWeek}
                 />
               ))}
             </div>
           </>
         )}
 
-        {/* MNF Tiebreaker */}
-        {mnfGame && (
+        {/* MNF Tiebreaker — not shown for future weeks */}
+        {mnfGame && !isFutureWeek && (
           <div className={`ps-tiebreaker${mnfGame.isLocked ? " locked" : ""}`}>
             <div className="ps-tb-label">
               <span className="ps-tb-tag">MNF TIEBREAKER</span>
