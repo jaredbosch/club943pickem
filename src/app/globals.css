@@ -4821,4 +4821,84 @@ body {
   .wt-td { padding: 8px 8px; font-size: 12px; }
   .wt-td-player { min-width: 120px; font-size: 12px; }
   .wt-th-player { min-width: 120px; }
+
+  /* ── Picks page ── */
+
+  /* Hero: stack left/right vertically */
+  .ps-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 14px 12px;
+  }
+  .ps-hero-title { font-size: 32px; }
+  .ps-hero-right { align-items: flex-start; width: 100%; }
+
+  /* Week nav: scrolls horizontally instead of wrapping */
+  .ps-week-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+    padding-bottom: 2px;
+  }
+  .ps-week-nav::-webkit-scrollbar { display: none; }
+  .ps-week-btn { padding: 4px 9px; font-size: 12px; white-space: nowrap; }
+
+  /* Confidence budget bar: already scrollable, tighten chips */
+  .ps-budget-bar { padding: 6px 10px; gap: 4px; }
+  .ps-budget-bar-chip { min-width: 24px; height: 24px; font-size: 10px; }
+  .ps-budget-bar-label { font-size: 8px; }
+  .ps-budget-bar-count { font-size: 9px; white-space: nowrap; }
+
+  /* Game rows: shrink team abbr and spread slightly */
+  .pp-pick-abbr { font-size: 18px; }
+  .pp-pick-spread { font-size: 12px; margin-top: 3px; }
+  .pp-pick-conf { padding: 10px 6px; min-width: 54px; }
+  .pp-pick-conf-num { font-size: 20px; }
+  .pp-pick-side { padding: 10px 10px; gap: 7px; }
+  .pp-pick-logo { width: 34px; height: 34px; font-size: 10px; }
+  .pp-pick-at { width: 54px; }
+
+  /* Confidence picker portal: full width on mobile */
+  .pp-conf-picker {
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: auto !important;
+    bottom: 12px !important;
+    width: auto !important;
+  }
+
+  /* MNF tiebreaker: stack on mobile */
+  .ps-tiebreaker { flex-direction: column; gap: 10px; padding: 14px; }
+  .ps-tb-input-row { flex-direction: row; }
+
+  /* Bottom bar */
+  .ps-bottom-bar { padding: 10px 14px; }
+  .ps-score-display { font-size: 13px; }
+
+  /* Future week banner */
+  .ps-future-banner { font-size: 10px; padding: 8px 14px; }
+
+  /* ── Grid page ── */
+  .wg-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+  }
+  .wg-hero-title { font-size: 32px; }
+  .wg-week-nav {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    max-width: none;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding-bottom: 2px;
+  }
+  .wg-week-nav::-webkit-scrollbar { display: none; }
+  .wg-week-btn { white-space: nowrap; }
 }
