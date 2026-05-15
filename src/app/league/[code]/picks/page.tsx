@@ -36,7 +36,7 @@ export default async function PicksPage({
   const now = new Date();
   const seasonYear = league.season_year;
   // Active week: the current NFL week (clamped to ≥1 so off-season = week 1)
-  const activeWeek = Math.max(1, Math.min(18, nflWeek(now)));
+  const activeWeek = Math.max(1, Math.min(18, nflWeek(now, seasonYear)));
 
   const { data: weekRows } = await supabase
     .from("games")
@@ -85,6 +85,7 @@ export default async function PicksPage({
 
   return (
     <PickSheet
+      key={currentWeek}
       slots={slots}
       week={hasGames ? currentWeek : 7}
       seasonYear={seasonYear}
