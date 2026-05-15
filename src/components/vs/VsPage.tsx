@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 export type PainPoint = {
   title: string;
   body: string;
+  quote?: { text: string; source: string; url?: string };
   competitorScreenshot: string; // path under /vs/
   competitorAlt: string;
   tppScreenshot: string;
@@ -99,6 +100,17 @@ export function VsPage({
               <div className="vs-pain-text">
                 <h3 className="vs-pain-title">{p.title}</h3>
                 <p className="vs-pain-body">{p.body}</p>
+                {p.quote && (
+                  <blockquote className="vs-quote">
+                    <p className="vs-quote-text">&ldquo;{p.quote.text}&rdquo;</p>
+                    <cite className="vs-quote-source">
+                      {p.quote.url
+                        ? <a href={p.quote.url} target="_blank" rel="noopener noreferrer">{p.quote.source}</a>
+                        : p.quote.source
+                      }
+                    </cite>
+                  </blockquote>
+                )}
               </div>
               <div className="vs-pain-screenshots">
                 <div className="vs-screenshot-wrap">

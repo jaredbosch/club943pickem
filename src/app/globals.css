@@ -5221,3 +5221,30 @@ body {
   .vs-cta-primary, .vs-cta-secondary { justify-content: center; }
   .vs-footer { flex-wrap: wrap; justify-content: flex-start; padding: 16px; }
 }
+
+/* Vs page quote block */
+.vs-quote {
+  margin: 18px 0 0;
+  padding: 14px 18px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in oklab, var(--accent) 6%, var(--bg2));
+  border-radius: 0 6px 6px 0;
+}
+.vs-quote-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink2);
+  font-style: italic;
+  margin: 0 0 8px;
+}
+.vs-quote-source {
+  font-family: var(--font-code);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  font-style: normal;
+}
+.vs-quote-source a { color: var(--accent); text-decoration: none; }
+.vs-quote-source a:hover { text-decoration: underline; }
