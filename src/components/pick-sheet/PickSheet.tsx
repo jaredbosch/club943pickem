@@ -119,7 +119,8 @@ export function PickSheet({
   }
 
   async function upsertPick(gameId: string, state: PickState) {
-    if (isSampleData || !state.pickedTeam) return;
+    // Nothing to save if neither team nor confidence is set
+    if (isSampleData || (state.pickedTeam === null && state.confidence === null)) return;
     setSaving(true);
     await supabase.from("picks").upsert(
       {
@@ -127,7 +128,7 @@ export function PickSheet({
         league_id: leagueId,
         game_id: gameId,
         week,
-        picked_team: state.pickedTeam,
+        picked_team: state.pickedTeam ?? null,
         confidence: state.confidence ?? null,
         is_locked: false,
       },
@@ -140,13 +141,13 @@ export function PickSheet({
     if (isSampleData) return;
     setSaving(true);
     const rows = [...picks.entries()]
-      .filter(([, state]) => !!state.pickedTeam)
+      .filter(([, state]) => state.pickedTeam !== null || state.confidence !== null)
       .map(([gameId, state]) => ({
         user_id: userId,
         league_id: leagueId,
         game_id: gameId,
         week,
-        picked_team: state.pickedTeam,
+        picked_team: state.pickedTeam ?? null,
         confidence: state.confidence ?? null,
         is_locked: false,
       }));
