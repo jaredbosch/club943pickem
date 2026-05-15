@@ -36,6 +36,7 @@ function easternParts(d: Date): EasternParts {
 export function timeSlotFor(kickoff: Date): TimeSlot {
   const { weekday, hour } = easternParts(kickoff);
   switch (weekday) {
+    case "Wed":
     case "Thu":
     case "Fri":
     case "Sat":
