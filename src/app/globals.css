@@ -1436,6 +1436,16 @@ body {
   }
 
   /* Sample banner */
+  .ps-save-error {
+    font-family: var(--font-code);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--bad);
+    border: 1px solid color-mix(in oklab, var(--bad) 40%, transparent);
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: help;
+  }
   .ps-future-badge {
     font-family: var(--font-code);
     font-size: 10px;

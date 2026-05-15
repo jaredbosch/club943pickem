@@ -88,6 +88,7 @@ export function PickSheet({
   const [picks, setPicks] = useState<Map<string, PickState>>(() => buildPickState(slots));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [openPickerId, setOpenPickerId] = useState<string | null>(null);
   const [tbGuess, setTbGuess] = useState<string>(initialTiebreakerGuess != null ? String(initialTiebreakerGuess) : "");
   const [tbSaving, setTbSaving] = useState(false);
@@ -119,10 +120,8 @@ export function PickSheet({
   }
 
   async function upsertPick(gameId: string, state: PickState) {
-    // Nothing to save if neither team nor confidence is set
     if (isSampleData || (state.pickedTeam === null && state.confidence === null)) return;
-    setSaving(true);
-    await supabase.from("picks").upsert(
+    const { error } = await supabase.from("picks").upsert(
       {
         user_id: userId,
         league_id: leagueId,
@@ -134,12 +133,13 @@ export function PickSheet({
       },
       { onConflict: "user_id,league_id,game_id" },
     );
-    setSaving(false);
+    if (error) setSaveError(error.message);
   }
 
   async function saveAllPicks() {
     if (isSampleData) return;
     setSaving(true);
+    setSaveError(null);
     const rows = [...picks.entries()]
       .filter(([, state]) => state.pickedTeam !== null || state.confidence !== null)
       .map(([gameId, state]) => ({
@@ -152,7 +152,12 @@ export function PickSheet({
         is_locked: false,
       }));
     if (rows.length > 0) {
-      await supabase.from("picks").upsert(rows, { onConflict: "user_id,league_id,game_id" });
+      const { error } = await supabase.from("picks").upsert(rows, { onConflict: "user_id,league_id,game_id" });
+      if (error) {
+        setSaveError(error.message);
+        setSaving(false);
+        return;
+      }
     }
     setSaving(false);
     setSaved(true);
@@ -181,9 +186,14 @@ export function PickSheet({
         const updated = { ...current, pickedTeam: team };
         const newMap = new Map(prev);
         newMap.set(gameId, updated);
-        upsertPick(gameId, updated);
-        markDirty();
         return newMap;
+      });
+      // Fire save outside the updater (setState updaters must be pure)
+      setPicks((prev) => {
+        const state = prev.get(gameId);
+        if (state) upsertPick(gameId, state);
+        markDirty();
+        return prev;
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -192,23 +202,32 @@ export function PickSheet({
 
   const setConfidence = useCallback(
     (gameId: string, value: number) => {
+      let clearedGameId: string | null = null;
+      let clearedState: PickState | null = null;
+
       setPicks((prev) => {
         const newMap = new Map(prev);
-        // Clear (don't swap) any other game that already holds this value
         for (const [gid, p] of newMap) {
           if (gid !== gameId && p.confidence === value) {
-            const cleared = { ...p, confidence: null };
-            newMap.set(gid, cleared);
-            upsertPick(gid, cleared);
+            clearedGameId = gid;
+            clearedState = { ...p, confidence: null };
+            newMap.set(gid, clearedState);
             break;
           }
         }
         const current = newMap.get(gameId) ?? { pickedTeam: null, confidence: null };
         const updated = { ...current, confidence: value };
         newMap.set(gameId, updated);
-        upsertPick(gameId, updated);
-        markDirty();
         return newMap;
+      });
+
+      // Fire saves outside the updater
+      if (clearedGameId && clearedState) upsertPick(clearedGameId, clearedState);
+      setPicks((prev) => {
+        const state = prev.get(gameId);
+        if (state) upsertPick(gameId, state);
+        markDirty();
+        return prev;
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -255,6 +274,7 @@ export function PickSheet({
             {saved ? "✓ Saved!" : saving ? "Saving…" : "Save Picks"}
           </button>
           {isFutureWeek && <span className="ps-future-badge">SCHEDULE ONLY</span>}
+          {saveError && <span className="ps-save-error" title={saveError}>⚠ Save failed</span>}
           <SignOutButton />
           <ThemeToggle />
         </header>
