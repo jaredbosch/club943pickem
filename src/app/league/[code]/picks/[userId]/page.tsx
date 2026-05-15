@@ -72,7 +72,7 @@ export default async function PlayerProfilePage({
 
   const { data: allGames } = await supabase
     .from("games")
-    .select("id, home_team, away_team, week, kickoff_time")
+    .select("id, home_team, away_team, week, kickoff_time, status")
     .eq("season_year", league.season_year)
     .order("kickoff_time", { ascending: false });
 
@@ -122,6 +122,10 @@ export default async function PlayerProfilePage({
   const gradedPicks = (allPicks ?? []).filter((p) => p.is_correct !== null);
   const correctCount = gradedPicks.filter((p) => p.is_correct).length;
 
+  // Missed = final games where the user had no graded pick
+  const finalGameCount = (allGames ?? []).filter((g) => (g as { status: string }).status === "final").length;
+  const missedGames = Math.max(0, finalGameCount - gradedPicks.length);
+
   return (
     <PlayerProfile
       displayName={displayName}
@@ -140,6 +144,7 @@ export default async function PlayerProfilePage({
       recentPicks={recentPicks}
       mostTrusted={mostTrusted}
       blindSpots={blindSpots}
+      missedGames={missedGames}
       isCurrentUser={params.userId === user.id}
     />
   );

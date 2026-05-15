@@ -34,6 +34,7 @@ type Props = {
   seasonPoints: number;
   correctPicks: number;
   totalGraded: number;
+  missedGames: number;
   rank: number | null;
   totalPlayers: number;
   leaderPoints: number;
@@ -69,6 +70,7 @@ export function PlayerProfile({
   seasonPoints,
   correctPicks,
   totalGraded,
+  missedGames,
   rank,
   totalPlayers,
   leaderPoints,
@@ -85,6 +87,7 @@ export function PlayerProfile({
   const kpis = [
     { label: "SEASON PTS", value: seasonPoints, sub: `${totalGraded} picks graded`, accent: true },
     { label: "WIN RATE", value: `${winRate}%`, sub: `${correctPicks}-${totalGraded - correctPicks}` },
+    { label: "MISSED", value: missedGames, sub: missedGames === 0 ? "perfect attendance" : `game${missedGames !== 1 ? "s" : ""} skipped`, warn: missedGames > 0 },
     { label: "RANK", value: rank ? `#${rank}` : "—", sub: `of ${totalPlayers}` },
     gapToFirst !== null
       ? { label: "TO 1ST", value: `-${gapToFirst}`, sub: "pts behind leader", warn: true }
