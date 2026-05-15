@@ -45,9 +45,8 @@ export default async function PicksPage({
     .order("week", { ascending: false });
 
   const availableWeeks = [...new Set((weekRows ?? []).map((r) => r.week))].sort((a, b) => a - b);
-  const latestWeek = availableWeeks.at(-1) ?? null;
   const requestedWeek = searchParams.week ? parseInt(searchParams.week) : null;
-  const currentWeek = requestedWeek ?? latestWeek ?? nflWeek(now);
+  const currentWeek = requestedWeek ?? activeWeek;
 
   const { data: games } = await supabase
     .from("games")
