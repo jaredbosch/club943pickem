@@ -1,16 +1,24 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { SlotGroup } from "./SlotGroup";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { SignOutButton } from "@/components/ui/SignOutButton";
 import type { Slot, Game } from "./types";
 
 type PickState = {
   pickedTeam: string | null;
   confidence: number | null;
+};
+
+type MnfGame = {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  isLocked: boolean;
 };
 
 type Props = {
@@ -20,9 +28,12 @@ type Props = {
   availableWeeks: number[];
   leagueId: string;
   leagueName: string;
+  leagueCode: string;
   userId: string;
   hasGames: boolean;
   isSampleData?: boolean;
+  mnfGame?: MnfGame | null;
+  initialTiebreakerGuess?: number | null;
 };
 
 function buildPickState(slots: Slot[]): Map<string, PickState> {
@@ -55,9 +66,12 @@ export function PickSheet({
   availableWeeks,
   leagueId,
   leagueName,
+  leagueCode,
   userId,
   hasGames,
   isSampleData = false,
+  mnfGame = null,
+  initialTiebreakerGuess = null,
 }: Props) {
   const router = useRouter();
   const supabase = createClient();
@@ -66,6 +80,25 @@ export function PickSheet({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [openPickerId, setOpenPickerId] = useState<string | null>(null);
+  const [tbGuess, setTbGuess] = useState<string>(initialTiebreakerGuess != null ? String(initialTiebreakerGuess) : "");
+  const [tbSaving, setTbSaving] = useState(false);
+  const [tbSaved, setTbSaved] = useState(false);
+  const isDirtyRef = useRef(false);
+
+  // Mark dirty on any pick change so autosave knows there's something to do
+  const markDirty = () => { isDirtyRef.current = true; };
+
+  // Autosave every 10s if there are unsaved changes
+  useEffect(() => {
+    if (isSampleData) return;
+    const id = setInterval(async () => {
+      if (!isDirtyRef.current) return;
+      isDirtyRef.current = false;
+      await saveAllPicks();
+    }, 10_000);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSampleData]);
 
   const allGames = slots.flatMap((s) => s.games);
   const totalGames = allGames.length;
@@ -110,6 +143,20 @@ export function PickSheet({
     setTimeout(() => setSaved(false), 2500);
   }
 
+  async function saveTiebreaker() {
+    if (!mnfGame || isSampleData || mnfGame.isLocked) return;
+    const val = parseInt(tbGuess, 10);
+    if (isNaN(val) || val < 0 || val > 120) return;
+    setTbSaving(true);
+    await supabase.from("tiebreaker_guesses").upsert(
+      { user_id: userId, league_id: leagueId, game_id: mnfGame.id, week, guess: val },
+      { onConflict: "user_id,league_id,week" },
+    );
+    setTbSaving(false);
+    setTbSaved(true);
+    setTimeout(() => setTbSaved(false), 2500);
+  }
+
   const pickTeam = useCallback(
     (gameId: string, team: string) => {
       setPicks((prev) => {
@@ -124,6 +171,7 @@ export function PickSheet({
         const newMap = new Map(prev);
         newMap.set(gameId, updated);
         upsertPick(gameId, updated);
+        markDirty();
         return newMap;
       });
     },
@@ -148,6 +196,7 @@ export function PickSheet({
         const updated = { ...current, confidence: value };
         newMap.set(gameId, updated);
         upsertPick(gameId, updated);
+        markDirty();
         return newMap;
       });
     },
@@ -166,7 +215,7 @@ export function PickSheet({
   const gamesScored = mergedSlots.flatMap((s) => s.games).filter((g) => g.result).length;
 
   function goToWeek(w: number) {
-    router.push(`/picks?week=${w}`);
+    router.push(`/league/${leagueCode}/picks?week=${w}`);
   }
 
   return (
@@ -176,14 +225,15 @@ export function PickSheet({
         {/* Sticky header wrapper — nav + budget bar stick together as one unit */}
         <div className="ps-sticky-header">
         <header className="app-nav">
-          <Link href="/dashboard" className="app-nav-logo">
+          <Link href={`/league/${leagueCode}/dashboard`} className="app-nav-logo">
             <div className="app-nav-badge">TPP</div>
             <span className="app-nav-name">thepickempool</span>
           </Link>
           <div style={{ width: 1, height: 24, background: "var(--line)" }} />
           <span className="pp-chip solid">{leagueName}</span>
           <div style={{ flex: 1 }} />
-          <Link href="/dashboard" className="ps-nav-back">← Standings</Link>
+          <Link href="/settings" className="ps-nav-back">Settings</Link>
+          <Link href={`/league/${leagueCode}/dashboard`} className="ps-nav-back">← Standings</Link>
           <button
             type="button"
             className={`ps-save-btn${saved ? " saved" : ""}${saving ? " saving" : ""}`}
@@ -192,6 +242,7 @@ export function PickSheet({
           >
             {saved ? "✓ Saved!" : saving ? "Saving…" : "Save Picks"}
           </button>
+          <SignOutButton />
           <ThemeToggle />
         </header>
 
@@ -278,6 +329,39 @@ export function PickSheet({
               ))}
             </div>
           </>
+        )}
+
+        {/* MNF Tiebreaker */}
+        {mnfGame && (
+          <div className={`ps-tiebreaker${mnfGame.isLocked ? " locked" : ""}`}>
+            <div className="ps-tb-label">
+              <span className="ps-tb-tag">MNF TIEBREAKER</span>
+              <span className="ps-tb-matchup">{mnfGame.awayTeam} @ {mnfGame.homeTeam}</span>
+              <span className="ps-tb-hint">
+                {mnfGame.isLocked ? "Locked — game has started" : "Predict total combined score · used only if picks tie"}
+              </span>
+            </div>
+            <div className="ps-tb-input-row">
+              <input
+                type="number"
+                className="ps-tb-input"
+                placeholder="e.g. 47"
+                min={0}
+                max={120}
+                value={tbGuess}
+                onChange={(e) => setTbGuess(e.target.value)}
+                disabled={mnfGame.isLocked || isSampleData}
+              />
+              <button
+                type="button"
+                className={`ps-tb-btn${tbSaved ? " saved" : ""}`}
+                onClick={saveTiebreaker}
+                disabled={mnfGame.isLocked || tbSaving || isSampleData || tbGuess === ""}
+              >
+                {tbSaved ? "✓ Saved" : tbSaving ? "…" : "Submit"}
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Bottom bar */}

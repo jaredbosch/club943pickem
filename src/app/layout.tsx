@@ -28,6 +28,11 @@ export const metadata: Metadata = {
   description: "NFL ATS confidence pick'em for private leagues.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -40,6 +45,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             var t = localStorage.getItem('pp-theme');
             if (t) document.documentElement.setAttribute('data-theme', t);
           } catch(e) {}
+        `}} />
+        {/* Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LHQ35R4M0C" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-LHQ35R4M0C');
         `}} />
       </head>
       <body className="min-h-screen">

@@ -10,17 +10,18 @@ const WEEKS_NAV = [6, 7, 8];
 
 type Props = {
   playerName: string;
+  leagueCode: string;
 };
 
 const noop = () => {};
 
-export function ReadOnlyPickSheet({ playerName }: Props) {
+export function ReadOnlyPickSheet({ playerName, leagueCode }: Props) {
   return (
     <div className="ps-shell">
       <div className="ps-container">
         <div className="ps-header">
           <div>
-            <Link href="/dashboard" className="dash-back-link">← Standings</Link>
+            <Link href={`/league/${leagueCode}/dashboard`} className="dash-back-link">← Standings</Link>
             <div className="ps-title" style={{ marginTop: "4px" }}>{playerName}</div>
             <div className="ps-subtitle">week {WEEK} picks · view only</div>
           </div>

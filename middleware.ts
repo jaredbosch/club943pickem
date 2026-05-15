@@ -13,6 +13,11 @@ const protectedRoutes = [
 ];
 
 export async function middleware(request: NextRequest) {
+  // Cron routes authenticate via Bearer token inside the handler — skip middleware entirely
+  if (request.nextUrl.pathname.startsWith("/api/cron")) {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

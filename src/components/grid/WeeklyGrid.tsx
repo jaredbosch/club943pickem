@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { NFL_COLORS } from "@/lib/nfl-colors";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { SignOutButton } from "@/components/ui/SignOutButton";
+import { LiveRefresher } from "./LiveRefresher";
 
 type GameCol = {
   id: string;
@@ -27,6 +29,7 @@ type PlayerRow = {
 
 type Props = {
   leagueName: string;
+  leagueCode: string;
   week: number;
   seasonYear: number;
   availableWeeks: number[];
@@ -155,6 +158,7 @@ function GameHeader({ game }: { game: GameCol }) {
 
 export function WeeklyGrid({
   leagueName,
+  leagueCode,
   week,
   seasonYear,
   availableWeeks,
@@ -164,6 +168,7 @@ export function WeeklyGrid({
   hasGames,
   isSampleData,
 }: Props) {
+  const hasLiveGames = games.some((g) => g.status === "in_progress");
   const maxPoints = players.length > 0 ? Math.max(...players.map((p) => p.weekPoints), 1) : 1;
   const prevWeek = availableWeeks.findIndex((w) => w === week) > 0
     ? availableWeeks[availableWeeks.findIndex((w) => w === week) - 1]
@@ -177,17 +182,22 @@ export function WeeklyGrid({
 
       {/* Nav */}
       <header className="app-nav">
-        <Link href="/dashboard" className="app-nav-logo">
+        <Link href={`/league/${leagueCode}/dashboard`} className="app-nav-logo">
           <div className="app-nav-badge">TPP</div>
           <span className="app-nav-name">thepickempool</span>
         </Link>
-        <div style={{ width: 1, height: 24, background: "var(--line)" }} />
-        <span className="pp-chip solid">{leagueName}</span>
-        <div style={{ flex: 1 }} />
-        <Link href="/dashboard" className="ps-nav-back">← Standings</Link>
-        <Link href="/picks" className="dash-picks-btn">Make Picks →</Link>
-        <ThemeToggle />
+        <div className="app-nav-sep" />
+        <span className="pp-chip solid app-nav-year">{leagueName}</span>
+        <div className="app-nav-spacer" />
+        <nav className="app-nav-links">
+          <Link href="/settings" className="ps-nav-back">Settings</Link>
+          <Link href={`/league/${leagueCode}/dashboard`} className="ps-nav-back">← Standings</Link>
+        </nav>
+        <Link href={`/league/${leagueCode}/picks`} className="dash-picks-btn">Make Picks →</Link>
+        <SignOutButton />
+          <ThemeToggle />
       </header>
+      <LiveRefresher hasLiveGames={hasLiveGames} />
 
       {/* Hero */}
       <div className="wg-hero pp-hero-grad">
@@ -203,12 +213,12 @@ export function WeeklyGrid({
         </div>
         <div className="wg-week-nav">
           {prevWeek !== null
-            ? <Link href={`/grid?week=${prevWeek}`} className="pp-btn ghost">← Wk {prevWeek}</Link>
+            ? <Link href={`/league/${leagueCode}/grid?week=${prevWeek}`} className="pp-btn ghost">← Wk {prevWeek}</Link>
             : <span className="pp-btn ghost" style={{ opacity: 0.3, cursor: "default" }}>← Wk {week - 1}</span>
           }
           <span className="pp-chip solid" style={{ padding: "6px 14px", fontSize: 12 }}>WEEK {week}</span>
           {nextWeek !== null
-            ? <Link href={`/grid?week=${nextWeek}`} className="pp-btn ghost">Wk {nextWeek} →</Link>
+            ? <Link href={`/league/${leagueCode}/grid?week=${nextWeek}`} className="pp-btn ghost">Wk {nextWeek} →</Link>
             : <span className="pp-btn ghost" style={{ opacity: 0.3, cursor: "default" }}>Wk {week + 1} →</span>
           }
         </div>
@@ -232,7 +242,7 @@ export function WeeklyGrid({
               : "Games sync automatically once the season schedule is released"}
           </div>
           {availableWeeks.length > 0 && (
-            <Link href={`/grid?week=${availableWeeks.at(-1)}`} className="pp-btn" style={{ marginTop: 8 }}>
+            <Link href={`/league/${leagueCode}/grid?week=${availableWeeks.at(-1)}`} className="pp-btn" style={{ marginTop: 8 }}>
               Go to Week {availableWeeks.at(-1)} →
             </Link>
           )}
@@ -249,7 +259,7 @@ export function WeeklyGrid({
               {players.map((p, i) => (
                 <Link
                   key={p.userId}
-                  href={`/picks/${p.userId}`}
+                  href={`/league/${leagueCode}/picks/${p.userId}`}
                   className={`wg-player-row${p.isCurrentUser ? " me" : ""}${i === 0 ? " first" : ""}`}
                 >
                   {i === 0 && <div className="wg-player-leader-bar" />}

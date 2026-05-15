@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { NFL_COLORS } from "@/lib/nfl-colors";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { SignOutButton } from "@/components/ui/SignOutButton";
 
 type WeekStat = {
   week: number;
@@ -28,6 +29,7 @@ type TeamTendency = {
 type Props = {
   displayName: string;
   leagueName: string;
+  leagueCode: string;
   seasonYear: number;
   seasonPoints: number;
   correctPicks: number;
@@ -62,6 +64,7 @@ function TeamBadge({ abbr, size = 32 }: { abbr: string; size?: number }) {
 export function PlayerProfile({
   displayName,
   leagueName,
+  leagueCode,
   seasonYear,
   seasonPoints,
   correctPicks,
@@ -94,16 +97,20 @@ export function PlayerProfile({
 
       {/* Nav */}
       <header className="app-nav">
-        <Link href="/dashboard" className="app-nav-logo">
+        <Link href={`/league/${leagueCode}/dashboard`} className="app-nav-logo">
           <div className="app-nav-badge">TPP</div>
           <span className="app-nav-name">thepickempool</span>
         </Link>
-        <div style={{ width: 1, height: 24, background: "var(--line)" }} />
-        <span className="pp-chip solid">{leagueName}</span>
-        <div style={{ flex: 1 }} />
-        {isCurrentUser && <Link href="/picks" className="ps-nav-back">Make Picks →</Link>}
-        <Link href="/dashboard" className="ps-nav-back" style={{ marginLeft: 8 }}>← Standings</Link>
-        <ThemeToggle />
+        <div className="app-nav-sep" />
+        <span className="pp-chip solid app-nav-year">{leagueName}</span>
+        <div className="app-nav-spacer" />
+        <nav className="app-nav-links">
+          {isCurrentUser && <Link href={`/league/${leagueCode}/picks`} className="ps-nav-back">Make Picks →</Link>}
+          {isCurrentUser && <Link href="/settings" className="ps-nav-back">Settings</Link>}
+          <Link href={`/league/${leagueCode}/dashboard`} className="ps-nav-back">← Standings</Link>
+        </nav>
+        <SignOutButton />
+          <ThemeToggle />
       </header>
 
       {/* Hero */}

@@ -85,7 +85,7 @@ export function LeagueSetup() {
       return;
     }
 
-    router.push("/picks");
+    router.push(`/league/${code.trim().toUpperCase()}/picks`);
   }
 
   if (inviteCode) {
@@ -101,7 +101,7 @@ export function LeagueSetup() {
           <button type="button" className="league-btn" onClick={copyInviteCode} style={{ marginBottom: "0.75rem" }}>
             {copied ? "Copied!" : "Copy code"}
           </button>
-          <button type="button" className="league-btn-secondary" onClick={() => router.push("/picks")}>
+          <button type="button" className="league-btn-secondary" onClick={() => router.push(`/league/${inviteCode}/picks`)}>
             Go to picks
           </button>
         </div>
