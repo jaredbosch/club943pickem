@@ -119,7 +119,7 @@ export function PickSheet({
   }
 
   async function upsertPick(gameId: string, state: PickState) {
-    if (isSampleData) return;
+    if (isSampleData || !state.pickedTeam) return;
     setSaving(true);
     await supabase.from("picks").upsert(
       {
@@ -128,7 +128,7 @@ export function PickSheet({
         game_id: gameId,
         week,
         picked_team: state.pickedTeam,
-        confidence: state.confidence,
+        confidence: state.confidence ?? null,
         is_locked: false,
       },
       { onConflict: "user_id,league_id,game_id" },
@@ -139,16 +139,20 @@ export function PickSheet({
   async function saveAllPicks() {
     if (isSampleData) return;
     setSaving(true);
-    const rows = [...picks.entries()].map(([gameId, state]) => ({
-      user_id: userId,
-      league_id: leagueId,
-      game_id: gameId,
-      week,
-      picked_team: state.pickedTeam,
-      confidence: state.confidence,
-      is_locked: false,
-    }));
-    await supabase.from("picks").upsert(rows, { onConflict: "user_id,league_id,game_id" });
+    const rows = [...picks.entries()]
+      .filter(([, state]) => !!state.pickedTeam)
+      .map(([gameId, state]) => ({
+        user_id: userId,
+        league_id: leagueId,
+        game_id: gameId,
+        week,
+        picked_team: state.pickedTeam,
+        confidence: state.confidence ?? null,
+        is_locked: false,
+      }));
+    if (rows.length > 0) {
+      await supabase.from("picks").upsert(rows, { onConflict: "user_id,league_id,game_id" });
+    }
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
