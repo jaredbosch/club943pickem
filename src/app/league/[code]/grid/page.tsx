@@ -174,7 +174,7 @@ export default async function GridPage({
         awayScore: (g as Record<string, unknown>).away_score as number | null ?? null,
         homeScore: (g as Record<string, unknown>).home_score as number | null ?? null,
         atsWinner: atsWinnerMap[g.id] ?? null,
-        homeSpread: (g as Record<string, unknown>).home_spread as number | null ?? null,
+        homeSpread: (g as Record<string, unknown>).spread_home as number | null ?? null,
       }))}
       players={playerRows}
       consensus={consensus}
