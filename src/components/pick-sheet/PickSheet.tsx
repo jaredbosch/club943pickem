@@ -163,12 +163,6 @@ export function PickSheet({
         const current = prev.get(gameId) ?? { pickedTeam: null, confidence: null };
         if (current.pickedTeam === team) return prev;
         const updated = { ...current, pickedTeam: team };
-        if (!updated.confidence) {
-          const used = new Set([...prev.values()].map((p) => p.confidence).filter((n) => n !== null) as number[]);
-          const avail = Array.from({ length: allGames.length }, (_, i) => i + 1).filter((n) => !used.has(n));
-          // Assign highest available — first game you pick gets the top confidence
-          if (avail.length > 0) updated.confidence = avail[avail.length - 1];
-        }
         const newMap = new Map(prev);
         newMap.set(gameId, updated);
         upsertPick(gameId, updated);
