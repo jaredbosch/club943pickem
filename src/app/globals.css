@@ -1866,7 +1866,7 @@ body {
   .pp-pick-abbr {
     font-family: var(--font-disp);
     font-weight: 900;
-    font-size: 20px;
+    font-size: 24px;
     line-height: 0.95;
     text-transform: uppercase;
     color: var(--ink2);
@@ -1883,7 +1883,7 @@ body {
   }
   .pp-pick-spread {
     font-family: var(--font-disp);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 800;
     color: var(--accent);
     letter-spacing: -0.01em;
