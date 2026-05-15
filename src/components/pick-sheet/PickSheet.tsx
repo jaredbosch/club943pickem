@@ -263,8 +263,8 @@ export function PickSheet({
         {/* Hero */}
         <div className="ps-hero pp-hero-grad">
           <div>
-            <div className="ps-hero-week">WEEK {week} · {seasonYear} · CONFIDENCE PICKS</div>
-            <div className="ps-hero-title">LOCK IT IN</div>
+            <div className="ps-hero-week">WEEK {week} · {seasonYear} · {isFutureWeek ? "SCHEDULE" : "CONFIDENCE PICKS"}</div>
+            <div className="ps-hero-title">{isFutureWeek ? "COMING SOON" : "LOCK IT IN"}</div>
             <div className="ps-hero-sub">
               {leagueName}
               {saving && <span className="ps-saving"> · saving…</span>}
@@ -371,20 +371,28 @@ export function PickSheet({
         )}
 
         {/* Bottom bar */}
-        <div className="ps-bottom-bar">
-          <div className="ps-score-display">
-            <strong>{picksIn}</strong> of {totalGames} picks submitted
+        {isFutureWeek ? (
+          <div className="ps-bottom-bar">
+            <div className="ps-score-display">
+              Week {week} opens once Week {activeWeek} wraps up
+            </div>
           </div>
-          <div className="ps-score-spacer" />
-          <button
-            type="button"
-            className={`ps-save-btn${saved ? " saved" : ""}${saving ? " saving" : ""}`}
-            onClick={saveAllPicks}
-            disabled={saving || isSampleData}
-          >
-            {saved ? "✓ Saved!" : saving ? "Saving…" : "Save Picks"}
-          </button>
-        </div>
+        ) : (
+          <div className="ps-bottom-bar">
+            <div className="ps-score-display">
+              <strong>{picksIn}</strong> of {totalGames} picks submitted
+            </div>
+            <div className="ps-score-spacer" />
+            <button
+              type="button"
+              className={`ps-save-btn${saved ? " saved" : ""}${saving ? " saving" : ""}`}
+              onClick={saveAllPicks}
+              disabled={saving || isSampleData}
+            >
+              {saved ? "✓ Saved!" : saving ? "Saving…" : "Save Picks"}
+            </button>
+          </div>
+        )}
 
       </div>
     </div>
