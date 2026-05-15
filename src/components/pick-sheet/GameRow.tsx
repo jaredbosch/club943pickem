@@ -147,7 +147,6 @@ export function GameRow({
             />
 
             <div className="pp-pick-at">
-              <div className="pp-pick-spread-center">{game.home.spread}</div>
               {isLive && game.liveScore
                 ? <div className="pp-pick-live-center">{game.liveScore}</div>
                 : <div className="pp-pick-at-vs">@</div>
@@ -191,7 +190,8 @@ function TeamSide({
   const color = teamColor(abbr);
   const gradDir = side === "away" ? "90deg" : "270deg";
   const logoGradient = `linear-gradient(145deg, ${color}, color-mix(in oklab, ${color} 70%, #000))`;
-  const pickedBg = `linear-gradient(${gradDir}, color-mix(in oklab, ${color} 28%, transparent), color-mix(in oklab, ${color} 8%, transparent))`;
+  const pickedBg = `linear-gradient(${gradDir}, color-mix(in oklab, ${color} 50%, transparent), color-mix(in oklab, ${color} 18%, transparent))`;
+  const spread = side === "away" ? game.away.spread : game.home.spread;
 
   const resultCls = result === "correct" ? " correct" : result === "incorrect" ? " incorrect" : "";
 
@@ -211,6 +211,11 @@ function TeamSide({
       <div className="pp-pick-team-info">
         <span className="pp-pick-abbr">{abbr}</span>
         <span className="pp-pick-record">{side === "away" ? game.away.record : game.home.record}</span>
+        {spread && spread !== "PK" && spread !== "+0.0" && spread !== "-0.0" ? (
+          <span className="pp-pick-spread">{spread}</span>
+        ) : spread === "PK" ? (
+          <span className="pp-pick-spread">PK</span>
+        ) : null}
       </div>
     </button>
   );

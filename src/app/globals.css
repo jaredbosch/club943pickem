@@ -1840,7 +1840,7 @@ body {
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 3px;
+    width: 4px;
     pointer-events: none;
   }
   .pp-pick-side.away .pp-pick-side-edge { left: 0; }
@@ -1881,6 +1881,16 @@ body {
     margin-top: 3px;
     display: block;
   }
+  .pp-pick-spread {
+    font-family: var(--font-disp);
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+    margin-top: 4px;
+    display: block;
+  }
+  .pp-pick-side.home .pp-pick-spread { text-align: right; }
 
   /* Right rank rail */
   .pp-pick-rank {
