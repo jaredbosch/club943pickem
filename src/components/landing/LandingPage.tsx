@@ -446,6 +446,7 @@ export function LandingPage() {
           <span style={{ fontSize: 13, color: "var(--ink3)" }}>thepickempool</span>
         </div>
         <div className="lp-footer-copy">NFL ATS Confidence Pick&apos;em · Private Leagues · Built for real fans</div>
+        <Link href="/privacy" className="lp-footer-legal">Privacy Policy</Link>
       </footer>
 
     </div>
