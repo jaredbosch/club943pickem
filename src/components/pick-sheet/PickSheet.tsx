@@ -21,6 +21,8 @@ type MnfGame = {
   isLocked: boolean;
 };
 
+type ScoringType = "ats_confidence" | "ats" | "straight_up";
+
 type Props = {
   slots: Slot[];
   week: number;
@@ -30,6 +32,7 @@ type Props = {
   leagueName: string;
   leagueCode: string;
   activeWeek: number;
+  scoringType: ScoringType;
   userId: string;
   hasGames: boolean;
   isSampleData?: boolean;
@@ -69,6 +72,7 @@ export function PickSheet({
   leagueName,
   leagueCode,
   activeWeek,
+  scoringType,
   userId,
   hasGames,
   isSampleData = false,
@@ -76,6 +80,8 @@ export function PickSheet({
   initialTiebreakerGuess = null,
 }: Props) {
   const isFutureWeek = week > activeWeek;
+  const showConfidence = scoringType === "ats_confidence" && !isFutureWeek;
+  const showSpread = scoringType !== "straight_up" && !isFutureWeek;
   const router = useRouter();
   const supabase = createClient();
 
@@ -246,8 +252,8 @@ export function PickSheet({
           <ThemeToggle />
         </header>
 
-        {/* Confidence budget bar — only on active week */}
-        {hasGames && !isFutureWeek && (
+        {/* Confidence budget bar — only for confidence leagues on active week */}
+        {hasGames && showConfidence && (
           <div className="ps-budget-bar">
             <span className="ps-budget-bar-label">CONF</span>
             {Array.from({ length: totalGames }, (_, i) => totalGames - i).map((n) => (
@@ -263,7 +269,7 @@ export function PickSheet({
         {/* Hero */}
         <div className="ps-hero pp-hero-grad">
           <div>
-            <div className="ps-hero-week">WEEK {week} · {seasonYear} · {isFutureWeek ? "SCHEDULE" : "CONFIDENCE PICKS"}</div>
+            <div className="ps-hero-week">WEEK {week} · {seasonYear} · {isFutureWeek ? "SCHEDULE" : scoringType === "ats_confidence" ? "CONFIDENCE PICKS" : scoringType === "ats" ? "ATS PICKS" : "PICKS"}</div>
             <div className="ps-hero-title">{isFutureWeek ? "COMING SOON" : "LOCK IT IN"}</div>
             <div className="ps-hero-sub">
               {leagueName}
@@ -325,12 +331,14 @@ export function PickSheet({
                   key={slot.id}
                   slot={slot}
                   onPickTeam={pickTeam}
-                  onConfidenceChange={setConfidence}
+                  onConfidenceChange={showConfidence ? setConfidence : undefined}
                   totalGames={totalGames}
                   usedConfidenceMap={usedConfidenceMap}
                   openPickerId={openPickerId}
                   onOpenPicker={setOpenPickerId}
                   scheduleOnly={isFutureWeek}
+                  showConfidence={showConfidence}
+                  showSpread={showSpread}
                 />
               ))}
             </div>

@@ -18,12 +18,18 @@ type Member = {
   joinedAt: string;
 };
 
+type ScoringType = "ats_confidence" | "ats" | "straight_up";
+type WeeklyPotType = "percentage" | "fixed";
+
 type LeagueSettings = {
   name: string;
   entry_fee_cents: number;
   max_players: number;
   weekly_pool_pct: number;
   season_pool_pct: number;
+  weekly_pot_type: WeeklyPotType;
+  weekly_fixed_cents: number | null;
+  scoring_type: ScoringType;
   playoffs_enabled: boolean;
   drop_lowest_weeks: number;
   commissioner_can_edit: boolean;
@@ -31,7 +37,7 @@ type LeagueSettings = {
 };
 
 type Props = {
-  league: { id: string; season_year: number; invite_code: string; status: string } & LeagueSettings;
+  league: { id: string; season_year: number; invite_code: string; status: string; scoring_type: ScoringType; weekly_pot_type: WeeklyPotType; weekly_fixed_cents: number | null } & LeagueSettings;
   leagueCode: string;
   members: Member[];
   currentUserId: string;
@@ -143,6 +149,9 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
     max_players: league.max_players,
     weekly_pool_pct: league.weekly_pool_pct,
     season_pool_pct: league.season_pool_pct,
+    weekly_pot_type: league.weekly_pot_type,
+    weekly_fixed_cents: league.weekly_fixed_cents,
+    scoring_type: league.scoring_type,
     playoffs_enabled: league.playoffs_enabled,
     drop_lowest_weeks: league.drop_lowest_weeks,
     commissioner_can_edit: league.commissioner_can_edit,
@@ -175,6 +184,9 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
         max_players: settings.max_players,
         weekly_pool_pct: settings.weekly_pool_pct,
         season_pool_pct: settings.season_pool_pct,
+        weekly_pot_type: settings.weekly_pot_type,
+        weekly_fixed_cents: settings.weekly_pot_type === "fixed" ? settings.weekly_fixed_cents : null,
+        scoring_type: settings.scoring_type,
         playoffs_enabled: settings.playoffs_enabled,
         drop_lowest_weeks: settings.drop_lowest_weeks,
         commissioner_can_edit: settings.commissioner_can_edit,
@@ -384,6 +396,31 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
               </div>
             </div>
 
+            {/* League Type */}
+            <div className="comm-settings-group">
+              <div className="comm-settings-group-label">LEAGUE TYPE</div>
+              <div className="comm-settings-row">
+                <label className="comm-settings-label">Scoring Mode</label>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {([
+                    ["ats_confidence", "ATS + Confidence", "Pick winners against the spread, assign 1–16 confidence points per game"],
+                    ["ats", "ATS Only", "Pick winners against the spread, 1 point per correct pick"],
+                    ["straight_up", "Straight Up Winners", "Pick the outright winner, no spread, 1 point per correct pick"],
+                  ] as [ScoringType, string, string][]).map(([val, label, desc]) => (
+                    <label key={val} className={`comm-type-option${settings.scoring_type === val ? " selected" : ""}`}>
+                      <input type="radio" name="scoring_type" value={val}
+                        checked={settings.scoring_type === val}
+                        onChange={() => setSetting("scoring_type", val)} />
+                      <div>
+                        <div className="comm-type-option-label">{label}</div>
+                        <div className="comm-type-option-desc">{desc}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* Money */}
             <div className="comm-settings-group">
               <div className="comm-settings-group-label">MONEY</div>
@@ -404,11 +441,36 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
               </div>
               <div className="comm-settings-row">
                 <label className="comm-settings-label">Weekly Pot</label>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <input className="comm-settings-input narrow" type="number" min={0} max={100} step={1}
-                    value={Math.round(settings.weekly_pool_pct * 100)}
-                    onChange={(e) => setSetting("weekly_pool_pct", parseInt(e.target.value || "0") / 100)} />
-                  <span className="comm-settings-suffix">% weekly · {Math.round(settings.season_pool_pct * 100)}% season</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      type="button"
+                      className={`comm-type-btn${settings.weekly_pot_type === "percentage" ? " active" : ""}`}
+                      onClick={() => setSetting("weekly_pot_type", "percentage")}
+                    >% of pot</button>
+                    <button
+                      type="button"
+                      className={`comm-type-btn${settings.weekly_pot_type === "fixed" ? " active" : ""}`}
+                      onClick={() => setSetting("weekly_pot_type", "fixed")}
+                    >Fixed $</button>
+                  </div>
+                  {settings.weekly_pot_type === "percentage" ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <input className="comm-settings-input narrow" type="number" min={0} max={100} step={1}
+                        value={Math.round(settings.weekly_pool_pct * 100)}
+                        onChange={(e) => setSetting("weekly_pool_pct", parseInt(e.target.value || "0") / 100)} />
+                      <span className="comm-settings-suffix">% weekly · {Math.round(settings.season_pool_pct * 100)}% season</span>
+                    </div>
+                  ) : (
+                    <div className="comm-settings-money">
+                      <span className="comm-settings-prefix">$</span>
+                      <input className="comm-settings-input narrow" type="number" min={0} step={5}
+                        value={settings.weekly_fixed_cents != null ? settings.weekly_fixed_cents / 100 : ""}
+                        placeholder="e.g. 300"
+                        onChange={(e) => setSetting("weekly_fixed_cents", Math.round(parseFloat(e.target.value || "0") * 100))} />
+                      <span className="comm-settings-suffix">per week · remainder to season winner</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

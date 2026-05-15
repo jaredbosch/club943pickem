@@ -15,6 +15,8 @@ type Props = {
   isPickerOpen?: boolean;
   onOpenPicker?: (id: string | null) => void;
   scheduleOnly?: boolean;
+  showConfidence?: boolean;
+  showSpread?: boolean;
 };
 
 export function GameRow({
@@ -27,6 +29,8 @@ export function GameRow({
   isPickerOpen = false,
   onOpenPicker,
   scheduleOnly = false,
+  showConfidence = true,
+  showSpread = true,
 }: Props) {
   const isOpen = !scheduleOnly && slotStatus === "open";
   const isLive = slotStatus === "live";
@@ -63,10 +67,10 @@ export function GameRow({
 
   return (
     <div className={`pp-pick-row${!isOpen ? " locked" : ""}${hasPick ? " has-pick" : ""}${resultCls}${warnCls}`}>
-      <div className={`pp-pick-inner${scheduleOnly ? " schedule-only" : ""}`}>
+      <div className={`pp-pick-inner${!showConfidence ? " schedule-only" : ""}`}>
 
-        {/* Left: confidence rail — hidden for schedule-only (future) weeks */}
-        {!scheduleOnly && (
+        {/* Left: confidence rail — hidden for future weeks or non-confidence leagues */}
+        {showConfidence && (
           <div
             ref={confRailRef}
             className={`pp-pick-conf${hasPick ? " has-pick" : ""}${isHighConf ? " high" : ""}${canOpenPicker ? " clickable" : ""}`}
@@ -147,7 +151,7 @@ export function GameRow({
               picked={pickedAway}
               result={pickedAway ? game.result : undefined}
               locked={!isOpen}
-              showSpread={!scheduleOnly}
+              showSpread={showSpread}
               onClick={() => isOpen && onPickTeam(game.id, game.away.abbr)}
             />
 
@@ -165,7 +169,7 @@ export function GameRow({
               picked={pickedHome}
               result={pickedHome ? game.result : undefined}
               locked={!isOpen}
-              showSpread={!scheduleOnly}
+              showSpread={showSpread}
               onClick={() => isOpen && onPickTeam(game.id, game.home.abbr)}
             />
           </div>

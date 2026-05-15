@@ -13,7 +13,7 @@ export default async function CommissionerPage({
 
   const { data: league } = await supabase
     .from("leagues")
-    .select("id, name, season_year, entry_fee_cents, max_players, weekly_pool_pct, season_pool_pct, invite_code, status, playoffs_enabled, drop_lowest_weeks, commissioner_can_edit, registration_locked")
+    .select("id, name, season_year, entry_fee_cents, max_players, weekly_pool_pct, season_pool_pct, weekly_pot_type, weekly_fixed_cents, scoring_type, invite_code, status, playoffs_enabled, drop_lowest_weeks, commissioner_can_edit, registration_locked")
     .eq("invite_code", params.code.toUpperCase())
     .maybeSingle();
 

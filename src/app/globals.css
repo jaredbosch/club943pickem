@@ -3972,6 +3972,24 @@ body {
   }
   .league-btn-secondary:hover { border-color: var(--line2); color: var(--ink2); }
   .league-error { font-family: var(--font-code); font-size: 12px; color: var(--bad); margin: 0; }
+  .league-type-options { display: flex; flex-direction: column; gap: 8px; }
+  .league-type-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    cursor: pointer;
+  }
+  .league-type-option.selected {
+    border-color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 8%, var(--bg));
+  }
+  .league-type-option input[type="radio"] { margin-top: 3px; accent-color: var(--accent); }
+  .league-type-label { font-family: var(--font-code); font-size: 12px; font-weight: 700; color: var(--ink); }
+  .league-type-desc { font-size: 11px; color: var(--ink3); margin-top: 2px; }
   .league-success-icon {
     width: 48px;
     height: 48px;
@@ -4313,6 +4331,53 @@ body {
   }
   .comm-save-settings-btn:disabled { opacity: 0.5; cursor: default; }
   .comm-save-settings-btn:hover:not(:disabled) { opacity: 0.85; }
+
+  /* League type selector (commissioner + league setup) */
+  .comm-type-btn {
+    font-family: var(--font-code);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 5px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--line2);
+    background: var(--bg3);
+    color: var(--ink3);
+    cursor: pointer;
+  }
+  .comm-type-btn.active {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+  .comm-type-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--bg3);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .comm-type-option.selected {
+    border-color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 8%, var(--bg3));
+  }
+  .comm-type-option input[type="radio"] { margin-top: 2px; accent-color: var(--accent); }
+  .comm-type-option-label {
+    font-family: var(--font-code);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .comm-type-option-desc {
+    font-size: 11px;
+    color: var(--ink3);
+    margin-top: 2px;
+  }
 
   /* Help / FAQ */
   .comm-help-body { padding: 8px 0; }

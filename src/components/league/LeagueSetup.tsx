@@ -17,6 +17,9 @@ export function LeagueSetup() {
   const [entryFeeDollars, setEntryFeeDollars] = useState(300);
   const [maxPlayers, setMaxPlayers] = useState(50);
 
+  // Create form: scoring type
+  const [scoringType, setScoringType] = useState<"ats_confidence" | "ats" | "straight_up">("ats_confidence");
+
   // Join form state
   const [code, setCode] = useState("");
 
@@ -57,6 +60,11 @@ export function LeagueSetup() {
     if (fetchError || !league) {
       setError("League created but couldn't fetch invite code.");
       return;
+    }
+
+    // Set scoring type if non-default
+    if (scoringType !== "ats_confidence") {
+      await supabase.from("leagues").update({ scoring_type: scoringType }).eq("id", data);
     }
 
     setInviteCode(league.invite_code);
@@ -184,6 +192,27 @@ export function LeagueSetup() {
                   value={maxPlayers}
                   onChange={(e) => setMaxPlayers(Number(e.target.value))}
                 />
+              </div>
+            </div>
+
+            <div className="league-field">
+              <label className="league-label">League Type</label>
+              <div className="league-type-options">
+                {([
+                  ["ats_confidence", "ATS + Confidence", "Pick ATS winners, assign 1–16 confidence points"],
+                  ["ats", "ATS Only", "Pick ATS winners, 1 point per correct pick"],
+                  ["straight_up", "Straight Up Winners", "Pick the outright winner, no spread"],
+                ] as ["ats_confidence" | "ats" | "straight_up", string, string][]).map(([val, label, desc]) => (
+                  <label key={val} className={`league-type-option${scoringType === val ? " selected" : ""}`}>
+                    <input type="radio" name="scoringType" value={val}
+                      checked={scoringType === val}
+                      onChange={() => setScoringType(val)} />
+                    <div>
+                      <div className="league-type-label">{label}</div>
+                      <div className="league-type-desc">{desc}</div>
+                    </div>
+                  </label>
+                ))}
               </div>
             </div>
 

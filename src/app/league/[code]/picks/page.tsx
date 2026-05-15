@@ -18,7 +18,7 @@ export default async function PicksPage({
 
   const { data: league } = await supabase
     .from("leagues")
-    .select("id, name, season_year, invite_code")
+    .select("id, name, season_year, invite_code, scoring_type")
     .eq("invite_code", params.code.toUpperCase())
     .maybeSingle();
 
@@ -94,6 +94,7 @@ export default async function PicksPage({
       leagueName={league.name}
       leagueCode={params.code.toUpperCase()}
       activeWeek={activeWeek}
+      scoringType={(league.scoring_type ?? "ats_confidence") as "ats_confidence" | "ats" | "straight_up"}
       userId={user.id}
       hasGames={true}
       isSampleData={!hasGames}

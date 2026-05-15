@@ -10,9 +10,15 @@ type Props = {
   openPickerId?: string | null;
   onOpenPicker?: (id: string | null) => void;
   scheduleOnly?: boolean;
+  showConfidence?: boolean;
+  showSpread?: boolean;
 };
 
-export function SlotGroup({ slot, onPickTeam, onConfidenceChange, totalGames = 16, usedConfidenceMap, openPickerId, onOpenPicker, scheduleOnly = false }: Props) {
+export function SlotGroup({
+  slot, onPickTeam, onConfidenceChange, totalGames = 16,
+  usedConfidenceMap, openPickerId, onOpenPicker,
+  scheduleOnly = false, showConfidence = true, showSpread = true,
+}: Props) {
   return (
     <div className="ps-slot-group">
       <div className="ps-slot-header">
@@ -36,6 +42,8 @@ export function SlotGroup({ slot, onPickTeam, onConfidenceChange, totalGames = 1
           isPickerOpen={openPickerId === game.id}
           onOpenPicker={onOpenPicker}
           scheduleOnly={scheduleOnly}
+          showConfidence={showConfidence}
+          showSpread={showSpread}
         />
       ))}
     </div>
