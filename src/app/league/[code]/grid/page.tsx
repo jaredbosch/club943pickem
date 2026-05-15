@@ -34,7 +34,7 @@ export default async function GridPage({
 
   const leagueCode = params.code.toUpperCase();
   const now = new Date();
-  const seasonYear = nflSeasonYear(now);
+  const seasonYear = league.season_year;
 
   const { data: weekRows } = await supabase
     .from("games")

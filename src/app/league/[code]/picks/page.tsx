@@ -18,7 +18,7 @@ export default async function PicksPage({
 
   const { data: league } = await supabase
     .from("leagues")
-    .select("id, name, invite_code")
+    .select("id, name, season_year, invite_code")
     .eq("invite_code", params.code.toUpperCase())
     .maybeSingle();
 
@@ -34,7 +34,7 @@ export default async function PicksPage({
   if (!membership) redirect("/league");
 
   const now = new Date();
-  const seasonYear = nflSeasonYear(now);
+  const seasonYear = league.season_year;
 
   const { data: weekRows } = await supabase
     .from("games")
