@@ -63,7 +63,7 @@ export function GameRow({
 
   return (
     <div className={`pp-pick-row${!isOpen ? " locked" : ""}${hasPick ? " has-pick" : ""}${resultCls}${warnCls}`}>
-      <div className="pp-pick-inner">
+      <div className={`pp-pick-inner${scheduleOnly ? " schedule-only" : ""}`}>
 
         {/* Left: confidence rail — hidden for schedule-only (future) weeks */}
         {!scheduleOnly && (

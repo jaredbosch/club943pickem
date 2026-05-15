@@ -1551,6 +1551,9 @@ body {
     grid-template-columns: 68px 1fr;
     align-items: stretch;
   }
+  .pp-pick-inner.schedule-only {
+    grid-template-columns: 1fr;
+  }
 
   /* Confidence rail */
   .pp-pick-conf {
