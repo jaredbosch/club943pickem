@@ -454,10 +454,10 @@ export function LandingPage() {
               </thead>
               <tbody>
                 {[
-                  ["ATS + Confidence", "All 16", "ATS", "1–16", "Each kickoff", true],
-                  ["Straight Up + Confidence", "All 16", "None", "1–16", "Each kickoff", false],
-                  ["ATS Only", "All 16", "ATS", "None", "Each kickoff", false],
-                  ["Straight Up Winners", "All 16", "None", "None", "Each kickoff", false],
+                  ["ATS + Confidence", "All games", "ATS", "1–16", "Each kickoff", true],
+                  ["Straight Up + Confidence", "All games", "None", "1–16", "Each kickoff", false],
+                  ["ATS Only", "All games", "ATS", "None", "Each kickoff", false],
+                  ["Straight Up Winners", "All games", "None", "None", "Each kickoff", false],
                   ["Pick 5 — ATS", "Any 5", "ATS", "None", "Friday", false],
                   ["Pick 5 — Straight Up", "Any 5", "None", "None", "Friday", false],
                 ].map(([name, picks, spread, conf, lock, popular]) => (

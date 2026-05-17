@@ -16,7 +16,7 @@ const FORMATS = [
     headline: "The full skill game.",
     desc: "Pick every NFL game against the spread and assign a unique confidence number (1–16) to each pick. Stack high confidence on your locks, low confidence on coin flips. Points earned = confidence × correct. The best handicappers rise to the top over 18 weeks.",
     details: [
-      { label: "Picks per week", value: "All 16 games" },
+      { label: "Picks per week", value: "All games" },
       { label: "Scoring", value: "Confidence 1–16 per game" },
       { label: "Spread", value: "ATS (against the spread)" },
       { label: "Lock time", value: "Each game at kickoff" },
@@ -33,7 +33,7 @@ const FORMATS = [
     headline: "All the strategy, no spread knowledge needed.",
     desc: "Pick the outright winner of every game — no point spread. Assign confidence 1–16 exactly like ATS Confidence, so skill differentiation stays high. Great for groups where not everyone follows the betting market.",
     details: [
-      { label: "Picks per week", value: "All 16 games" },
+      { label: "Picks per week", value: "All games" },
       { label: "Scoring", value: "Confidence 1–16 per game" },
       { label: "Spread", value: "Straight up (pick the winner)" },
       { label: "Lock time", value: "Each game at kickoff" },
@@ -50,7 +50,7 @@ const FORMATS = [
     headline: "One point, one game. Pick em ATS.",
     desc: "Pick every game against the spread for one point per correct pick. No confidence assignment — just pick the team. Fastest to fill out each week, but the week winner can change on any late game.",
     details: [
-      { label: "Picks per week", value: "All 16 games" },
+      { label: "Picks per week", value: "All games" },
       { label: "Scoring", value: "1 pt per correct ATS pick" },
       { label: "Spread", value: "ATS (against the spread)" },
       { label: "Lock time", value: "Each game at kickoff" },
@@ -67,7 +67,7 @@ const FORMATS = [
     headline: "Pick the winner. That's it.",
     desc: "Pick the outright winner of every game, one point for each correct pick, no spread. The simplest format on the platform. Good for very casual groups or as a secondary game within a larger league.",
     details: [
-      { label: "Picks per week", value: "All 16 games" },
+      { label: "Picks per week", value: "All games" },
       { label: "Scoring", value: "1 pt per correct pick" },
       { label: "Spread", value: "None — straight winner" },
       { label: "Lock time", value: "Each game at kickoff" },
@@ -115,7 +115,7 @@ const FORMATS = [
 const COMPARISON = [
   { feature: "Spread required",    ats_confidence: "✓ ATS", su_confidence: "✗ SU", ats: "✓ ATS", straight_up: "✗ SU", pick5_ats: "✓ ATS", pick5_su: "✗ SU" },
   { feature: "Confidence scoring", ats_confidence: "✓ 1–16", su_confidence: "✓ 1–16", ats: "✗", straight_up: "✗", pick5_ats: "✗", pick5_su: "✗" },
-  { feature: "Games per week",     ats_confidence: "16", su_confidence: "16", ats: "16", straight_up: "16", pick5_ats: "5 of 16", pick5_su: "5 of 16" },
+  { feature: "Games per week",     ats_confidence: "All", su_confidence: "All", ats: "All", straight_up: "All", pick5_ats: "Any 5", pick5_su: "Any 5" },
   { feature: "Lock time",          ats_confidence: "Kickoff", su_confidence: "Kickoff", ats: "Kickoff", straight_up: "Kickoff", pick5_ats: "Friday", pick5_su: "Friday" },
   { feature: "Push scoring",       ats_confidence: "0 pts", su_confidence: "0 pts", ats: "0 pts", straight_up: "0 pts", pick5_ats: "½ pt", pick5_su: "½ pt" },
   { feature: "Time to pick",       ats_confidence: "~10 min", su_confidence: "~10 min", ats: "~5 min", straight_up: "~3 min", pick5_ats: "~3 min", pick5_su: "~2 min" },
