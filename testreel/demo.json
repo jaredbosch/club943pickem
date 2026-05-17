@@ -1,0 +1,145 @@
+{
+  "$schema": "./node_modules/testreel/recording-definition.schema.json",
+
+  "url": "https://thepickempool.com/league/6V7A3F/dashboard",
+  "viewport": { "width": 1440, "height": 900 },
+
+  "colorScheme": "dark",
+
+  "outputFormat": "mp4",
+  "speed": 0.8,
+
+  "cursor": {
+    "style": "pointer",
+    "size": 44,
+    "rippleColor": "rgba(255, 255, 255, 0.35)",
+    "rippleSize": 90,
+    "idleHide": true,
+    "idleHideMs": 4000,
+    "fadeMs": 350
+  },
+
+  "chrome": {
+    "enabled": true,
+    "titleBarHeight": 38,
+    "titleBarColor": "#1a1a1a",
+    "trafficLights": true,
+    "url": "thepickempool.com"
+  },
+
+  "background": {
+    "enabled": true,
+    "gradient": { "from": "#0a0a0a", "to": "#111827" },
+    "padding": 60,
+    "borderRadius": 14
+  },
+
+  "auth": {
+    "provider": "supabase",
+    "url": "${SUPABASE_URL}",
+    "serviceRoleKey": "${SUPABASE_SERVICE_ROLE_KEY}",
+    "email": "${TEST_USER_EMAIL}"
+  },
+
+  "waitForSelector": ".app-nav-logo",
+
+  "steps": [
+
+    { "action": "wait", "ms": 1200 },
+
+    { "action": "screenshot", "name": "01-dashboard-loaded" },
+
+    { "action": "wait", "ms": 800, "pauseAfter": 0 },
+
+    { "action": "scroll", "y": 220, "pauseAfter": 1000 },
+
+    { "action": "screenshot", "name": "02-standings-table" },
+
+    { "action": "scroll", "y": 280, "pauseAfter": 900 },
+
+    { "action": "screenshot", "name": "03-weekly-results" },
+
+    { "action": "wait", "ms": 1000, "pauseAfter": 0 },
+
+    {
+      "action": "navigate",
+      "url": "https://thepickempool.com/league/6V7A3F/picks",
+      "pauseAfter": 1200
+    },
+
+    { "action": "screenshot", "name": "04-picks-page-loaded" },
+
+    { "action": "wait", "ms": 800, "pauseAfter": 0 },
+
+    {
+      "action": "click",
+      "selector": ".pp-pick-side.away",
+      "pauseAfter": 1000
+    },
+
+    { "action": "screenshot", "name": "05-sea-picked" },
+
+    {
+      "action": "click",
+      "selector": ".pp-pick-conf.clickable",
+      "pauseAfter": 900
+    },
+
+    { "action": "screenshot", "name": "06-confidence-picker-open" },
+
+    {
+      "action": "click",
+      "selector": ".pp-conf-chip:nth-child(3)",
+      "pauseAfter": 1100
+    },
+
+    { "action": "screenshot", "name": "07-confidence-14-selected" },
+
+    { "action": "hover", "selector": ".ps-budget-bar", "pauseAfter": 1000 },
+
+    { "action": "screenshot", "name": "08-budget-bar" },
+
+    { "action": "wait", "ms": 800, "pauseAfter": 0 },
+
+    {
+      "action": "navigate",
+      "url": "https://thepickempool.com/league/6V7A3F/grid",
+      "pauseAfter": 1200
+    },
+
+    { "action": "screenshot", "name": "09-grid-page-loaded" },
+
+    { "action": "wait", "ms": 800, "pauseAfter": 0 },
+
+    { "action": "scroll", "x": 400, "y": 0, "pauseAfter": 1000 },
+
+    { "action": "screenshot", "name": "10-grid-scrolled-right" },
+
+    { "action": "scroll", "x": 400, "y": 0, "pauseAfter": 900 },
+
+    { "action": "screenshot", "name": "11-grid-full-matrix" },
+
+    { "action": "wait", "ms": 1000, "pauseAfter": 0 },
+
+    {
+      "action": "navigate",
+      "url": "https://thepickempool.com/league/6V7A3F/commissioner",
+      "pauseAfter": 1200
+    },
+
+    { "action": "screenshot", "name": "12-commissioner-panel" },
+
+    { "action": "wait", "ms": 800, "pauseAfter": 0 },
+
+    { "action": "scroll", "y": 300, "pauseAfter": 900 },
+
+    { "action": "screenshot", "name": "13-member-roster" },
+
+    { "action": "scroll", "y": 200, "pauseAfter": 800 },
+
+    { "action": "screenshot", "name": "14-commissioner-final" },
+
+    { "action": "wait", "ms": 1200 }
+
+  ]
+}

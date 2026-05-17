@@ -28,3 +28,6 @@ Thumbs.db
 
 # vercel
 .vercel
+
+# testreel — generated demo videos (can be large)
+testreel-output/

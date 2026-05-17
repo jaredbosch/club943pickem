@@ -452,6 +452,7 @@ export function LandingPage() {
         <Link href="/vs/nfl-pickem" className="lp-footer-legal">vs NFL.com</Link>
         <Link href="/vs/sleeper-pickem" className="lp-footer-legal">vs Sleeper</Link>
         <Link href="/vs/runyourpool" className="lp-footer-legal">vs RunYourPool</Link>
+        <Link href="/blog" className="lp-footer-legal">Blog</Link>
         <Link href="/privacy" className="lp-footer-legal">Privacy Policy</Link>
       </footer>
 
