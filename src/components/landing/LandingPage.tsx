@@ -331,6 +331,29 @@ export function LandingPage() {
         </div>
       </div>
 
+      {/* Video Demo */}
+      <section className="lp-section lp-video-section">
+        <div className="lp-section-inner">
+          <div className="lp-section-label">SEE IT IN ACTION</div>
+          <h2 className="lp-section-title">Everything your pool<br /><span className="lp-accent">needs. Nothing it doesn&apos;t.</span></h2>
+          <p className="lp-section-sub">Live spreads. Confidence scoring. The Grid. Commissioner tools. All in one place.</p>
+          <div className="lp-video-wrap">
+            <video
+              src="/demo.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="lp-video"
+            />
+          </div>
+          <div className="lp-video-ctas">
+            <Link href="/league?action=create" className="lp-btn-primary">Start Your League — Free</Link>
+            <Link href="/league?action=join" className="lp-btn-secondary">Join an Existing League →</Link>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="lp-section lp-steps-section">
         <div className="lp-section-inner">
