@@ -792,6 +792,7 @@ body {
 }
 .lp-ps-team-abbr.picked { color: var(--ink); }
 .lp-ps-team-rec { font-family: var(--font-code); font-size: 10px; color: var(--ink3); }
+.lp-ps-team-spread { font-family: var(--font-disp); font-size: 12px; font-weight: 800; color: var(--accent); margin-top: 2px; }
 .lp-ps-at {
   display: flex;
   align-items: center;

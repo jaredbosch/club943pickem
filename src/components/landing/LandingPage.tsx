@@ -139,10 +139,10 @@ const DEMO_COLORS: Record<string, string> = {
 };
 
 const DEMO_GAMES = [
-  { away: "BUF", awayRec: "6-2", home: "KC",  homeRec: "7-1", spread: "BUF -2.5", ou: "48.5", time: "SUN 4:25P", net: "CBS", picked: "KC",  conf: 16, pct: 42, prime: false, locked: false, final: "",        won: false },
-  { away: "PHI", awayRec: "6-2", home: "DAL", homeRec: "4-4", spread: "PHI -3",   ou: "46.0", time: "SUN 8:20P", net: "NBC", picked: "PHI", conf: 15, pct: 61, prime: true,  locked: false, final: "",        won: false },
-  { away: "SF",  awayRec: "5-3", home: "LAR", homeRec: "4-4", spread: "SF -4",    ou: "44.5", time: "SUN 4:05P", net: "FOX", picked: "SF",  conf: 13, pct: 54, prime: false, locked: false, final: "",        won: false },
-  { away: "BAL", awayRec: "6-2", home: "CIN", homeRec: "4-4", spread: "BAL -5.5", ou: "47.0", time: "THU 8:15P", net: "AMZ", picked: "BAL", conf: 10, pct: 68, prime: true,  locked: true,  final: "BAL 24-21", won: true  },
+  { away: "BUF", awayRec: "6-2", awaySpread: "-2.5", home: "KC",  homeRec: "7-1", homeSpread: "+2.5", spread: "BUF -2.5", ou: "48.5", time: "SUN 4:25P", net: "CBS", picked: "KC",  conf: 16, pct: 42, prime: false, locked: false, final: "",        won: false },
+  { away: "PHI", awayRec: "6-2", awaySpread: "-3",   home: "DAL", homeRec: "4-4", homeSpread: "+3",   spread: "PHI -3",   ou: "46.0", time: "SUN 8:20P", net: "NBC", picked: "PHI", conf: 15, pct: 61, prime: true,  locked: false, final: "",        won: false },
+  { away: "SF",  awayRec: "5-3", awaySpread: "-4",   home: "LAR", homeRec: "4-4", homeSpread: "+4",   spread: "SF -4",    ou: "44.5", time: "SUN 4:05P", net: "FOX", picked: "SF",  conf: 13, pct: 54, prime: false, locked: false, final: "",        won: false },
+  { away: "BAL", awayRec: "6-2", awaySpread: "-5.5", home: "CIN", homeRec: "4-4", homeSpread: "+5.5", spread: "BAL -5.5", ou: "47.0", time: "THU 8:15P", net: "AMZ", picked: "BAL", conf: 10, pct: 68, prime: true,  locked: true,  final: "BAL 24-21", won: true  },
 ];
 
 function DemoPickRow({ game }: { game: typeof DEMO_GAMES[0] }) {
@@ -162,8 +162,6 @@ function DemoPickRow({ game }: { game: typeof DEMO_GAMES[0] }) {
         <div className="lp-ps-meta">
           <span className="lp-ps-meta-time">{game.time}</span>
           <span className="lp-ps-net-chip">{game.net}</span>
-          <span className="lp-ps-meta-label">SPREAD</span>
-          <span className="lp-ps-meta-val">{game.spread}</span>
           <span className="lp-ps-meta-label">O/U</span>
           <span className="lp-ps-meta-val">{game.ou}</span>
           <div className="lp-ps-meta-spacer" />
@@ -180,6 +178,7 @@ function DemoPickRow({ game }: { game: typeof DEMO_GAMES[0] }) {
             <div className="lp-ps-team-info">
               <div className={`lp-ps-team-abbr${pickedAway ? " picked" : ""}`}>{game.away}</div>
               <div className="lp-ps-team-rec">{game.awayRec}</div>
+              <div className="lp-ps-team-spread">{game.awaySpread}</div>
             </div>
           </div>
           <div className="lp-ps-at">@</div>
@@ -190,6 +189,7 @@ function DemoPickRow({ game }: { game: typeof DEMO_GAMES[0] }) {
             <div className="lp-ps-team-info right">
               <div className={`lp-ps-team-abbr${pickedHome ? " picked" : ""}`}>{game.home}</div>
               <div className="lp-ps-team-rec">{game.homeRec}</div>
+              <div className="lp-ps-team-spread">{game.homeSpread}</div>
             </div>
             <div className="lp-ps-logo" style={{ background: homeColor }}>{game.home}</div>
           </div>
