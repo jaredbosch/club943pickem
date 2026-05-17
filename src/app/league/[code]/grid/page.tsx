@@ -17,7 +17,7 @@ export default async function GridPage({
 
   const { data: league } = await supabase
     .from("leagues")
-    .select("id, name, season_year, invite_code")
+    .select("id, name, season_year, invite_code, scoring_type")
     .eq("invite_code", params.code.toUpperCase())
     .maybeSingle();
 
@@ -68,6 +68,9 @@ export default async function GridPage({
 
   const gameIds = (games ?? []).map((g) => g.id);
 
+  const scoringType = (league.scoring_type ?? "ats_confidence") as string;
+  const isPick5 = scoringType === "pick5_su" || scoringType === "pick5_ats";
+
   const { data: allPicks } = gameIds.length
     ? await supabase
         .from("picks")
@@ -94,9 +97,14 @@ export default async function GridPage({
     const displayName = u?.display_name ?? u?.email?.split("@")[0] ?? "Player";
     const standing = standingsMap.get(m.user_id);
     const playerPicks = (allPicks ?? []).filter((p) => p.user_id === m.user_id);
-    const pickMap: Record<string, { pickedTeam: string; isCorrect: boolean | null; confidence: number | null }> = {};
+    const pickMap: Record<string, { pickedTeam: string | null; isCorrect: boolean | null; confidence: number | null; selected?: boolean }> = {};
     for (const p of playerPicks) {
-      if (p.picked_team) pickMap[p.game_id] = { pickedTeam: p.picked_team, isCorrect: p.is_correct, confidence: p.confidence };
+      if (p.picked_team) {
+        pickMap[p.game_id] = { pickedTeam: p.picked_team, isCorrect: p.is_correct, confidence: p.confidence, selected: true };
+      } else if (isPick5) {
+        // Pick 5: game selected but no side chosen yet — show as selected/pending
+        pickMap[p.game_id] = { pickedTeam: null, isCorrect: null, confidence: null, selected: true };
+      }
     }
     return {
       userId: m.user_id,
@@ -176,6 +184,7 @@ export default async function GridPage({
         atsWinner: atsWinnerMap[g.id] ?? null,
         homeSpread: (g as Record<string, unknown>).spread_home as number | null ?? null,
       }))}
+      isPick5={isPick5}
       players={playerRows}
       consensus={consensus}
       currentUserId={user.id}

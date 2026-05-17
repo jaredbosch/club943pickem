@@ -24,7 +24,7 @@ type PlayerRow = {
   weekCorrect: number;
   rank: number | null;
   isCurrentUser: boolean;
-  picks: Record<string, { pickedTeam: string; isCorrect: boolean | null; confidence: number | null }>;
+  picks: Record<string, { pickedTeam: string | null; isCorrect: boolean | null; confidence: number | null; selected?: boolean }>;
 };
 
 type Props = {
@@ -39,6 +39,7 @@ type Props = {
   currentUserId: string;
   hasGames: boolean;
   isSampleData?: boolean;
+  isPick5?: boolean;
 };
 
 function initials(name: string) {
@@ -65,7 +66,7 @@ function HeatCell({
   gameStatus,
   masked,
 }: {
-  pick: { pickedTeam: string; isCorrect: boolean | null; confidence: number | null } | undefined;
+  pick: { pickedTeam: string | null; isCorrect: boolean | null; confidence: number | null; selected?: boolean } | undefined;
   gameStatus: string;
   masked?: boolean;
 }) {
@@ -75,12 +76,17 @@ function HeatCell({
   if (masked) {
     return <div className="grid-cell grid-cell-masked" />;
   }
+  // Pick5: game selected but no side chosen yet
+  if (pick.selected && pick.pickedTeam === null) {
+    return <div className="grid-cell grid-cell-selected-p5">·</div>;
+  }
 
-  const color = NFL_COLORS[pick.pickedTeam]?.primary ?? "#333";
+  const color = NFL_COLORS[pick.pickedTeam!]?.primary ?? "#333";
   const isLive = gameStatus === "live" || gameStatus === "in_progress";
   const isGraded = pick.isCorrect !== null;
   const isWin = pick.isCorrect === true;
   const isLoss = pick.isCorrect === false;
+  const isPush = pick.isCorrect === null && isGraded === false; // can't happen, but safety
 
   let bg: string;
   let cellClass = "grid-cell";
@@ -167,6 +173,7 @@ export function WeeklyGrid({
   consensus,
   hasGames,
   isSampleData,
+  isPick5 = false,
 }: Props) {
   const hasLiveGames = games.some((g) => g.status === "in_progress");
   const maxPoints = players.length > 0 ? Math.max(...players.map((p) => p.weekPoints), 1) : 1;

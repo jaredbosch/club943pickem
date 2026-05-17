@@ -2470,6 +2470,13 @@ body {
     background: var(--bg3);
     border: 1px dashed var(--line2);
   }
+  /* Pick 5: selected game, no side chosen yet */
+  .grid-cell-selected-p5 {
+    background: color-mix(in oklab, var(--accent) 10%, var(--bg2));
+    border: 1px dashed color-mix(in oklab, var(--accent) 45%, transparent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-code); font-size: 12px; color: var(--accent); opacity: 0.75;
+  }
   .grid-cell-masked {
     background: repeating-linear-gradient(
       45deg,
