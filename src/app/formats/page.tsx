@@ -216,6 +216,8 @@ export default function FormatsPage() {
       <footer className="vs-footer">
         <Link href="/" className="lp-footer-legal">← Home</Link>
         <span>·</span>
+        <a href="https://x.com/thepickempool" target="_blank" rel="noopener noreferrer" className="lp-footer-legal">𝕏 @thepickempool</a>
+        <span>·</span>
         <Link href="/privacy" className="lp-footer-legal">Privacy Policy</Link>
         <span>·</span>
         <span style={{ color: "var(--ink3)", fontSize: 11, fontFamily: "var(--font-code)" }}>© {new Date().getFullYear()} thepickempool.com</span>

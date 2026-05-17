@@ -508,6 +508,9 @@ export function LandingPage() {
             </Link>
           </div>
           <Link href="/sign-in" className="lp-cta-signin">Already have an account? Sign in →</Link>
+          <a href="https://x.com/thepickempool" target="_blank" rel="noopener noreferrer" className="lp-cta-x">
+            Follow us on 𝕏 for updates, picks talk, and pool tips →
+          </a>
         </div>
       </section>
 
@@ -518,6 +521,9 @@ export function LandingPage() {
           <span style={{ fontSize: 13, color: "var(--ink3)" }}>thepickempool</span>
         </div>
         <div className="lp-footer-copy">NFL ATS Confidence Pick&apos;em · Private Leagues · Built for real fans</div>
+        <a href="https://x.com/thepickempool" target="_blank" rel="noopener noreferrer" className="lp-footer-x">
+          𝕏 @thepickempool
+        </a>
         <Link href="/vs/yahoo-pickem" className="lp-footer-legal">vs Yahoo</Link>
         <Link href="/vs/cbs-pickem" className="lp-footer-legal">vs CBS</Link>
         <Link href="/vs/espn-pickem" className="lp-footer-legal">vs ESPN</Link>
