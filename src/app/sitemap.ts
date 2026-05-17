@@ -20,6 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/vs/nfl-pickem`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/vs/sleeper-pickem`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/vs/runyourpool`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/formats`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     { url: `${base}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     ...blogPosts,
     { url: `${base}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },

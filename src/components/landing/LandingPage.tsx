@@ -211,6 +211,7 @@ export function LandingPage() {
           <span className="lp-nav-name">thepickempool</span>
         </div>
         <div className="lp-nav-right">
+          <Link href="/formats" className="lp-nav-formats">Formats</Link>
           <Link href="/sign-in" className="lp-nav-signin">Sign In</Link>
         </div>
       </header>
@@ -430,6 +431,54 @@ export function LandingPage() {
           <h2 className="lp-section-title">Everything you need to<br /><span className="lp-accent">run the pool right</span></h2>
           <div className="lp-features-grid">
             {FEATURES.map((f, i) => <FeatureCard key={i} feature={f} index={i} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* League format comparison table */}
+      <section className="lp-section lp-formats-section">
+        <div className="lp-section-inner">
+          <div className="lp-section-label">6 FORMATS</div>
+          <h2 className="lp-section-title">One platform.<br /><span className="lp-accent">Every format your pool needs.</span></h2>
+          <p className="lp-section-sub">Pick the format that fits your group. Change it in the commissioner panel before the season.</p>
+          <div className="lp-formats-table-wrap">
+            <table className="lp-formats-table">
+              <thead>
+                <tr>
+                  <th className="lp-fmt-th lp-fmt-th-name">Format</th>
+                  <th className="lp-fmt-th">Picks/Week</th>
+                  <th className="lp-fmt-th">Spread</th>
+                  <th className="lp-fmt-th">Confidence</th>
+                  <th className="lp-fmt-th">Lock Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["ATS + Confidence", "All 16", "ATS", "1–16", "Each kickoff", true],
+                  ["Straight Up + Confidence", "All 16", "None", "1–16", "Each kickoff", false],
+                  ["ATS Only", "All 16", "ATS", "None", "Each kickoff", false],
+                  ["Straight Up Winners", "All 16", "None", "None", "Each kickoff", false],
+                  ["Pick 5 — ATS", "Any 5", "ATS", "None", "Friday", false],
+                  ["Pick 5 — Straight Up", "Any 5", "None", "None", "Friday", false],
+                ].map(([name, picks, spread, conf, lock, popular]) => (
+                  <tr key={name as string} className={`lp-fmt-row${popular ? " popular" : ""}`}>
+                    <td className="lp-fmt-td lp-fmt-td-name">
+                      {name}
+                      {popular && <span className="lp-fmt-badge">Most Popular</span>}
+                    </td>
+                    <td className="lp-fmt-td">{picks}</td>
+                    <td className="lp-fmt-td">{spread}</td>
+                    <td className="lp-fmt-td">{conf}</td>
+                    <td className="lp-fmt-td">{lock}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ textAlign: "center", marginTop: 24 }}>
+            <Link href="/formats" className="lp-btn-ghost" style={{ display: "inline-flex" }}>
+              Deep dive into each format →
+            </Link>
           </div>
         </div>
       </section>
