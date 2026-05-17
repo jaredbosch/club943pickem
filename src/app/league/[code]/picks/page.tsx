@@ -1,9 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PickSheet } from "@/components/pick-sheet/PickSheet";
+import { Pick5Sheet } from "@/components/pick-sheet/Pick5Sheet";
 import { transformGamesAndPicks } from "@/lib/picks/transform";
 import { nflSeasonYear, nflWeek } from "@/lib/nfl/week";
 import { week7Slots } from "@/components/pick-sheet/week7-data";
+import { type ScoringType, isPick5Format } from "@/lib/scoring";
 
 export default async function PicksPage({
   params,
@@ -82,19 +84,56 @@ export default async function PicksPage({
         .maybeSingle()
     : { data: null };
 
+  const scoringType = (league.scoring_type ?? "ats_confidence") as ScoringType;
+  const leagueCode = params.code.toUpperCase();
+  const sharedProps = {
+    leagueId: league.id,
+    leagueName: league.name,
+    leagueCode,
+    userId: user.id,
+    week: hasGames ? currentWeek : 7,
+    seasonYear,
+    availableWeeks: hasGames ? availableWeeks : [7],
+    scoringType,
+    activeWeek,
+  };
+
+  // Pick 5 formats get a dedicated pick sheet
+  if (isPick5Format(scoringType)) {
+    const thursdayGame = (games ?? []).find(g => g.time_slot === "thursday") ?? null;
+    const isThursdayLocked = thursdayGame ? new Date(thursdayGame.kickoff_time) <= now : false;
+
+    return (
+      <Pick5Sheet
+        key={currentWeek}
+        {...sharedProps}
+        games={(games ?? []).map(g => ({
+          id: g.id,
+          homeTeam: g.home_team,
+          awayTeam: g.away_team,
+          spreadHome: g.spread_home,
+          timeSlot: g.time_slot,
+          kickoffTime: g.kickoff_time,
+          status: g.status,
+        }))}
+        existingPicks={(picks ?? []).map(p => ({
+          gameId: p.game_id,
+          pickedTeam: p.picked_team,
+          isCorrect: p.is_correct,
+          pointsEarned: p.points_earned,
+        }))}
+        isThursdayLocked={isThursdayLocked}
+        hasGames={hasGames}
+      />
+    );
+  }
+
+  // Standard formats
   return (
     <PickSheet
       key={currentWeek}
+      {...sharedProps}
       slots={slots}
-      week={hasGames ? currentWeek : 7}
-      seasonYear={seasonYear}
-      availableWeeks={hasGames ? availableWeeks : [7]}
-      leagueId={league.id}
-      leagueName={league.name}
-      leagueCode={params.code.toUpperCase()}
-      activeWeek={activeWeek}
-      scoringType={(league.scoring_type ?? "ats_confidence") as "ats_confidence" | "ats" | "straight_up"}
-      userId={user.id}
       hasGames={true}
       isSampleData={!hasGames}
       mnfGame={mnfGame ? {

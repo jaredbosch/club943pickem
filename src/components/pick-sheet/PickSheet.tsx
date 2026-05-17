@@ -21,7 +21,8 @@ type MnfGame = {
   isLocked: boolean;
 };
 
-type ScoringType = "ats_confidence" | "ats" | "straight_up";
+import type { ScoringType } from "@/lib/scoring";
+import { isConfidenceFormat, isAtsFormat, scoringTypeHeroLabel } from "@/lib/scoring";
 
 type Props = {
   slots: Slot[];
@@ -80,8 +81,8 @@ export function PickSheet({
   initialTiebreakerGuess = null,
 }: Props) {
   const isFutureWeek = week > activeWeek;
-  const showConfidence = scoringType === "ats_confidence" && !isFutureWeek;
-  const showSpread = scoringType !== "straight_up" && !isFutureWeek;
+  const showConfidence = isConfidenceFormat(scoringType) && !isFutureWeek;
+  const showSpread = isAtsFormat(scoringType) && !isFutureWeek;
   const router = useRouter();
   const supabase = createClient();
 
@@ -296,7 +297,7 @@ export function PickSheet({
         {/* Hero */}
         <div className="ps-hero pp-hero-grad">
           <div>
-            <div className="ps-hero-week">WEEK {week} · {seasonYear} · {isFutureWeek ? "SCHEDULE" : scoringType === "ats_confidence" ? "CONFIDENCE PICKS" : scoringType === "ats" ? "ATS PICKS" : "PICKS"}</div>
+            <div className="ps-hero-week">WEEK {week} · {seasonYear} · {isFutureWeek ? "SCHEDULE" : scoringTypeHeroLabel(scoringType)}</div>
             <div className="ps-hero-title">{isFutureWeek ? "COMING SOON" : "LOCK IT IN"}</div>
             <div className="ps-hero-sub">
               {leagueName}

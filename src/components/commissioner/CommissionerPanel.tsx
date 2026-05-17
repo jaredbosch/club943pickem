@@ -18,7 +18,7 @@ type Member = {
   joinedAt: string;
 };
 
-type ScoringType = "ats_confidence" | "ats" | "straight_up";
+import { type ScoringType, SCORING_OPTIONS } from "@/lib/scoring";
 type WeeklyPotType = "percentage" | "fixed";
 
 type LeagueSettings = {
@@ -402,11 +402,7 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
               <div className="comm-settings-row">
                 <label className="comm-settings-label">Scoring Mode</label>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {([
-                    ["ats_confidence", "ATS + Confidence", "Pick winners against the spread, assign 1–16 confidence points per game"],
-                    ["ats", "ATS Only", "Pick winners against the spread, 1 point per correct pick"],
-                    ["straight_up", "Straight Up Winners", "Pick the outright winner, no spread, 1 point per correct pick"],
-                  ] as [ScoringType, string, string][]).map(([val, label, desc]) => (
+                  {SCORING_OPTIONS.map(([val, label, desc]) => (
                     <label key={val} className={`comm-type-option${settings.scoring_type === val ? " selected" : ""}`}>
                       <input type="radio" name="scoring_type" value={val}
                         checked={settings.scoring_type === val}

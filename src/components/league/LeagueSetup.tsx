@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { type ScoringType, SCORING_OPTIONS } from "@/lib/scoring";
 
 type Tab = "create" | "join";
 
@@ -18,7 +19,7 @@ export function LeagueSetup() {
   const [maxPlayers, setMaxPlayers] = useState(50);
 
   // Create form: scoring type
-  const [scoringType, setScoringType] = useState<"ats_confidence" | "ats" | "straight_up">("ats_confidence");
+  const [scoringType, setScoringType] = useState<ScoringType>("ats_confidence");
 
   // Join form state
   const [code, setCode] = useState("");
@@ -198,11 +199,7 @@ export function LeagueSetup() {
             <div className="league-field">
               <label className="league-label">League Type</label>
               <div className="league-type-options">
-                {([
-                  ["ats_confidence", "ATS + Confidence", "Pick ATS winners, assign 1–16 confidence points"],
-                  ["ats", "ATS Only", "Pick ATS winners, 1 point per correct pick"],
-                  ["straight_up", "Straight Up Winners", "Pick the outright winner, no spread"],
-                ] as ["ats_confidence" | "ats" | "straight_up", string, string][]).map(([val, label, desc]) => (
+                {SCORING_OPTIONS.map(([val, label, desc]) => (
                   <label key={val} className={`league-type-option${scoringType === val ? " selected" : ""}`}>
                     <input type="radio" name="scoringType" value={val}
                       checked={scoringType === val}
