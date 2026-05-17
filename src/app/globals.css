@@ -5832,3 +5832,16 @@ body {
   transition: color 0.15s;
 }
 .lp-cta-x:hover { color: var(--ink2); }
+
+/* X icon in landing nav */
+.lp-nav-x {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink3);
+  text-decoration: none;
+  padding: 6px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.lp-nav-x:hover { color: var(--ink); background: var(--bg2); }
