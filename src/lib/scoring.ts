@@ -31,6 +31,15 @@ export function scoringTypeHeroLabel(t: ScoringType): string {
   }
 }
 
+// Pick 5 result encoding in the picks table:
+//   Win:   is_correct = true,  points_earned = 1.0
+//   Push:  is_correct = null,  points_earned = 0.5  (null = "not a win or loss", 0.5 signals push)
+//   Loss:  is_correct = false, points_earned = 0
+//   Pending: is_correct = null, points_earned = null
+export function isPick5Push(isCorrect: boolean | null, pointsEarned: number | null): boolean {
+  return isCorrect === null && pointsEarned === 0.5;
+}
+
 export const SCORING_OPTIONS: [ScoringType, string, string][] = [
   ['ats_confidence', 'ATS + Confidence',        'Pick ATS winners and assign 1–16 confidence per game'],
   ['ats',           'ATS Only',                 'Pick ATS winners — 1 point per correct pick'],

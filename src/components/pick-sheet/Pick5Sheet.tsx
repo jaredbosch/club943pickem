@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { SignOutButton } from "@/components/ui/SignOutButton";
 import { NFL_COLORS } from "@/lib/nfl-colors";
 import type { ScoringType } from "@/lib/scoring";
-import { isAtsFormat } from "@/lib/scoring";
+import { isAtsFormat, isPick5Push } from "@/lib/scoring";
 
 type Game = {
   id: string;
@@ -23,7 +23,7 @@ type ExistingPick = {
   gameId: string;
   pickedTeam: string | null;
   isCorrect: boolean | null;
-  pointsEarned: number | null;
+  pointsEarned: number | null; // 1 = win, 0.5 = push, 0 = loss, null = pending
 };
 
 type Props = {
@@ -260,10 +260,10 @@ export function Pick5Sheet({
           </div>
         ) : null}
 
-        {/* Lock deadline callout */}
+        {/* Lock deadline + scoring rule */}
         {!isLocked && !isFutureWeek && (
           <div className="p5-lock-notice">
-            ⏰ All picks lock at Thursday night kickoff
+            ⏰ All picks lock Thursday at kickoff · 1pt win · ½pt push · 0pt loss
           </div>
         )}
 
@@ -337,16 +337,20 @@ export function Pick5Sheet({
               const pickedTeam = picks.get(g.id) ?? null;
               const existingResult = existingPicks.find(p => p.gameId === g.id);
               const isCorrect = existingResult?.isCorrect ?? null;
+              const pointsEarned = existingResult?.pointsEarned ?? null;
+              const isPush = isPick5Push(isCorrect, pointsEarned);
+              const resultClass = isCorrect === true ? " result-correct" : isCorrect === false ? " result-incorrect" : isPush ? " result-push" : "";
 
               return (
-                <div key={g.id} className={`pp-pick-row has-pick${isCorrect === true ? " result-correct" : isCorrect === false ? " result-incorrect" : ""}`}>
+                <div key={g.id} className={`pp-pick-row has-pick${resultClass}`}>
                   <div className="pp-pick-inner schedule-only">
                     <div className="pp-pick-center">
                       <div className="pp-pick-meta">
                         <span className="pp-pick-meta-time">{formatTime(g.kickoffTime)}</span>
                         <div className="pp-pick-meta-spacer" />
-                        {isCorrect === true && <span className="pp-pick-meta-won">✓ correct</span>}
-                        {isCorrect === false && <span className="pp-pick-meta-lost">✗ wrong</span>}
+                        {isCorrect === true && <span className="pp-pick-meta-won">+1 pt</span>}
+                        {isPush && <span className="pp-pick-meta-push">½ push</span>}
+                        {isCorrect === false && <span className="pp-pick-meta-lost">0 pts</span>}
                       </div>
                       <div className="pp-pick-teams">
                         {/* Away */}
