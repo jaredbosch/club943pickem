@@ -5846,3 +5846,72 @@ body {
   transition: color 0.15s, background 0.15s;
 }
 .lp-nav-x:hover { color: var(--ink); background: var(--bg2); }
+
+/* ── Support page ────────────────────────────────────────────────── */
+.support-contact-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-bottom: 0;
+}
+.support-contact-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  width: 40px;
+  text-align: center;
+}
+.support-contact-title {
+  font-family: var(--font-code);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.support-contact-sub {
+  font-size: 12px;
+  color: var(--ink3);
+  margin-top: 3px;
+}
+.support-contact-btn {
+  margin-left: auto;
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+  border-radius: 6px;
+  padding: 6px 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.support-contact-btn:hover { background: color-mix(in oklab, var(--accent) 10%, transparent); }
+.support-faq-item {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+.support-faq-item:last-child { border-bottom: none; }
+.support-faq-q {
+  font-family: var(--font-code);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  margin: 0 0 8px;
+}
+.support-faq-a {
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.65;
+  margin: 0;
+}
+@media (max-width: 640px) {
+  .support-contact-card { flex-wrap: wrap; }
+  .support-contact-btn { margin-left: 0; width: 100%; text-align: center; }
+}

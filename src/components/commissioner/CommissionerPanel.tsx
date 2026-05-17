@@ -249,6 +249,7 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
         <span className="pp-chip solid">{settings.name}</span>
         <div style={{ flex: 1 }} />
         <Link href={`/league/${leagueCode}/dashboard`} className="ps-nav-back">← Standings</Link>
+        <Link href="/support" className="ps-nav-back">Help</Link>
         <SignOutButton />
         <ThemeToggle />
       </header>
