@@ -110,8 +110,8 @@ export default function SupportPage() {
             <div className="support-contact-title">Email the developer directly</div>
             <div className="support-contact-sub">Usually responds within 24 hours. For bugs, league issues, or anything else.</div>
           </div>
-          <a href="mailto:support@thepickempool.com" className="support-contact-btn">
-            support@thepickempool.com
+          <a href="mailto:admin@thepickempool.com" className="support-contact-btn">
+            admin@thepickempool.com
           </a>
         </div>
 
@@ -141,7 +141,7 @@ export default function SupportPage() {
 
         <h2 className="legal-h2">Still stuck?</h2>
         <p className="legal-p">
-          Email <a href="mailto:support@thepickempool.com" className="legal-link">support@thepickempool.com</a> or DM{" "}
+          Email <a href="mailto:admin@thepickempool.com" className="legal-link">admin@thepickempool.com</a> or DM{" "}
           <a href="https://x.com/thepickempool" target="_blank" rel="noopener noreferrer" className="legal-link">@thepickempool on X</a>.
           We build and run this product directly — you'll hear from the person who wrote the code.
         </p>
