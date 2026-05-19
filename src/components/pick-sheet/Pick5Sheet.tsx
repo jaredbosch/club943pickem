@@ -98,36 +98,39 @@ export function Pick5Sheet({
   const pickTeam = useCallback(async (gameId: string, team: string) => {
     if (isLocked) return;
 
+    // Compute the new picked team before touching state
+    const current = picks.get(gameId) ?? null;
+    let newPick: string | null;
+
+    if (current === team) {
+      newPick = null; // deselect
+    } else if (picks.has(gameId) || picks.size < MAX_PICKS) {
+      newPick = team; // pick this side (change or new)
+    } else {
+      return; // at limit, game not yet selected — do nothing
+    }
+
+    // Update UI state
     setPicks(prev => {
       const next = new Map(prev);
-      if (next.get(gameId) === team) {
-        // Tap same team → deselect
-        next.delete(gameId);
-      } else if (next.has(gameId) || next.size < MAX_PICKS) {
-        // Change side on existing pick, or add new pick if under limit
-        next.set(gameId, team);
-      }
+      if (newPick === null) next.delete(gameId);
+      else next.set(gameId, newPick!);
       return next;
     });
 
-    // Persist immediately
-    setTimeout(async () => {
-      setPicks(current => {
-        const pickedTeam = current.get(gameId) ?? null;
-        if (pickedTeam) {
-          supabase.from("picks").upsert(
-            { user_id: userId, league_id: leagueId, game_id: gameId, week, picked_team: pickedTeam, confidence: null, is_locked: false },
-            { onConflict: "user_id,league_id,game_id" }
-          ).then(({ error }) => { if (error) setSaveError(error.message); });
-        } else {
-          supabase.from("picks").delete()
-            .eq("user_id", userId).eq("league_id", leagueId).eq("game_id", gameId)
-            .then(({ error }) => { if (error) setSaveError(error.message); });
-        }
-        return current;
-      });
-    }, 0);
-  }, [isLocked, leagueId, userId, week, supabase]);
+    // Persist to DB immediately
+    if (newPick) {
+      const { error } = await supabase.from("picks").upsert(
+        { user_id: userId, league_id: leagueId, game_id: gameId, week, picked_team: newPick, confidence: null, is_locked: false },
+        { onConflict: "user_id,league_id,game_id" }
+      );
+      if (error) setSaveError(error.message);
+    } else {
+      const { error } = await supabase.from("picks").delete()
+        .eq("user_id", userId).eq("league_id", leagueId).eq("game_id", gameId);
+      if (error) setSaveError(error.message);
+    }
+  }, [isLocked, picks, leagueId, userId, week, supabase]);
 
   async function saveAllPicks() {
     setSaving(true);
