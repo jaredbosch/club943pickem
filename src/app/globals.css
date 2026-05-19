@@ -5916,3 +5916,35 @@ body {
   .support-contact-card { flex-wrap: wrap; }
   .support-contact-btn { margin-left: 0; width: 100%; text-align: center; }
 }
+
+/* Pick 5 — single-phase redesign */
+.p5-count-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--bg2);
+}
+.p5-count-pips {
+  display: flex;
+  gap: 5px;
+}
+.p5-pip {
+  width: 20px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line2);
+  transition: background 0.2s;
+}
+.p5-pip.filled { background: var(--accent); }
+.p5-count-label {
+  font-family: var(--font-code);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+.p5-count-full { color: var(--ink3); font-weight: 400; }
+.p5-dimmed { opacity: 0.35; pointer-events: none; }
