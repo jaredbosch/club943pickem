@@ -5948,3 +5948,70 @@ body {
 }
 .p5-count-full { color: var(--ink3); font-weight: 400; }
 .p5-dimmed { opacity: 0.35; pointer-events: none; }
+
+/* ── /home league picker ─────────────────────────────────────────── */
+.home-shell { min-height: 100vh; background: var(--bg); }
+.home-hero { padding: 48px 32px 40px; border-bottom: 1px solid var(--line); background: var(--bg2); }
+.home-hero-tag { font-family: var(--font-code); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink3); margin-bottom: 10px; }
+.home-hero-title { font-family: var(--font-disp); font-size: 40px; font-weight: 900; letter-spacing: -0.02em; text-transform: uppercase; color: var(--ink); margin: 0 0 6px; }
+.home-hero-sub { font-size: 15px; color: var(--ink3); margin: 0; }
+.home-user-name { font-family: var(--font-code); font-size: 12px; font-weight: 600; color: var(--ink3); letter-spacing: 0.04em; }
+
+.home-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 32px; max-width: 1100px; margin: 0 auto; }
+
+.home-card {
+  background: var(--bg2); border: 1px solid var(--line); border-radius: 12px;
+  display: flex; flex-direction: column; text-decoration: none; color: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+  overflow: hidden;
+}
+.home-card:hover { border-color: var(--line2); transform: translateY(-2px); }
+.home-card-top { padding: 20px 20px 16px; flex: 1; }
+.home-card-name { font-family: var(--font-disp); font-size: 22px; font-weight: 900; letter-spacing: -0.01em; text-transform: uppercase; color: var(--ink); margin: 0 0 10px; }
+.home-card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.home-card-chip { font-family: var(--font-code); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--bg3); color: var(--ink3); border: 1px solid var(--line); }
+.home-card-chip.comm { background: color-mix(in oklab, var(--accent) 15%, var(--bg3)); color: var(--accent); border-color: color-mix(in oklab, var(--accent) 35%, transparent); }
+.home-card-stats { display: flex; gap: 0; border-top: 1px solid var(--line); }
+.home-card-stat { flex: 1; padding: 14px 16px; border-right: 1px solid var(--line); }
+.home-card-stat:last-child { border-right: none; }
+.home-card-stat-val { font-family: var(--font-disp); font-size: 26px; font-weight: 900; color: var(--accent); line-height: 1; }
+.home-card-stat-label { font-family: var(--font-code); font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink3); margin-top: 4px; }
+.home-card-footer { padding: 12px 20px; background: var(--bg3); font-family: var(--font-code); font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
+
+.home-card-new { border-style: dashed; background: transparent; align-items: center; justify-content: center; padding: 32px; gap: 16px; }
+.home-card-new:hover { transform: none; background: var(--bg2); }
+.home-card-new-title { font-family: var(--font-code); font-size: 12px; font-weight: 600; color: var(--ink3); text-align: center; }
+.home-card-new-actions { display: flex; gap: 10px; }
+.home-card-new-btn { font-family: var(--font-code); font-size: 12px; font-weight: 700; padding: 8px 20px; border-radius: 6px; border: 1px solid var(--line2); color: var(--ink2); text-decoration: none; transition: background 0.15s, color 0.15s; }
+.home-card-new-btn:hover { background: var(--bg3); color: var(--ink); }
+.home-card-new-btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+.home-card-new-btn.primary:hover { opacity: 0.88; }
+
+@media (max-width: 640px) {
+  .home-cards { padding: 16px; grid-template-columns: 1fr; }
+  .home-hero { padding: 32px 16px 28px; }
+  .home-hero-title { font-size: 30px; }
+}
+
+/* ── League switcher dropdown ────────────────────────────────────── */
+.ls-wrap { position: relative; }
+.ls-trigger {
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer; border: none; font-family: inherit;
+  background: var(--accent); color: #000;
+}
+.ls-trigger.open { opacity: 0.85; }
+.ls-chevron { font-size: 8px; opacity: 0.7; }
+.ls-dropdown {
+  position: absolute; top: calc(100% + 8px); left: 0;
+  background: var(--bg2); border: 1px solid var(--line2); border-radius: 10px;
+  min-width: 220px; z-index: 100; overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.ls-dropdown-label { font-family: var(--font-code); font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink3); padding: 10px 14px 6px; }
+.ls-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; text-decoration: none; color: var(--ink); transition: background 0.1s; gap: 12px; }
+.ls-item:hover { background: var(--bg3); }
+.ls-item-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+.ls-item-year { font-family: var(--font-code); font-size: 10px; color: var(--ink3); }
+.ls-all { display: block; padding: 10px 14px; font-family: var(--font-code); font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); text-decoration: none; border-top: 1px solid var(--line); transition: background 0.1s; }
+.ls-all:hover { background: var(--bg3); }

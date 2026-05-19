@@ -1,3 +1,4 @@
+import { LeagueSwitcher } from "@/components/nav/LeagueSwitcher";
 import Link from "next/link";
 import { NFL_COLORS } from "@/lib/nfl-colors";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -194,7 +195,7 @@ export function WeeklyGrid({
           <span className="app-nav-name">thepickempool</span>
         </Link>
         <div className="app-nav-sep" />
-        <span className="pp-chip solid app-nav-year">{leagueName}</span>
+        <LeagueSwitcher currentLeagueCode={leagueCode} currentLeagueName={leagueName} />
         <div className="app-nav-spacer" />
         <nav className="app-nav-links">
           <Link href="/settings" className="ps-nav-back">Settings</Link>

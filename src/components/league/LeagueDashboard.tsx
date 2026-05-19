@@ -1,4 +1,5 @@
 "use client";
+import { LeagueSwitcher } from "@/components/nav/LeagueSwitcher";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -232,7 +233,7 @@ export function LeagueDashboard({ league, leagueCode, standings, isCommissioner,
           <span className="app-nav-name">thepickempool</span>
         </Link>
         <div className="app-nav-sep" />
-        <span className="pp-chip solid app-nav-year">{league.season_year}</span>
+        <LeagueSwitcher currentLeagueCode={leagueCode} currentLeagueName={league.name} />
         <div className="app-nav-spacer" />
         <nav className="app-nav-links">
           <Link href={`/league/${leagueCode}/grid`} className="ps-nav-back">The Grid</Link>

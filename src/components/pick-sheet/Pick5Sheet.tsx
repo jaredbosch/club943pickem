@@ -1,4 +1,5 @@
 "use client";
+import { LeagueSwitcher } from "@/components/nav/LeagueSwitcher";
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
@@ -161,7 +162,7 @@ export function Pick5Sheet({
               <span className="app-nav-name">thepickempool</span>
             </Link>
             <div style={{ width: 1, height: 24, background: "var(--line)" }} />
-            <span className="pp-chip solid">{leagueName}</span>
+            <LeagueSwitcher currentLeagueCode={leagueCode} currentLeagueName={leagueName} />
             <div style={{ flex: 1 }} />
             <Link href="/settings" className="ps-nav-back">Settings</Link>
             <Link href={`/league/${leagueCode}/dashboard`} className="ps-nav-back">← Standings</Link>

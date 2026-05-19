@@ -7,13 +7,18 @@ export default async function Home() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (user) {
-    const { data: membership } = await supabase
+    const { data: memberships } = await supabase
       .from("league_members")
-      .select("league_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
-    redirect(membership ? "/dashboard" : "/league");
+      .select("leagues(invite_code)")
+      .eq("user_id", user.id);
+
+    const leagues = (memberships ?? [])
+      .map((m) => (m.leagues as unknown as { invite_code: string } | null)?.invite_code)
+      .filter(Boolean) as string[];
+
+    if (leagues.length === 0) redirect("/league");
+    if (leagues.length === 1) redirect(`/league/${leagues[0]}/dashboard`);
+    redirect("/home"); // 2+ leagues → picker
   }
 
   return <LandingPage />;
