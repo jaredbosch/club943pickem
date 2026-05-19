@@ -4,6 +4,8 @@ import { NFL_COLORS } from "@/lib/nfl-colors";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { SignOutButton } from "@/components/ui/SignOutButton";
 import type { ProfileStats } from "@/lib/profile-stats";
+import type { ScoringType } from "@/lib/scoring";
+import { isAtsFormat, isConfidenceFormat, isPick5Format } from "@/lib/scoring";
 
 type WeekStat = {
   week: number;
@@ -45,6 +47,7 @@ type Props = {
   mostTrusted: TeamTendency[];
   blindSpots: TeamTendency[];
   profileStats: ProfileStats;
+  scoringType: ScoringType;
   isCurrentUser: boolean;
 };
 
@@ -82,6 +85,7 @@ export function PlayerProfile({
   mostTrusted,
   blindSpots,
   profileStats,
+  scoringType,
   isCurrentUser,
 }: Props) {
   const winRate = totalGraded > 0 ? Math.round((correctPicks / totalGraded) * 100) : 0;
@@ -327,11 +331,16 @@ export function PlayerProfile({
       </div>
 
       {/* ── Advanced Stats ── */}
+      {(() => {
+        const showConf  = isConfidenceFormat(scoringType);
+        const showAts   = isAtsFormat(scoringType);
+        const showTb    = !isPick5Format(scoringType);
+        return (
       <div className="prof-adv-section">
           <div className="prof-adv-inner">
 
-            {/* Confidence Calibration */}
-            <div className="prof-adv-card prof-adv-full">
+            {/* Confidence Calibration — confidence formats only */}
+            {showConf && <div className="prof-adv-card prof-adv-full">
               <div className="prof-adv-title">Confidence Calibration</div>
               <div className="prof-adv-sub">Do your locks actually win more? A sharp player shows a rising curve.</div>
               <div className="prof-conf-bars">
@@ -354,29 +363,31 @@ export function PlayerProfile({
                   );
                 })}
               </div>
-            </div>
+            </div>}
 
-            {/* Favorite vs Underdog + Home vs Away */}
+            {/* Favorite vs Underdog + Home vs Away — ATS formats show both; SU shows only home/away */}
             <div className="prof-adv-card">
-              <div className="prof-adv-title">Fav vs Dog</div>
-              <div className="prof-split-rows">
-                {[
-                  { label: "Favorites", stat: profileStats.fav },
-                  { label: "Underdogs", stat: profileStats.dog },
-                ].map(({ label, stat }) => (
-                  <div key={label} className="prof-split-row">
-                    <div className="prof-split-label">{label}</div>
-                    <div className="prof-split-bar-wrap">
-                      <div className="prof-split-bar" style={{ width: `${stat.picks > 0 ? Math.round(stat.winRate * 100) : 0}%` }} />
+              {showAts && <>
+                <div className="prof-adv-title">Fav vs Dog</div>
+                <div className="prof-split-rows">
+                  {[
+                    { label: "Favorites", stat: profileStats.fav },
+                    { label: "Underdogs", stat: profileStats.dog },
+                  ].map(({ label, stat }) => (
+                    <div key={label} className="prof-split-row">
+                      <div className="prof-split-label">{label}</div>
+                      <div className="prof-split-bar-wrap">
+                        <div className="prof-split-bar" style={{ width: `${stat.picks > 0 ? Math.round(stat.winRate * 100) : 0}%` }} />
+                      </div>
+                      <div className="prof-split-stat">
+                        {stat.picks > 0 ? `${Math.round(stat.winRate * 100)}%` : "—"}
+                        <span className="prof-split-count"> ({stat.picks})</span>
+                      </div>
                     </div>
-                    <div className="prof-split-stat">
-                      {stat.picks > 0 ? `${Math.round(stat.winRate * 100)}%` : "—"}
-                      <span className="prof-split-count"> ({stat.picks})</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="prof-adv-divider" />
+                  ))}
+                </div>
+                <div className="prof-adv-divider" />
+              </>}
               <div className="prof-adv-title" style={{ marginTop: 14 }}>Home vs Away</div>
               <div className="prof-split-rows">
                 {[
@@ -397,8 +408,8 @@ export function PlayerProfile({
               </div>
             </div>
 
-            {/* Line size */}
-            <div className="prof-adv-card">
+            {/* Line size — ATS formats only */}
+            {showAts && <div className="prof-adv-card">
               <div className="prof-adv-title">Performance by Line Size</div>
               <div className="prof-line-grid">
                 {[profileStats.lineShort, profileStats.lineMid, profileStats.lineBig].map((g) => (
@@ -409,9 +420,9 @@ export function PlayerProfile({
                   </div>
                 ))}
               </div>
-            </div>
+            </div>}
 
-            {/* Primetime vs Regular */}
+            {/* Primetime vs Regular + Divisional — all formats */}
             <div className="prof-adv-card">
               <div className="prof-adv-title">Primetime vs Regular</div>
               <div className="prof-split-rows">
@@ -467,7 +478,7 @@ export function PlayerProfile({
                   <div className="prof-streak-label">Longest Win Streak</div>
                 </div>
               </div>
-              {profileStats.tbCount > 0 && (
+              {showTb && profileStats.tbCount > 0 && (
                 <>
                   <div className="prof-adv-divider" />
                   <div className="prof-adv-title" style={{ marginTop: 14 }}>MNF Tiebreaker</div>
@@ -487,6 +498,8 @@ export function PlayerProfile({
 
           </div>
         </div>
+        );
+      })()}
 
     </div>
   );

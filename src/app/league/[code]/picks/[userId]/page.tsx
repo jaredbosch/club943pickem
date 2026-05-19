@@ -14,7 +14,7 @@ export default async function PlayerProfilePage({
 
   const { data: league } = await supabase
     .from("leagues")
-    .select("id, name, season_year, invite_code")
+    .select("id, name, season_year, invite_code, scoring_type")
     .eq("invite_code", params.code.toUpperCase())
     .maybeSingle();
 
@@ -180,6 +180,7 @@ export default async function PlayerProfilePage({
       blindSpots={blindSpots}
       missedGames={missedGames}
       profileStats={profileStats}
+      scoringType={(league.scoring_type ?? "ats_confidence") as import("@/lib/scoring").ScoringType}
       isCurrentUser={params.userId === user.id}
     />
   );
