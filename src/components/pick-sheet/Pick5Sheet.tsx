@@ -234,9 +234,9 @@ export function Pick5Sheet({
               {isThursdayLocked && <span style={{ color: "var(--bad)", marginLeft: 8 }}>· Locked</span>}
             </div>
           </div>
-          <div className="ps-hero-right">
+          <div className="ps-hero-right" style={{ minWidth: 0, overflow: "hidden" }}>
             {/* Week nav */}
-            <div className="ps-week-nav">
+            <div className="ps-week-nav" style={{ overflowX: "auto", flexWrap: "nowrap", maxWidth: "100%", paddingBottom: 4, scrollbarWidth: "none" }}>
               {availableWeeks.map(w => (
                 <Link
                   key={w}
