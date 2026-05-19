@@ -142,7 +142,6 @@ export function GameRow({
                 <span className={`pp-pick-meta-pct${globalPct.awayPct >= 50 ? " pop" : ""}`}>{globalPct.awayPct}%</span>
                 <span className="pp-pick-meta-pct-sep">·</span>
                 <span className={`pp-pick-meta-pct${globalPct.homePct >= 50 ? " pop" : ""}`}>{globalPct.homePct}%</span>
-                <span className="pp-pick-meta-pct-label">({globalPct.total} picks)</span>
               </span>
             )}
             <span className="pp-pick-meta-spacer" />
