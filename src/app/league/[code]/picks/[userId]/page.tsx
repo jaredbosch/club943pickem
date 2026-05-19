@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PlayerProfile } from "@/components/profile/PlayerProfile";
+import { computeProfileStats } from "@/lib/profile-stats";
 
 export default async function PlayerProfilePage({
   params,
@@ -72,9 +73,15 @@ export default async function PlayerProfilePage({
 
   const { data: allGames } = await supabase
     .from("games")
-    .select("id, home_team, away_team, week, kickoff_time, status")
+    .select("id, home_team, away_team, week, kickoff_time, status, spread_home, time_slot")
     .eq("season_year", league.season_year)
     .order("kickoff_time", { ascending: false });
+
+  const { data: tbGuesses } = await supabase
+    .from("tiebreaker_guesses")
+    .select("guess, actual_total")
+    .eq("user_id", params.userId)
+    .eq("league_id", league.id);
 
   const gameMap = new Map((allGames ?? []).map((g) => [g.id, g]));
 
@@ -132,6 +139,27 @@ export default async function PlayerProfilePage({
   ).length;
   const missedGames = Math.max(0, finalGameCount - gradedPicks.length);
 
+  // Advanced stats
+  const profileStats = computeProfileStats(
+    (allPicks ?? []).map((p) => ({
+      game_id: p.game_id,
+      picked_team: p.picked_team,
+      confidence: p.confidence,
+      is_correct: p.is_correct,
+      points_earned: p.points_earned,
+      week: (p as unknown as { week: number }).week,
+    })),
+    (allGames ?? []).map((g) => ({
+      id: g.id,
+      home_team: g.home_team,
+      away_team: g.away_team,
+      spread_home: (g as unknown as { spread_home: number | null }).spread_home,
+      time_slot: (g as unknown as { time_slot: string }).time_slot,
+      week: (g as unknown as { week: number }).week,
+    })),
+    (tbGuesses ?? []).map((t) => ({ guess: t.guess, actual_total: t.actual_total })),
+  );
+
   return (
     <PlayerProfile
       displayName={displayName}
@@ -151,6 +179,7 @@ export default async function PlayerProfilePage({
       mostTrusted={mostTrusted}
       blindSpots={blindSpots}
       missedGames={missedGames}
+      profileStats={profileStats}
       isCurrentUser={params.userId === user.id}
     />
   );

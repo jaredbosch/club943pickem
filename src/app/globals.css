@@ -6015,3 +6015,111 @@ body {
 .ls-item-year { font-family: var(--font-code); font-size: 10px; color: var(--ink3); }
 .ls-all { display: block; padding: 10px 14px; font-family: var(--font-code); font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); text-decoration: none; border-top: 1px solid var(--line); transition: background 0.1s; }
 .ls-all:hover { background: var(--bg3); }
+
+/* ── Advanced profile stats ──────────────────────────────────────── */
+.prof-adv-section {
+  background: var(--bg2);
+  border-top: 1px solid var(--line);
+  padding: 32px 24px 40px;
+}
+.prof-adv-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.prof-adv-card {
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+}
+.prof-adv-full { grid-column: 1 / -1; }
+.prof-adv-title {
+  font-family: var(--font-code);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink2);
+  margin-bottom: 4px;
+}
+.prof-adv-sub { font-size: 12px; color: var(--ink3); margin-bottom: 20px; }
+.prof-adv-divider { height: 1px; background: var(--line); margin: 14px 0 0; }
+
+/* Confidence calibration bar chart */
+.prof-conf-bars {
+  display: flex;
+  gap: 12px;
+  height: 140px;
+  align-items: flex-end;
+}
+.prof-conf-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+.prof-conf-bar-track {
+  flex: 1;
+  width: 100%;
+  background: var(--bg2);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+.prof-conf-bar-fill {
+  width: 100%;
+  background: var(--accent);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s;
+}
+.prof-conf-bar-pct {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-disp);
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--ink);
+}
+.prof-conf-bar-label { font-family: var(--font-code); font-size: 10px; font-weight: 700; color: var(--ink2); }
+.prof-conf-bar-range { font-family: var(--font-code); font-size: 9px; color: var(--ink3); }
+.prof-conf-bar-count { font-family: var(--font-code); font-size: 9px; color: var(--ink3); }
+
+/* Split bars (fav/dog, home/away, etc.) */
+.prof-split-rows { display: flex; flex-direction: column; gap: 10px; }
+.prof-split-row { display: flex; align-items: center; gap: 10px; }
+.prof-split-label { font-size: 12px; color: var(--ink3); min-width: 130px; flex-shrink: 0; }
+.prof-split-bar-wrap { flex: 1; height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+.prof-split-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s; }
+.prof-split-stat { font-family: var(--font-disp); font-size: 15px; font-weight: 900; color: var(--ink); min-width: 50px; text-align: right; }
+.prof-split-count { font-family: var(--font-code); font-size: 10px; color: var(--ink3); font-weight: 400; }
+
+/* Line size grid */
+.prof-line-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+.prof-line-cell { background: var(--bg2); border-radius: 6px; padding: 12px 10px; text-align: center; }
+.prof-line-range { font-family: var(--font-code); font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: var(--ink3); margin-bottom: 6px; }
+.prof-line-pct { font-family: var(--font-disp); font-size: 24px; font-weight: 900; color: var(--accent); line-height: 1; }
+.prof-line-record { font-family: var(--font-code); font-size: 10px; color: var(--ink3); margin-top: 4px; }
+
+/* Streaks */
+.prof-streak-row { display: flex; gap: 16px; margin-top: 12px; }
+.prof-streak-item { flex: 1; }
+.prof-streak-val { font-family: var(--font-disp); font-size: 32px; font-weight: 900; line-height: 1; color: var(--ink); }
+.prof-streak-label { font-family: var(--font-code); font-size: 10px; color: var(--ink3); margin-top: 4px; letter-spacing: 0.04em; }
+
+@media (max-width: 640px) {
+  .prof-adv-inner { grid-template-columns: 1fr; }
+  .prof-adv-full { grid-column: 1; }
+  .prof-split-label { min-width: 100px; font-size: 11px; }
+  .prof-conf-bars { height: 110px; }
+}
