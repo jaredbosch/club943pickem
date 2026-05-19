@@ -121,7 +121,7 @@ export function LeagueSetup() {
   return (
     <div className="league-shell">
       <div className="league-card">
-        <h1 className="league-title">Club 943 Pick&apos;em</h1>
+        <h1 className="league-title">thepickempool</h1>
         <p className="league-muted">Create a new league or join one with an invite code.</p>
 
         <div className="league-tabs">
