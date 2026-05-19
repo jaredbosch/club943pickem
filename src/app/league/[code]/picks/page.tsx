@@ -107,6 +107,25 @@ export default async function PicksPage({
         .in("game_id", gameIds)
     : { data: [] };
 
+  // Spread history for line movement display
+  const { data: spreadHistory } = gameIds.length
+    ? await supabase
+        .from("spread_history")
+        .select("game_id, spread_home, recorded_at")
+        .in("game_id", gameIds)
+        .order("recorded_at", { ascending: true })
+    : { data: [] };
+
+  // Build per-game history map: gameId → [{spread, date}]
+  const spreadHistoryMap = new Map<string, { spread: number; date: string }[]>();
+  for (const snap of spreadHistory ?? []) {
+    if (!spreadHistoryMap.has(snap.game_id)) spreadHistoryMap.set(snap.game_id, []);
+    spreadHistoryMap.get(snap.game_id)!.push({
+      spread: Number(snap.spread_home),
+      date: snap.recorded_at,
+    });
+  }
+
   const hasGames = (games ?? []).length > 0;
   const slots = hasGames
     ? transformGamesAndPicks(games ?? [], picks ?? [])
@@ -136,6 +155,7 @@ export default async function PicksPage({
     scoringType,
     activeWeek,
     globalPickPcts,
+    spreadHistoryMap,
   };
 
   // Pick 5 formats get a dedicated pick sheet

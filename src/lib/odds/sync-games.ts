@@ -8,6 +8,7 @@ import type { OddsApiGame } from "./types";
 export type SyncStats = {
   fetched: number;
   upserted: number;
+  snapshots: number;
   skipped: { id: string; reason: string }[];
 };
 
@@ -37,15 +38,12 @@ export function transformGame(game: OddsApiGame): GameRow {
   };
 }
 
-// Upserts each fetched game into public.games. Uses the service-role client
-// so RLS is bypassed. Rows with status='locked' or later keep their
-// locked_spread_home; we only refresh spread_home/kickoff_time here.
 export async function syncGames(
   supabase: SupabaseClient,
   apiKey: string,
 ): Promise<SyncStats> {
   const games = await fetchNflOdds(apiKey);
-  const stats: SyncStats = { fetched: games.length, upserted: 0, skipped: [] };
+  const stats: SyncStats = { fetched: games.length, upserted: 0, snapshots: 0, skipped: [] };
 
   for (const game of games) {
     let row: GameRow;
@@ -59,15 +57,38 @@ export async function syncGames(
       continue;
     }
 
-    const { error } = await supabase
+    // Upsert the game
+    const { data: upserted, error } = await supabase
       .from("games")
-      .upsert(row, { onConflict: "external_id" });
+      .upsert(row, { onConflict: "external_id" })
+      .select("id, spread_home")
+      .maybeSingle();
 
     if (error) {
       stats.skipped.push({ id: game.id, reason: error.message });
       continue;
     }
     stats.upserted++;
+
+    // Record a spread snapshot if we have a spread and a game ID
+    if (upserted?.id && row.spread_home !== null) {
+      // Only insert if the spread differs from the most recent snapshot
+      const { data: lastSnap } = await supabase
+        .from("spread_history")
+        .select("spread_home")
+        .eq("game_id", upserted.id)
+        .order("recorded_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const lastSpread = lastSnap?.spread_home ?? null;
+      if (lastSpread === null || Math.abs(Number(lastSpread) - row.spread_home) >= 0.5) {
+        const { error: snapErr } = await supabase
+          .from("spread_history")
+          .insert({ game_id: upserted.id, spread_home: row.spread_home });
+        if (!snapErr) stats.snapshots++;
+      }
+    }
   }
 
   return stats;

@@ -6271,3 +6271,13 @@ body {
   font-size: 9px;
   color: var(--line2);
 }
+
+/* Line movement indicator in picks meta strip */
+.pp-pick-meta-movement {
+  font-family: var(--font-code);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink3);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}

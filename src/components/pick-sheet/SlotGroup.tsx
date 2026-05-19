@@ -1,6 +1,6 @@
 import type { Slot } from "./types";
 import { GameRow } from "./GameRow";
-import type { GlobalPickPcts } from "./PickSheet";
+import type { GlobalPickPcts, SpreadHistoryMap } from "./PickSheet";
 
 type Props = {
   slot: Slot;
@@ -14,13 +14,14 @@ type Props = {
   showConfidence?: boolean;
   showSpread?: boolean;
   globalPickPcts?: GlobalPickPcts;
+  spreadHistoryMap?: SpreadHistoryMap;
 };
 
 export function SlotGroup({
   slot, onPickTeam, onConfidenceChange, totalGames = 16,
   usedConfidenceMap, openPickerId, onOpenPicker,
   scheduleOnly = false, showConfidence = true, showSpread = true,
-  globalPickPcts,
+  globalPickPcts, spreadHistoryMap,
 }: Props) {
   return (
     <div className="ps-slot-group">
@@ -48,6 +49,7 @@ export function SlotGroup({
           showConfidence={showConfidence}
           showSpread={showSpread}
           globalPct={globalPickPcts?.get(game.id)}
+          spreadHistory={spreadHistoryMap?.get(game.id)}
         />
       ))}
     </div>

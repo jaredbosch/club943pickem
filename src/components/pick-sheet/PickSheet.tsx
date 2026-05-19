@@ -26,6 +26,7 @@ import type { ScoringType } from "@/lib/scoring";
 import { isConfidenceFormat, isAtsFormat, scoringTypeHeroLabel } from "@/lib/scoring";
 
 export type GlobalPickPcts = Map<string, { awayPct: number; homePct: number; total: number }>;
+export type SpreadHistoryMap = Map<string, { spread: number; date: string }[]>;
 
 type Props = {
   slots: Slot[];
@@ -43,6 +44,7 @@ type Props = {
   mnfGame?: MnfGame | null;
   initialTiebreakerGuess?: number | null;
   globalPickPcts?: GlobalPickPcts;
+  spreadHistoryMap?: SpreadHistoryMap;
 };
 
 function buildPickState(slots: Slot[]): Map<string, PickState> {
@@ -84,6 +86,7 @@ export function PickSheet({
   mnfGame = null,
   initialTiebreakerGuess = null,
   globalPickPcts,
+  spreadHistoryMap,
 }: Props) {
   const isFutureWeek = week > activeWeek;
   const showConfidence = isConfidenceFormat(scoringType) && !isFutureWeek;
@@ -389,6 +392,7 @@ export function PickSheet({
                   showConfidence={showConfidence}
                   showSpread={showSpread}
                   globalPickPcts={globalPickPcts}
+                  spreadHistoryMap={spreadHistoryMap}
                 />
               ))}
             </div>

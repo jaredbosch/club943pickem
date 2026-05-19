@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createAdminClient();
     const stats = await syncGames(supabase, apiKey);
-    return NextResponse.json({ ok: true, ...stats });
+    return NextResponse.json({ ok: true, fetched: stats.fetched, upserted: stats.upserted, snapshots: stats.snapshots, skipped: stats.skipped });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ ok: false, error: message }, { status: 500 });

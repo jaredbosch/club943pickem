@@ -20,6 +20,7 @@ type Props = {
   showConfidence?: boolean;
   showSpread?: boolean;
   globalPct?: GlobalPct;
+  spreadHistory?: { spread: number; date: string }[];
 };
 
 export function GameRow({
@@ -35,6 +36,7 @@ export function GameRow({
   showConfidence = true,
   showSpread = true,
   globalPct,
+  spreadHistory,
 }: Props) {
   const isOpen = !scheduleOnly && slotStatus === "open";
   const isLive = slotStatus === "live";
@@ -144,6 +146,21 @@ export function GameRow({
                 <span className={`pp-pick-meta-pct${globalPct.homePct >= 50 ? " pop" : ""}`}>{globalPct.homePct}%</span>
               </span>
             )}
+            {spreadHistory && spreadHistory.length >= 2 && (() => {
+              const open = spreadHistory[0].spread;
+              const current = spreadHistory[spreadHistory.length - 1].spread;
+              const diff = current - open;
+              if (Math.abs(diff) < 0.5) return null;
+              const moved = diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+              const dir = diff > 0 ? "▲" : "▼";
+              const color = diff > 0 ? "var(--bad)" : "var(--good)";
+              return (
+                <span className="pp-pick-meta-movement" title={`Opened ${open > 0 ? "+" : ""}${open}`}>
+                  <span style={{ color }}>{dir}</span>
+                  {Math.abs(diff).toFixed(1)} from {open > 0 ? "+" : ""}{open}
+                </span>
+              );
+            })()}
             <span className="pp-pick-meta-spacer" />
             {!isOpen && game.result === "correct" && (
               <span className="pp-pick-meta-won">+{game.pointsEarned ?? conf} pts</span>
