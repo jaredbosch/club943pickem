@@ -94,22 +94,37 @@ export function PickSheet({
   const [tbGuess, setTbGuess] = useState<string>(initialTiebreakerGuess != null ? String(initialTiebreakerGuess) : "");
   const [tbSaving, setTbSaving] = useState(false);
   const [tbSaved, setTbSaved] = useState(false);
+
+  // Always-fresh ref to picks — lets callbacks save without stale closures
+  const picksRef = useRef(picks);
+  useEffect(() => { picksRef.current = picks; }, [picks]);
+
   const isDirtyRef = useRef(false);
 
-  // Mark dirty on any pick change so autosave knows there's something to do
-  const markDirty = () => { isDirtyRef.current = true; };
-
-  // Autosave every 10s if there are unsaved changes
+  // Autosave every 3s (belt-and-suspenders behind per-tap saves)
   useEffect(() => {
     if (isSampleData) return;
     const id = setInterval(async () => {
       if (!isDirtyRef.current) return;
       isDirtyRef.current = false;
       await saveAllPicks();
-    }, 10_000);
+    }, 3_000);
     return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSampleData]);
+
+  // Warn before tab close if there are unsaved picks
+  useEffect(() => {
+    if (isSampleData || !showConfidence) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirtyRef.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isSampleData, showConfidence]);
 
   const allGames = slots.flatMap((s) => s.games);
   const totalGames = allGames.length;
@@ -180,56 +195,57 @@ export function PickSheet({
   }
 
   const pickTeam = useCallback(
-    (gameId: string, team: string) => {
+    async (gameId: string, team: string) => {
+      // Compute new state directly from the always-fresh ref
+      const current = picksRef.current.get(gameId) ?? { pickedTeam: null, confidence: null };
+      if (current.pickedTeam === team) return; // no change
+      const updated = { ...current, pickedTeam: team };
+
+      // Update UI
       setPicks((prev) => {
-        const current = prev.get(gameId) ?? { pickedTeam: null, confidence: null };
-        if (current.pickedTeam === team) return prev;
-        const updated = { ...current, pickedTeam: team };
-        const newMap = new Map(prev);
-        newMap.set(gameId, updated);
-        return newMap;
+        const next = new Map(prev);
+        next.set(gameId, updated);
+        return next;
       });
-      // Fire save outside the updater (setState updaters must be pure)
-      setPicks((prev) => {
-        const state = prev.get(gameId);
-        if (state) upsertPick(gameId, state);
-        markDirty();
-        return prev;
-      });
+      isDirtyRef.current = true;
+
+      // Save immediately — no setTimeout, no double-setState
+      await upsertPick(gameId, updated);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [allGames],
+    [],
   );
 
   const setConfidence = useCallback(
-    (gameId: string, value: number) => {
-      let clearedGameId: string | null = null;
+    async (gameId: string, value: number) => {
+      const currentMap = picksRef.current;
+
+      // Find if this confidence is already used by another game
+      let clearedId: string | null = null;
       let clearedState: PickState | null = null;
-
-      setPicks((prev) => {
-        const newMap = new Map(prev);
-        for (const [gid, p] of newMap) {
-          if (gid !== gameId && p.confidence === value) {
-            clearedGameId = gid;
-            clearedState = { ...p, confidence: null };
-            newMap.set(gid, clearedState);
-            break;
-          }
+      for (const [gid, p] of currentMap) {
+        if (gid !== gameId && p.confidence === value) {
+          clearedId = gid;
+          clearedState = { ...p, confidence: null };
+          break;
         }
-        const current = newMap.get(gameId) ?? { pickedTeam: null, confidence: null };
-        const updated = { ...current, confidence: value };
-        newMap.set(gameId, updated);
-        return newMap;
-      });
+      }
 
-      // Fire saves outside the updater
-      if (clearedGameId && clearedState) upsertPick(clearedGameId, clearedState);
+      const current = currentMap.get(gameId) ?? { pickedTeam: null, confidence: null };
+      const updated = { ...current, confidence: value };
+
+      // Update UI
       setPicks((prev) => {
-        const state = prev.get(gameId);
-        if (state) upsertPick(gameId, state);
-        markDirty();
-        return prev;
+        const next = new Map(prev);
+        if (clearedId && clearedState) next.set(clearedId, clearedState);
+        next.set(gameId, updated);
+        return next;
       });
+      isDirtyRef.current = true;
+
+      // Save both affected picks immediately
+      if (clearedId && clearedState) await upsertPick(clearedId, clearedState);
+      await upsertPick(gameId, updated);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
