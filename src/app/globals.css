@@ -6203,3 +6203,30 @@ body {
   .lp-analytics-wide { grid-column: 1; }
   .lp-stat-split-label { min-width: 90px; font-size: 10px; }
 }
+
+/* Platform-wide pick percentages */
+.pp-pick-meta-pct-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pp-pick-meta-pct {
+  font-family: var(--font-code);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink3);
+  letter-spacing: 0.02em;
+}
+.pp-pick-meta-pct.pop {
+  color: var(--accent);
+  font-weight: 700;
+}
+.pp-pick-meta-pct-sep {
+  font-size: 10px;
+  color: var(--line2);
+}
+.pp-pick-meta-pct-label {
+  font-family: var(--font-code);
+  font-size: 9px;
+  color: var(--line2);
+}

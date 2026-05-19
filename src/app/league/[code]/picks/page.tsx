@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { PickSheet } from "@/components/pick-sheet/PickSheet";
 import { Pick5Sheet } from "@/components/pick-sheet/Pick5Sheet";
 import { transformGamesAndPicks } from "@/lib/picks/transform";
@@ -59,6 +60,44 @@ export default async function PicksPage({
 
   const gameIds = (games ?? []).map((g) => g.id);
 
+  // Platform-wide pick percentages — all leagues, all users
+  // Uses admin client to bypass RLS so we get the true platform aggregate
+  const globalPickPcts = new Map<string, { awayPct: number; homePct: number; total: number }>();
+  if (gameIds.length > 0) {
+    const admin = createAdminClient();
+    const { data: allPicksRaw } = await admin
+      .from("picks")
+      .select("game_id, picked_team")
+      .in("game_id", gameIds)
+      .not("picked_team", "is", null);
+
+    // Count picks per team per game
+    const counts = new Map<string, { away: number; home: number }>();
+    const gameTeams = new Map<string, { away: string; home: string }>(
+      (games ?? []).map((g) => [g.id, { away: g.away_team, home: g.home_team }])
+    );
+    for (const p of allPicksRaw ?? []) {
+      if (!p.picked_team) continue;
+      const teams = gameTeams.get(p.game_id);
+      if (!teams) continue;
+      const c = counts.get(p.game_id) ?? { away: 0, home: 0 };
+      if (p.picked_team === teams.away) c.away++;
+      else if (p.picked_team === teams.home) c.home++;
+      counts.set(p.game_id, c);
+    }
+    // Convert to percentages (only show if 3+ picks on a game)
+    for (const [gameId, c] of counts) {
+      const total = c.away + c.home;
+      if (total >= 3) {
+        globalPickPcts.set(gameId, {
+          awayPct: Math.round((c.away / total) * 100),
+          homePct: Math.round((c.home / total) * 100),
+          total,
+        });
+      }
+    }
+  }
+
   const { data: picks } = gameIds.length
     ? await supabase
         .from("picks")
@@ -96,6 +135,7 @@ export default async function PicksPage({
     availableWeeks: hasGames ? availableWeeks : [7],
     scoringType,
     activeWeek,
+    globalPickPcts,
   };
 
   // Pick 5 formats get a dedicated pick sheet

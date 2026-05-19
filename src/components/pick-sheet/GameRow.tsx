@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import type { Game, SlotStatus, PickResult } from "./types";
 import { teamColor } from "@/lib/nfl-colors";
 
+type GlobalPct = { awayPct: number; homePct: number; total: number };
+
 type Props = {
   game: Game;
   slotStatus: SlotStatus;
@@ -17,6 +19,7 @@ type Props = {
   scheduleOnly?: boolean;
   showConfidence?: boolean;
   showSpread?: boolean;
+  globalPct?: GlobalPct;
 };
 
 export function GameRow({
@@ -31,6 +34,7 @@ export function GameRow({
   scheduleOnly = false,
   showConfidence = true,
   showSpread = true,
+  globalPct,
 }: Props) {
   const isOpen = !scheduleOnly && slotStatus === "open";
   const isLive = slotStatus === "live";
@@ -133,6 +137,14 @@ export function GameRow({
             {game.gameTime && <span className="pp-pick-meta-time">{game.gameTime}</span>}
             {game.network && <span className="pp-pick-meta-net">{game.network}</span>}
             {game.isPrimetime && <span className="pp-pick-meta-prime">★ PRIME</span>}
+            {globalPct && (
+              <span className="pp-pick-meta-pct-wrap">
+                <span className={`pp-pick-meta-pct${globalPct.awayPct >= 50 ? " pop" : ""}`}>{globalPct.awayPct}%</span>
+                <span className="pp-pick-meta-pct-sep">·</span>
+                <span className={`pp-pick-meta-pct${globalPct.homePct >= 50 ? " pop" : ""}`}>{globalPct.homePct}%</span>
+                <span className="pp-pick-meta-pct-label">({globalPct.total} picks)</span>
+              </span>
+            )}
             <span className="pp-pick-meta-spacer" />
             {!isOpen && game.result === "correct" && (
               <span className="pp-pick-meta-won">+{game.pointsEarned ?? conf} pts</span>
