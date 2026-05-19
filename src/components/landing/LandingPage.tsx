@@ -438,6 +438,98 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Analytics showcase */}
+      <section className="lp-section lp-analytics-section">
+        <div className="lp-section-inner">
+          <div className="lp-section-label">PLAYER ANALYTICS</div>
+          <h2 className="lp-section-title">Stats no other pool<br /><span className="lp-accent">has ever shown you.</span></h2>
+          <p className="lp-section-sub">Every player gets a full breakdown of how they pick — not just their record.</p>
+
+          <div className="lp-analytics-grid">
+
+            {/* Confidence calibration */}
+            <div className="lp-analytics-card lp-analytics-wide">
+              <div className="lp-analytics-card-label">CONFIDENCE CALIBRATION</div>
+              <div className="lp-analytics-card-desc">Do your locks actually win more? A sharp player shows a rising curve — high confidence picks win at higher rates than low ones.</div>
+              <div className="lp-conf-chart">
+                {[
+                  { tier: "Low",  range: "1–4",   pct: 38 },
+                  { tier: "Med",  range: "5–8",   pct: 52 },
+                  { tier: "High", range: "9–12",  pct: 64 },
+                  { tier: "Lock", range: "13–16", pct: 74 },
+                ].map((b) => (
+                  <div key={b.tier} className="lp-conf-col">
+                    <div className="lp-conf-bar-wrap">
+                      <div className="lp-conf-pct">{b.pct}%</div>
+                      <div className="lp-conf-bar" style={{ height: `${b.pct}%` }} />
+                    </div>
+                    <div className="lp-conf-tier">{b.tier}</div>
+                    <div className="lp-conf-range">{b.range}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Stat tiles */}
+            <div className="lp-analytics-card">
+              <div className="lp-analytics-card-label">FAVORITES vs UNDERDOGS</div>
+              <div className="lp-analytics-card-desc">Are you a chalk player or do you find value on dogs?</div>
+              <div className="lp-stat-splits">
+                {[
+                  { label: "Favorites", pct: 68, record: "34–16" },
+                  { label: "Underdogs", pct: 44, record: "11–14" },
+                ].map((s) => (
+                  <div key={s.label} className="lp-stat-split-row">
+                    <span className="lp-stat-split-label">{s.label}</span>
+                    <div className="lp-stat-split-track"><div className="lp-stat-split-bar" style={{ width: `${s.pct}%` }} /></div>
+                    <span className="lp-stat-split-val">{s.pct}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="lp-analytics-card">
+              <div className="lp-analytics-card-label">PERFORMANCE BY LINE SIZE</div>
+              <div className="lp-analytics-card-desc">Short spreads, medium, or blowouts — where do you have edge?</div>
+              <div className="lp-line-tiles">
+                {[
+                  { range: "0–3.5", label: "Short", pct: 61 },
+                  { range: "3.5–7", label: "Medium", pct: 55 },
+                  { range: "7+",    label: "Big",    pct: 38 },
+                ].map((t) => (
+                  <div key={t.label} className="lp-line-tile">
+                    <div className="lp-line-tile-pct">{t.pct}%</div>
+                    <div className="lp-line-tile-range">{t.range}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="lp-analytics-card">
+              <div className="lp-analytics-card-label">PRIMETIME vs REGULAR</div>
+              <div className="lp-analytics-card-desc">Some players dominate Sunday morning and collapse on Thursday night.</div>
+              <div className="lp-stat-splits">
+                {[
+                  { label: "Primetime (THU/SNF/MNF)", pct: 48 },
+                  { label: "Sunday early/late",       pct: 67 },
+                ].map((s) => (
+                  <div key={s.label} className="lp-stat-split-row">
+                    <span className="lp-stat-split-label">{s.label}</span>
+                    <div className="lp-stat-split-track"><div className="lp-stat-split-bar" style={{ width: `${s.pct}%` }} /></div>
+                    <span className="lp-stat-split-val">{s.pct}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+
+          <p className="lp-analytics-note">
+            Plus: divisional game performance, current streak, longest win streak, MNF tiebreaker accuracy — all on every player&apos;s profile.
+          </p>
+        </div>
+      </section>
+
       {/* League format comparison table */}
       <section className="lp-section lp-formats-section">
         <div className="lp-section-inner">
