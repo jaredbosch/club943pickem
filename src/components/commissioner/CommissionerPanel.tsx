@@ -143,6 +143,8 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState(false);
   const [openHelp, setOpenHelp] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<string | null>(null); // memberId
+  const [removing, setRemoving] = useState<string | null>(null);
 
   const [settings, setSettings] = useState<LeagueSettings>({
     name: league.name,
@@ -230,6 +232,23 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
       cancelEdit(memberId);
     }
     setSaving((s) => ({ ...s, [memberId]: false }));
+  }
+
+  async function removeMember(memberId: string, displayName: string) {
+    setRemoving(memberId);
+    const res = await fetch("/api/commissioner/remove-member", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ leagueId: league.id, memberId }),
+    });
+    setRemoving(null);
+    setConfirmRemove(null);
+    if (res.ok) {
+      setMembers((ms) => ms.filter((m) => m.memberId !== memberId));
+    } else {
+      const { error } = await res.json();
+      alert(`Could not remove ${displayName}: ${error}`);
+    }
   }
 
   async function copyCode() {
@@ -366,8 +385,26 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
                           <button type="button" className="comm-save-btn" onClick={() => saveEdit(m.memberId)} disabled={isSaving}>{isSaving ? "…" : "Save"}</button>
                           <button type="button" className="comm-cancel-btn" onClick={() => cancelEdit(m.memberId)}>✕</button>
                         </div>
+                      ) : confirmRemove === m.memberId ? (
+                        <div className="comm-remove-confirm">
+                          <span className="comm-remove-confirm-text">Remove {m.displayName.split(" ")[0]}?</span>
+                          <button
+                            type="button"
+                            className="comm-remove-confirm-yes"
+                            onClick={() => removeMember(m.memberId, m.displayName)}
+                            disabled={removing === m.memberId}
+                          >
+                            {removing === m.memberId ? "…" : "Yes, Remove"}
+                          </button>
+                          <button type="button" className="comm-cancel-btn" onClick={() => setConfirmRemove(null)}>Cancel</button>
+                        </div>
                       ) : (
-                        <button type="button" className="comm-edit-btn" onClick={() => startEdit(m)}>Edit</button>
+                        <div style={{ display: "flex", gap: 4 }}>
+                          <button type="button" className="comm-edit-btn" onClick={() => startEdit(m)}>Edit</button>
+                          {m.userId !== currentUserId && (
+                            <button type="button" className="comm-remove-btn" onClick={() => setConfirmRemove(m.memberId)}>Remove</button>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>

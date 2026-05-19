@@ -4246,6 +4246,47 @@ body {
     cursor: pointer;
   }
 
+  .comm-remove-btn {
+    font-family: var(--font-code);
+    font-size: 9px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 3px;
+    border: 1px solid color-mix(in oklab, var(--bad) 40%, transparent);
+    background: transparent;
+    color: var(--bad);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+  }
+  .comm-remove-btn:hover { opacity: 1; }
+  .comm-remove-confirm {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .comm-remove-confirm-text {
+    font-family: var(--font-code);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--bad);
+    white-space: nowrap;
+  }
+  .comm-remove-confirm-yes {
+    font-family: var(--font-code);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 3px;
+    border: 1px solid var(--bad);
+    background: var(--bad);
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .comm-remove-confirm-yes:disabled { opacity: 0.5; cursor: not-allowed; }
+
   /* Settings card */
   .comm-settings-card { margin-top: 20px; }
   .comm-settings-body { padding: 0 20px; }
