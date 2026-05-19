@@ -304,7 +304,7 @@ export function PickSheet({
               {saving && <span className="ps-saving"> · saving…</span>}
             </div>
           </div>
-          <div className="ps-hero-right" style={{ minWidth: 0, overflow: "hidden" }}>
+          <div className="ps-hero-right" style={{ minWidth: 0 }}>
             {gamesScored > 0 && (
               <div className="ps-hero-kpis">
                 <div className="ps-hero-kpi">
@@ -317,7 +317,7 @@ export function PickSheet({
                 </div>
               </div>
             )}
-            <div className="ps-week-nav" style={{ overflowX: "auto", flexWrap: "nowrap", maxWidth: "100%", paddingBottom: 4, scrollbarWidth: "none" }}>
+            <div className="ps-week-nav">
               {weeksToShow.map((w) => (
                 <button
                   key={w}

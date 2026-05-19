@@ -1379,21 +1379,22 @@ body {
   .ps-week-nav {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
   }
   .ps-week-btn {
     background: var(--bg3);
     border: 1px solid var(--line);
     color: var(--ink2);
-    padding: 5px 12px;
+    padding: 4px 8px;
     border-radius: 3px;
     cursor: pointer;
     font-family: var(--font-disp);
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     transition: all 0.15s;
+    min-width: 0;
   }
   .ps-week-btn:hover { border-color: var(--line2); color: var(--ink); }
   .ps-week-btn.active {
