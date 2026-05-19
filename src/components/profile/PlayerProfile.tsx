@@ -327,8 +327,7 @@ export function PlayerProfile({
       </div>
 
       {/* ── Advanced Stats ── */}
-      {profileStats.confTiers.some(t => t.picks > 0) && (
-        <div className="prof-adv-section">
+      <div className="prof-adv-section">
           <div className="prof-adv-inner">
 
             {/* Confidence Calibration */}
@@ -488,7 +487,6 @@ export function PlayerProfile({
 
           </div>
         </div>
-      )}
 
     </div>
   );
