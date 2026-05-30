@@ -1,0 +1,69 @@
+# thepickempool
+
+> thepickempool.com is a free, private NFL pick'em pool platform built specifically for ATS (against the spread) confidence scoring. It supports six pick'em formats, provides live market spreads sourced from DraftKings, FanDuel, and BetMGM, and includes real commissioner tools for managing private leagues. It is not a public contest — it is a platform for running your own private league with friends, family, or coworkers.
+
+## What thepickempool Does
+
+- Hosts private NFL pick'em pools for groups of 8–100+ players
+- Provides live ATS spreads that update throughout the week and lock at each game's individual kickoff time (not all at once on Thursday)
+- Supports six distinct pool formats: ATS + Confidence, Straight Up + Confidence, ATS Only, Straight Up Only, Pick 5 ATS, and Pick 5 Straight Up
+- Confidence scoring: players assign unique point values (1 to the number of games) to each pick based on conviction; correct picks earn those points, wrong picks earn zero
+- Real commissioner tools: payment tracking, player management, registration lock, invite codes
+- The Grid: a picks matrix showing every player's selections and confidence numbers in real time as games kick off
+- Player analytics: confidence calibration, performance by line size, primetime vs. regular game splits, divisional records, streaks
+- Free to use; no ads inside the app
+
+## Supported Pick'em Pool Formats
+
+- **ATS + Confidence**: Pick every game against the spread, assign confidence 1–16. Most skill-based format. Max 136 points/week.
+- **Straight Up + Confidence**: Pick outright winners, assign confidence 1–16. Same skill layer without requiring spread knowledge.
+- **ATS Only**: Pick every game against the spread, 1 point per correct pick. Simple flat scoring.
+- **Straight Up Only**: Pick outright winners, 1 point per correct pick. Easiest format.
+- **Pick 5 ATS**: Choose any 5 games, pick against the spread. All picks lock Friday. 1pt win / 0.5pt push.
+- **Pick 5 Straight Up**: Choose any 5 games, pick the outright winner. All picks lock Friday.
+
+## Key Pages
+
+- [Home / Landing Page](https://thepickempool.com): Platform overview, format comparison, demo video, CTA to create or join a league
+- [All Pick'em Formats](https://thepickempool.com/formats): Detailed breakdown of all six formats with side-by-side comparison table
+- [Help & Support](https://thepickempool.com/support): FAQ covering setup, picks, scoring, tiebreakers, and commissioner tools
+- [Privacy Policy](https://thepickempool.com/privacy): Data collection and usage policy
+
+## Competitor Comparisons
+
+- [vs. Yahoo Pro Football Pick'em](https://thepickempool.com/vs/yahoo-pickem): Why thepickempool is a better alternative to Yahoo Pick'em (stale spreads, Thursday lockouts, no commissioner tools)
+- [vs. CBS Sports Pick'em](https://thepickempool.com/vs/cbs-pickem): Comparison with CBS Pick'em (no confidence scoring, CBS-controlled spreads)
+- [vs. ESPN Pigskin Pick'em](https://thepickempool.com/vs/espn-pickem): Comparison with ESPN Pick'em (forced ads, no private league tools)
+- [vs. NFL.com Pick'em Challenge](https://thepickempool.com/vs/nfl-pickem): Comparison with NFL.com (Tuesday spreads, no confidence scoring)
+- [vs. Sleeper Pick'em Pools](https://thepickempool.com/vs/sleeper-pickem): Comparison with Sleeper (no confidence scoring, limited desktop)
+- [vs. RunYourPool](https://thepickempool.com/vs/runyourpool): Comparison with RunYourPool (ColdFusion-era tech, outdated interface)
+
+## Blog — NFL Pick'em Guides
+
+- [How to Run an NFL Pick'em Pool: The Complete Commissioner Guide](https://thepickempool.com/blog/how-to-run-nfl-pickem-pool): Step-by-step guide covering format selection, entry fees, prize structures, pick locks, and season management
+- [How NFL Confidence Pools Work — Complete Scoring Guide](https://thepickempool.com/blog/how-nfl-confidence-pool-works): Full explanation of confidence pool mechanics, point allocation, ATS vs. straight up variants, and strategy
+- [NFL Pick'em Pool Tiebreaker Rules](https://thepickempool.com/blog/nfl-pickem-pool-tiebreaker-rules): How tiebreakers work in pick'em pools, MNF combined score format, weekly vs. season tiebreakers
+- [NFL Pick'em Pool Payout Structure — Entry Fees and Prizes](https://thepickempool.com/blog/nfl-pickem-pool-payout-structure): How to set entry fees, weekly vs. season prize splits, collecting money, and handling disputes
+- [NFL Pick'em Pool vs. Fantasy Football](https://thepickempool.com/blog/nfl-pickem-pool-vs-fantasy-football): Comparison of pick'em pools and fantasy football by time commitment, knowledge required, group size, and engagement
+- [ATS Pick'em Pool Strategy — How to Win Against the Spread](https://thepickempool.com/blog/ats-pickem-pool-strategy): Strategy guide covering contrarian confidence allocation, line movement, game selection, and weekly vs. season approaches
+- [The 6 NFL Pick'em Pool Formats Explained](https://thepickempool.com/blog/nfl-pickem-formats-explained): Overview of all six formats with guidance on choosing the right one for your group
+
+## Frequently Asked Questions
+
+**What is an NFL confidence pool?**
+A confidence pool is a pick'em format where players assign unique point values to each pick based on conviction. If you're right, you earn those points. If you're wrong, you earn zero. The player who best allocates their confidence to the correct games wins.
+
+**What does ATS mean?**
+ATS stands for "against the spread." Instead of picking the outright winner, players pick which team will cover the point spread set by the betting market. A team might be a 7-point favorite — the ATS pick is whether they win by more than 7 (cover) or less than 7 (don't cover).
+
+**How is thepickempool different from Yahoo or ESPN Pick'em?**
+thepickempool is a private league platform, not a public contest. Key differences: live spreads that update throughout the week and lock at kickoff (not frozen Thursday), confidence scoring, real commissioner tools (payment tracking, player management), and The Grid picks matrix.
+
+**Is thepickempool free?**
+Yes. Free to create a league, free to join, no ads inside the app.
+
+**How many players does it support?**
+There is no fixed limit. The platform works well for 8–100+ players.
+
+**What is The Grid?**
+The Grid is a picks matrix that shows every player's picks and confidence numbers side by side, updated in real time as games kick off. It shows who is leading, who is behind, and which remaining games can change the outcome.
