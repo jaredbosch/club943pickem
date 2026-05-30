@@ -1,6 +1,30 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LandingPage } from "@/components/landing/LandingPage";
+
+export const metadata: Metadata = {
+  title: "NFL Pick'em Pool with Live Spreads & Confidence Scoring | thepickempool",
+  description:
+    "Run a private NFL pick'em pool with live ATS spreads, confidence point scoring, and real commissioner tools. Six formats, free to start, no ads. Set up your league in 30 seconds.",
+  alternates: { canonical: "https://thepickempool.com" },
+  openGraph: {
+    title: "NFL Pick'em Pool with Live Spreads & Confidence Scoring | thepickempool",
+    description:
+      "Private NFL pick'em pools with live ATS spreads, confidence scoring, and real commissioner tools. Six formats. Free.",
+    url: "https://thepickempool.com",
+    siteName: "thepickempool",
+    type: "website",
+    images: [{ url: "https://thepickempool.com/og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NFL Pick'em Pool with Live Spreads & Confidence Scoring | thepickempool",
+    description:
+      "Private NFL pick'em pools with live ATS spreads, confidence scoring, and real commissioner tools. Six formats. Free.",
+    images: ["https://thepickempool.com/og-image.png"],
+  },
+};
 
 export default async function Home() {
   const supabase = createClient();

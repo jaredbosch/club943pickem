@@ -21,6 +21,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${post.title} | thepickempool Blog`,
     description: post.description,
+    alternates: { canonical: `https://thepickempool.com/blog/${slug}` },
+    openGraph: {
+      title: post.title,
+      description: post.description,
+      url: `https://thepickempool.com/blog/${slug}`,
+      siteName: "thepickempool",
+      type: "article",
+      publishedTime: post.date,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.description,
+    },
   };
 }
 

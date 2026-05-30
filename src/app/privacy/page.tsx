@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | thepickempool",
-  description: "Privacy policy for thepickempool.com",
+  description: "thepickempool privacy policy — how we collect, use, and protect your data when you run an NFL pick'em pool on our platform.",
+  alternates: { canonical: "https://thepickempool.com/privacy" },
 };
 
 export default function PrivacyPage() {

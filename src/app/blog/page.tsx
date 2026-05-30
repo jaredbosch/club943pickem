@@ -6,6 +6,19 @@ export const metadata: Metadata = {
   title: "NFL Pick'em Blog | thepickempool",
   description:
     "NFL pick'em tips, ATS strategy guides, and pool management advice for running the best confidence pick'em pool with your crew.",
+  alternates: { canonical: "https://thepickempool.com/blog" },
+  openGraph: {
+    title: "NFL Pick'em Blog | thepickempool",
+    description: "NFL pick'em tips, ATS strategy guides, and pool management advice for running the best confidence pick'em pool with your crew.",
+    url: "https://thepickempool.com/blog",
+    siteName: "thepickempool",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NFL Pick'em Blog | thepickempool",
+    description: "NFL pick'em tips, ATS strategy guides, and pool management advice for running the best confidence pick'em pool with your crew.",
+  },
 };
 
 export default function BlogIndexPage() {

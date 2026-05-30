@@ -5,6 +5,20 @@ export const metadata: Metadata = {
   title: "NFL Pick'em Pool Formats | thepickempool",
   description: "Six NFL pick'em formats in one platform — ATS confidence, straight-up, Pick 5, and more. Find the right format for your group.",
   alternates: { canonical: "https://thepickempool.com/formats" },
+  openGraph: {
+    title: "NFL Pick'em Pool Formats | thepickempool",
+    description: "Six NFL pick'em formats in one platform — ATS confidence, straight-up, Pick 5, and more. Find the right format for your group.",
+    url: "https://thepickempool.com/formats",
+    siteName: "thepickempool",
+    type: "website",
+    images: [{ url: "https://thepickempool.com/og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NFL Pick'em Pool Formats | thepickempool",
+    description: "Six NFL pick'em formats in one platform — ATS confidence, straight-up, Pick 5, and more.",
+    images: ["https://thepickempool.com/og-image.png"],
+  },
 };
 
 const FORMATS = [

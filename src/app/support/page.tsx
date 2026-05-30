@@ -4,6 +4,12 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Help & Support | thepickempool",
   description: "Get help with thepickempool — commissioner setup, picking games, scoring, and more.",
+  alternates: { canonical: "https://thepickempool.com/support" },
+  twitter: {
+    card: "summary_large_image",
+    title: "Help & Support | thepickempool",
+    description: "Get help with thepickempool — commissioner setup, picking games, scoring, and more.",
+  },
 };
 
 const FAQS = [
@@ -90,8 +96,24 @@ const FAQS = [
 ];
 
 export default function SupportPage() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQS.flatMap((section) =>
+      section.items.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      }))
+    ),
+  };
+
   return (
     <div className="legal-shell">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <header className="legal-header">
         <Link href="/" className="legal-logo">
           <div className="app-nav-badge" style={{ fontSize: 13, padding: "4px 8px" }}>TPP</div>

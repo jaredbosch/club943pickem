@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://thepickempool.com/vs/espn-pickem",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Better ESPN Pigskin Pick'em | thepickempool",
+    description: "Confidence scoring that works. No forced video ads. Real commissioner tools. The private league ESPN never built.",
+  },
 };
 
 const PAIN_POINTS = [

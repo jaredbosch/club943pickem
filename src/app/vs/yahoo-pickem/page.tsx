@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://thepickempool.com/vs/yahoo-pickem",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Better Yahoo Pick'em | thepickempool",
+    description: "Live spreads. Kickoff locks. Real commissioner tools. Everything Yahoo gets wrong, we get right.",
+  },
 };
 
 const PAIN_POINTS = [

@@ -12,6 +12,11 @@ export const metadata: Metadata = {
     type: "website",
   },
   alternates: { canonical: "https://thepickempool.com/vs/runyourpool" },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Modern RunYourPool Alternative | thepickempool",
+    description: "Live spreads. Confidence scoring. A picks matrix that updates in real time. Everything RunYourPool supports, built for how people actually use their phones in 2025.",
+  },
 };
 
 const PAIN_POINTS = [

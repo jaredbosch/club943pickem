@@ -12,6 +12,11 @@ export const metadata: Metadata = {
     type: "website",
   },
   alternates: { canonical: "https://thepickempool.com/vs/nfl-pickem" },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Better NFL.com Pick'em | thepickempool",
+    description: "Live spreads. Confidence scoring. Real private leagues. Everything NFL.com Pick'em isn't.",
+  },
 };
 
 const PAIN_POINTS = [

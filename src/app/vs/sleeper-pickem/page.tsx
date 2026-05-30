@@ -12,6 +12,11 @@ export const metadata: Metadata = {
     type: "website",
   },
   alternates: { canonical: "https://thepickempool.com/vs/sleeper-pickem" },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Pick'em Pools Sleeper Can't Build | thepickempool",
+    description: "Confidence scoring. Playoff pick'em. A desktop that works. Everything Sleeper's pick'em pools promised and hasn't delivered.",
+  },
 };
 
 const PAIN_POINTS = [

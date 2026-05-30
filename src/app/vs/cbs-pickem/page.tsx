@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://thepickempool.com/vs/cbs-pickem",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Better CBS Pick'em | thepickempool",
+    description: "Confidence points. Live market spreads. Private leagues with real commissioner tools. Everything CBS Pick'em isn't.",
+  },
 };
 
 const PAIN_POINTS = [
