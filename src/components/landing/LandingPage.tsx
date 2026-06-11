@@ -344,6 +344,8 @@ export function LandingPage() {
           <div className="lp-video-wrap">
             <video
               src="/demo.mp4"
+              poster="/demo-poster.jpg"
+              preload="metadata"
               autoPlay
               loop
               muted

@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-export default function SignInPage() {
-  const [email, setEmail] = useState("");
+export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -15,9 +14,17 @@ export default function SignInPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Passwords don't match.");
+      return;
+    }
     setLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.updateUser({ password });
     if (error) {
       setError(error.message);
       setLoading(false);
@@ -29,8 +36,6 @@ export default function SignInPage() {
   return (
     <main className="auth-shell pp-gridbg">
       <div className="auth-card">
-
-        {/* Logo */}
         <div className="auth-logo">
           <div className="app-nav-badge" style={{ width: 36, height: 36, fontSize: 16 }}>TPP</div>
           <div>
@@ -42,33 +47,33 @@ export default function SignInPage() {
         <div className="auth-divider" />
 
         <div className="auth-title-block">
-          <div className="disp-900 auth-title">Sign In</div>
-          <div className="tag" style={{ marginTop: 6 }}>enter your credentials to continue</div>
+          <div className="disp-900 auth-title">New Password</div>
+          <div className="tag" style={{ marginTop: 6 }}>choose a new password to continue</div>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="auth-field">
-            <label className="auth-label" htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="auth-input"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div className="auth-field">
-            <label className="auth-label" htmlFor="password">Password</label>
+            <label className="auth-label" htmlFor="password">New Password</label>
             <input
               id="password"
               type="password"
               required
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="auth-input"
+              placeholder="••••••••"
+            />
+          </div>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="confirm">Confirm Password</label>
+            <input
+              id="confirm"
+              type="password"
+              required
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
               className="auth-input"
               placeholder="••••••••"
             />
@@ -77,16 +82,9 @@ export default function SignInPage() {
           {error && <p className="auth-error">{error}</p>}
 
           <button type="submit" disabled={loading} className="auth-btn">
-            {loading ? "Signing in…" : "Sign In →"}
+            {loading ? "Saving…" : "Set New Password →"}
           </button>
         </form>
-
-        <p className="auth-switch">
-          No account?{" "}
-          <Link href="/sign-up" className="auth-link">Create one</Link>
-          {" · "}
-          <Link href="/forgot-password" className="auth-link">Forgot password?</Link>
-        </p>
       </div>
     </main>
   );

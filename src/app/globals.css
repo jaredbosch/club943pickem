@@ -867,6 +867,15 @@ body {
 .lp-feature-card:nth-child(4) { border-bottom: none; }
 .lp-feature-card:hover { background: var(--bg3); }
 .lp-feature-card.in-view { opacity: 1; transform: translateY(0); }
+/* Reveal animations are enhancement-only: reduced-motion users see content immediately */
+@media (prefers-reduced-motion: reduce) {
+  .lp-feature-card,
+  .lp-step {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
 .lp-feature-tag {
   font-family: var(--font-code);
   font-size: 9px;
@@ -5655,10 +5664,12 @@ body {
 
 /* Article prose */
 .blog-article {
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.75;
-  color: var(--ink2);
+  color: var(--ink);
 }
+.blog-article p,
+.blog-article li { color: color-mix(in oklab, var(--ink) 86%, var(--ink2)); }
 .blog-article h1,
 .blog-article h2,
 .blog-article h3 {
