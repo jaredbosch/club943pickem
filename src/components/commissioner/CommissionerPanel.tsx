@@ -1,11 +1,9 @@
 "use client";
-import { LeagueSwitcher } from "@/components/nav/LeagueSwitcher";
+import { AppHeader } from "@/components/nav/AppHeader";
 
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { SignOutButton } from "@/components/ui/SignOutButton";
 
 type Member = {
   memberId: string;
@@ -260,19 +258,13 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
   return (
     <div className="comm-shell pp-gridbg">
 
-      <header className="app-nav">
-        <Link href={`/league/${leagueCode}/dashboard`} className="app-nav-logo">
-          <div className="app-nav-badge">TPP</div>
-          <span className="app-nav-name">thepickempool</span>
-        </Link>
-        <div style={{ width: 1, height: 24, background: "var(--line)" }} />
-        <LeagueSwitcher currentLeagueCode={leagueCode} currentLeagueName={settings.name} />
-        <div style={{ flex: 1 }} />
-        <Link href={`/league/${leagueCode}/dashboard`} className="ps-nav-back">← Standings</Link>
-        <Link href="/support" className="ps-nav-back">Help</Link>
-        <SignOutButton />
-        <ThemeToggle />
-      </header>
+      <AppHeader
+        leagueCode={leagueCode}
+        leagueName={settings.name}
+        contextLabel="COMMISSIONER"
+        isCommissioner
+        action={<Link href="/support" className="ps-nav-back">Help</Link>}
+      />
 
       {/* Hero */}
       <div className="comm-hero pp-hero-grad">

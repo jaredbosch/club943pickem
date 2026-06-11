@@ -1,8 +1,6 @@
-import { LeagueSwitcher } from "@/components/nav/LeagueSwitcher";
+import { AppHeader } from "@/components/nav/AppHeader";
 import Link from "next/link";
 import { NFL_COLORS } from "@/lib/nfl-colors";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { SignOutButton } from "@/components/ui/SignOutButton";
 import { LiveRefresher } from "./LiveRefresher";
 
 type GameCol = {
@@ -189,22 +187,12 @@ export function WeeklyGrid({
     <div className="wg-shell pp-gridbg">
 
       {/* Nav */}
-      <header className="app-nav">
-        <Link href={`/league/${leagueCode}/dashboard`} className="app-nav-logo">
-          <div className="app-nav-badge">TPP</div>
-          <span className="app-nav-name">thepickempool</span>
-        </Link>
-        <div className="app-nav-sep" />
-        <LeagueSwitcher currentLeagueCode={leagueCode} currentLeagueName={leagueName} />
-        <div className="app-nav-spacer" />
-        <nav className="app-nav-links">
-          <Link href="/settings" className="ps-nav-back">Settings</Link>
-          <Link href={`/league/${leagueCode}/dashboard`} className="ps-nav-back">← Standings</Link>
-        </nav>
-        <Link href={`/league/${leagueCode}/picks`} className="dash-picks-btn">Make Picks →</Link>
-        <SignOutButton />
-          <ThemeToggle />
-      </header>
+      <AppHeader
+        leagueCode={leagueCode}
+        leagueName={leagueName}
+        contextLabel={`WEEK ${week} · PICKS MATRIX`}
+        action={<Link href={`/league/${leagueCode}/picks`} className="dash-picks-btn">Make Picks →</Link>}
+      />
       <LiveRefresher hasLiveGames={hasLiveGames} />
 
       {/* Hero */}

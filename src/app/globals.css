@@ -1235,6 +1235,72 @@ body {
 .app-nav-sep { width: 1px; height: 24px; background: var(--line); flex-shrink: 0; }
 .app-nav-spacer { flex: 1; }
 .app-nav-links { display: flex; align-items: center; gap: 18px; }
+.app-nav-league { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.app-nav-context {
+  font-family: var(--font-code);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--ink2);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.app-icon-btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line2);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink2);
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.app-icon-btn:hover { color: var(--ink); border-color: var(--ink3); }
+.app-menu-wrap { position: relative; flex-shrink: 0; }
+.app-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 208px;
+  background: var(--bg2);
+  border: 1px solid var(--line2);
+  border-radius: 2px;
+  padding: 6px;
+  z-index: 60;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+.app-menu-item {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  font-family: var(--font-body);
+  border-radius: 2px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.app-menu-item:hover { background: var(--bg3); }
+.app-menu-divider { height: 1px; background: var(--line); margin: 6px 4px; }
+.app-menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 12px;
+  color: var(--ink2);
+  font-size: 13px;
+}
 .theme-toggle {
   width: 30px;
   height: 30px;
@@ -1381,12 +1447,18 @@ body {
     margin-bottom: 2px;
   }
 
-  /* Week nav */
+  /* Week nav — scrollable rail with right-edge fade (DESIGN.md) */
   .ps-week-nav {
     display: flex;
     align-items: center;
     gap: 3px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+    padding-right: 28px;
   }
+  .ps-week-nav::-webkit-scrollbar { display: none; }
   .ps-week-btn {
     background: var(--bg3);
     border: 1px solid var(--line);
@@ -2109,6 +2181,8 @@ body {
     padding: 7px 20px;
     overflow-x: auto;
     scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent);
   }
   .ps-budget-bar::-webkit-scrollbar { display: none; }
   .ps-budget-bar-label {
@@ -4770,25 +4844,20 @@ body {
 /* ── Mobile responsive ─────────────────────────────────────────── */
 @media (max-width: 640px) {
 
-  /* Nav — two-row layout on mobile */
+  /* Touch floor for week pills (DESIGN.md 44px tappable minimum) */
+  .ps-week-btn { min-width: 40px; min-height: 40px; }
+  .ps-budget-bar-chip { width: 32px; height: 32px; }
+
+  /* Nav — single row on mobile; links live in the overflow menu (DESIGN.md) */
   .app-nav {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
-    padding: 8px 14px;
+    padding: 8px 12px;
   }
   .app-nav-sep { display: none; }
   .app-nav-year { display: none; }
   .app-nav-spacer { flex: 1; min-width: 8px; }
   .app-nav-name { display: none; }
-  .app-nav-links {
-    order: 10;
-    width: 100%;
-    display: flex;
-    gap: 14px;
-    border-top: 1px solid var(--line);
-    padding-top: 8px;
-  }
-  .app-nav-links .ps-nav-back { display: inline-flex; }
 
   /* Dashboard hero — stack vertically */
   .dash-hero {

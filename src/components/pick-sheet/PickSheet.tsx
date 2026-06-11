@@ -1,13 +1,11 @@
 "use client";
-import { LeagueSwitcher } from "@/components/nav/LeagueSwitcher";
+import { AppHeader } from "@/components/nav/AppHeader";
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { SlotGroup } from "./SlotGroup";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { SignOutButton } from "@/components/ui/SignOutButton";
 import type { Slot, Game } from "./types";
 
 type PickState = {
@@ -279,30 +277,17 @@ export function PickSheet({
 
         {/* Sticky header wrapper — nav + budget bar stick together as one unit */}
         <div className="ps-sticky-header">
-        <header className="app-nav">
-          <Link href={`/league/${leagueCode}/dashboard`} className="app-nav-logo">
-            <div className="app-nav-badge">TPP</div>
-            <span className="app-nav-name">thepickempool</span>
-          </Link>
-          <div style={{ width: 1, height: 24, background: "var(--line)" }} />
-          <LeagueSwitcher currentLeagueCode={leagueCode} currentLeagueName={leagueName} />
-          <div style={{ flex: 1 }} />
-          <Link href="/settings" className="ps-nav-back">Settings</Link>
-          <Link href={`/league/${leagueCode}/dashboard`} className="ps-nav-back">← Standings</Link>
-          <button
-            type="button"
-            className={`ps-save-btn${saved ? " saved" : ""}${saving ? " saving" : ""}`}
-            onClick={saveAllPicks}
-            disabled={saving || isSampleData || isFutureWeek}
-            style={isFutureWeek ? { display: "none" } : undefined}
-          >
-            {saved ? "✓ Saved!" : saving ? "Saving…" : "Save Picks"}
-          </button>
-          {isFutureWeek && <span className="ps-future-badge">SCHEDULE ONLY</span>}
-          {saveError && <span className="ps-save-error" title={saveError}>⚠ Save failed</span>}
-          <SignOutButton />
-          <ThemeToggle />
-        </header>
+        <AppHeader
+          leagueCode={leagueCode}
+          leagueName={leagueName}
+          contextLabel={`WEEK ${week} · ${seasonYear}`}
+          extra={
+            <>
+              {isFutureWeek && <span className="ps-future-badge">SCHEDULE ONLY</span>}
+              {saveError && <span className="ps-save-error" title={saveError}>⚠ Save failed</span>}
+            </>
+          }
+        />
 
         {/* Confidence budget bar — only for confidence leagues on active week */}
         {hasGames && showConfidence && (

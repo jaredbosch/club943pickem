@@ -1,11 +1,9 @@
 "use client";
-import { LeagueSwitcher } from "@/components/nav/LeagueSwitcher";
+import { AppHeader } from "@/components/nav/AppHeader";
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { SignOutButton } from "@/components/ui/SignOutButton";
 import { NFL_COLORS } from "@/lib/nfl-colors";
 import type { ScoringType } from "@/lib/scoring";
 import { isAtsFormat, isPick5Push } from "@/lib/scoring";
@@ -156,30 +154,12 @@ export function Pick5Sheet({
 
         {/* Sticky header */}
         <div className="ps-sticky-header">
-          <header className="app-nav">
-            <Link href={`/league/${leagueCode}/dashboard`} className="app-nav-logo">
-              <div className="app-nav-badge">TPP</div>
-              <span className="app-nav-name">thepickempool</span>
-            </Link>
-            <div style={{ width: 1, height: 24, background: "var(--line)" }} />
-            <LeagueSwitcher currentLeagueCode={leagueCode} currentLeagueName={leagueName} />
-            <div style={{ flex: 1 }} />
-            <Link href="/settings" className="ps-nav-back">Settings</Link>
-            <Link href={`/league/${leagueCode}/dashboard`} className="ps-nav-back">← Standings</Link>
-            {!isLocked && (
-              <button
-                type="button"
-                className={`ps-save-btn${saved ? " saved" : ""}${saving ? " saving" : ""}`}
-                onClick={saveAllPicks}
-                disabled={saving || picks.size === 0}
-              >
-                {saved ? "✓ Saved!" : saving ? "Saving…" : "Save Picks"}
-              </button>
-            )}
-            {saveError && <span className="ps-save-error" title={saveError}>⚠ Save failed</span>}
-            <SignOutButton />
-            <ThemeToggle />
-          </header>
+          <AppHeader
+            leagueCode={leagueCode}
+            leagueName={leagueName}
+            contextLabel={`WEEK ${week}`}
+            extra={saveError && <span className="ps-save-error" title={saveError}>⚠ Save failed</span>}
+          />
 
           {/* Pick counter bar */}
           <div className="p5-count-bar">

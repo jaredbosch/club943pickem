@@ -3,8 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { SignOutButton } from "@/components/ui/SignOutButton";
+import { AppHeader } from "@/components/nav/AppHeader";
 
 type Props = {
   userId: string;
@@ -46,18 +45,12 @@ export function PlayerSettings({ userId, email, displayName: initName, phone: in
 
   return (
     <div className="sett-shell pp-gridbg">
-      <header className="app-nav">
-        <Link href={leagueCode ? `/league/${leagueCode}/dashboard` : "/"} className="app-nav-logo">
-          <div className="app-nav-badge">TPP</div>
-          <span className="app-nav-name">thepickempool</span>
-        </Link>
-        <div style={{ width: 1, height: 24, background: "var(--line)" }} />
-        {leagueName && <span className="pp-chip solid">{leagueName}</span>}
-        <div style={{ flex: 1 }} />
-        <Link href={leagueCode ? `/league/${leagueCode}/dashboard` : "/"} className="ps-nav-back">← Dashboard</Link>
-        <SignOutButton />
-        <ThemeToggle />
-      </header>
+      <AppHeader
+        leagueCode={leagueCode || undefined}
+        leagueName={leagueName || undefined}
+        contextLabel="SETTINGS"
+        isCommissioner={isCommissioner}
+      />
 
       <div className="sett-main">
         <div className="sett-hero">

@@ -1,11 +1,9 @@
 "use client";
-import { LeagueSwitcher } from "@/components/nav/LeagueSwitcher";
+import { AppHeader } from "@/components/nav/AppHeader";
 
 import Link from "next/link";
 import { useState } from "react";
 import { LeagueNotes } from "./LeagueNotes";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { SignOutButton } from "@/components/ui/SignOutButton";
 
 type StandingRow = {
   userId: string;
@@ -227,24 +225,14 @@ export function LeagueDashboard({ league, leagueCode, standings, isCommissioner,
     <div className="dash-shell pp-gridbg">
 
       {/* Nav */}
-      <header className="app-nav">
-        <Link href={`/league/${leagueCode}/dashboard`} className="app-nav-logo">
-          <div className="app-nav-badge">TPP</div>
-          <span className="app-nav-name">thepickempool</span>
-        </Link>
-        <div className="app-nav-sep" />
-        <LeagueSwitcher currentLeagueCode={leagueCode} currentLeagueName={league.name} />
-        <div className="app-nav-spacer" />
-        <nav className="app-nav-links">
-          <Link href={`/league/${leagueCode}/grid`} className="ps-nav-back">The Grid</Link>
-          <Link href={`/league/${leagueCode}/picks/${currentUserId}`} className="ps-nav-back">My Profile</Link>
-          <Link href="/settings" className="ps-nav-back">Settings</Link>
-          {isCommissioner && <Link href={`/league/${leagueCode}/commissioner`} className="ps-nav-back">⚙ Commissioner</Link>}
-        </nav>
-        <Link href={`/league/${leagueCode}/picks`} className="dash-picks-btn">Make Picks →</Link>
-        <SignOutButton />
-          <ThemeToggle />
-      </header>
+      <AppHeader
+        leagueCode={leagueCode}
+        leagueName={league.name}
+        contextLabel={`${league.season_year} SEASON`}
+        currentUserId={currentUserId}
+        isCommissioner={isCommissioner}
+        action={<Link href={`/league/${leagueCode}/picks`} className="dash-picks-btn">Make Picks →</Link>}
+      />
 
       {/* Archive banner */}
       {isArchive && (
