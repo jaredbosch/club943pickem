@@ -4910,9 +4910,13 @@ body {
 /* ── Mobile responsive ─────────────────────────────────────────── */
 @media (max-width: 640px) {
 
-  /* Touch floor for week pills (DESIGN.md 44px tappable minimum) */
+  /* Touch floor (DESIGN.md 44px tappable minimum) */
   .ps-week-btn { min-width: 40px; min-height: 40px; }
   .ps-budget-bar-chip { width: 32px; height: 32px; }
+  .app-icon-btn { width: 44px; height: 44px; min-width: 44px; }
+  .ps-tb-btn { min-height: 44px; }
+  .app-menu-row .theme-toggle { width: 44px; height: 44px; }
+  .app-menu-row .sign-out-btn { min-height: 44px; }
 
   /* Grid: player column ≤40% of viewport on mobile (DESIGN.md) */
   .wg-left-col { min-width: 150px; max-width: 40vw; }
