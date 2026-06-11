@@ -245,9 +245,6 @@ export function LandingPage() {
               <Link href="/league?action=join" className="lp-btn-secondary">
                 Join a League
               </Link>
-              <Link href="/sign-in" className="lp-btn-ghost">
-                Sign In →
-              </Link>
             </div>
             <div className="lp-hero-stats">
               {[
