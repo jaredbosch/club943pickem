@@ -175,6 +175,7 @@ export function WeeklyGrid({
   isPick5 = false,
 }: Props) {
   const hasLiveGames = games.some((g) => g.status === "in_progress");
+  const anyGraded = games.some((g) => g.status === "final" || g.status === "complete");
   const maxPoints = players.length > 0 ? Math.max(...players.map((p) => p.weekPoints), 1) : 1;
   const prevWeek = availableWeeks.findIndex((w) => w === week) > 0
     ? availableWeeks[availableWeeks.findIndex((w) => w === week) - 1]
@@ -203,7 +204,7 @@ export function WeeklyGrid({
           <div className="wg-hero-legend">
             <span style={{ color: "var(--good)" }}>■ correct</span>
             <span style={{ color: "var(--bad)" }}>■ wrong</span>
-            <span style={{ color: "var(--accent)" }}>■ live</span>
+            <span style={{ color: "var(--live)" }}>■ live</span>
             <span style={{ color: "var(--ink3)" }}>■ pending</span>
           </div>
         </div>
@@ -276,7 +277,9 @@ export function WeeklyGrid({
                       />
                     </div>
                   </div>
-                  <div className={`wg-player-pts${i === 0 ? " accent" : ""}`}>{p.weekPoints}</div>
+                  <div className={`wg-player-pts${i === 0 && anyGraded ? " accent" : ""}`}>
+                    {anyGraded ? p.weekPoints : "—"}
+                  </div>
                 </Link>
               ))}
             </div>

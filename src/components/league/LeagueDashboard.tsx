@@ -162,37 +162,74 @@ function BumpChart({ weeklyRows, weeks }: { weeklyRows: WeeklyPlayerRow[]; weeks
         </text>
       ))}
 
-      {/* Player lines */}
-      {weeklyRows.map((player, pi) => {
-        const color = BUMP_COLORS[pi % BUMP_COLORS.length];
-        const pts: [number, number][] = [];
-        weeks.forEach((w, wi) => {
-          const rank = player.weekRank[w];
-          if (rank != null) pts.push([xFor(wi), yFor(rank)]);
+      {/* Player lines — top 5 + you get color and labels; the field stays gray (DESIGN.md) */}
+      {(() => {
+        const lastWeek = weeks[weeks.length - 1];
+        const finalRank = (p: WeeklyPlayerRow) => p.weekRank[lastWeek] ?? Number.MAX_SAFE_INTEGER;
+        const top5 = [...weeklyRows].sort((a, b) => finalRank(a) - finalRank(b)).slice(0, 5);
+        const emphasized = new Set(top5.map((p) => p.userId));
+        const me = weeklyRows.find((p) => p.isCurrentUser);
+        if (me) emphasized.add(me.userId);
+
+        const lineFor = (player: WeeklyPlayerRow) => {
+          const pts: [number, number][] = [];
+          weeks.forEach((w, wi) => {
+            const rank = player.weekRank[w];
+            if (rank != null) pts.push([xFor(wi), yFor(rank)]);
+          });
+          if (pts.length === 0) return null;
+          let d = `M ${pts[0][0]} ${pts[0][1]}`;
+          for (let i = 1; i < pts.length; i++) {
+            const mx = (pts[i - 1][0] + pts[i][0]) / 2;
+            d += ` C ${mx} ${pts[i - 1][1]}, ${mx} ${pts[i][1]}, ${pts[i][0]} ${pts[i][1]}`;
+          }
+          return { d, pts };
+        };
+
+        // Nudge end-labels apart so names never overlap into a smear
+        const labeled = weeklyRows
+          .filter((p) => emphasized.has(p.userId))
+          .map((p) => ({ p, line: lineFor(p) }))
+          .filter((e): e is { p: WeeklyPlayerRow; line: { d: string; pts: [number, number][] } } => e.line !== null)
+          .sort((a, b) => a.line.pts[a.line.pts.length - 1][1] - b.line.pts[b.line.pts.length - 1][1]);
+        const labelYs: number[] = [];
+        labeled.forEach((e, i) => {
+          const rawY = e.line.pts[e.line.pts.length - 1][1] + 4;
+          labelYs[i] = i === 0 ? rawY : Math.max(rawY, labelYs[i - 1] + 14);
         });
-        if (pts.length === 0) return null;
-
-        let d = `M ${pts[0][0]} ${pts[0][1]}`;
-        for (let i = 1; i < pts.length; i++) {
-          const mx = (pts[i - 1][0] + pts[i][0]) / 2;
-          d += ` C ${mx} ${pts[i - 1][1]}, ${mx} ${pts[i][1]}, ${pts[i][0]} ${pts[i][1]}`;
-        }
-
-        const last = pts[pts.length - 1];
-        const shortName = player.displayName.split(" ")[0];
 
         return (
-          <g key={player.userId}>
-            <path d={d} fill="none" stroke={color} strokeWidth={player.isCurrentUser ? 3 : 1.8} strokeLinecap="round" strokeLinejoin="round" opacity={0.9} />
-            {pts.map(([x, y], i) => (
-              <circle key={i} cx={x} cy={y} r={player.isCurrentUser ? 4 : 3} fill={color} />
-            ))}
-            <text x={last[0] + 10} y={last[1] + 4} className="bump-name-label" fill={color}>
-              {shortName}
-            </text>
-          </g>
+          <>
+            {/* the field: thin gray, no dots, no labels */}
+            {weeklyRows.filter((p) => !emphasized.has(p.userId)).map((player) => {
+              const line = lineFor(player);
+              if (!line) return null;
+              return (
+                <path key={player.userId} d={line.d} fill="none" stroke="var(--line2)" strokeWidth={1} opacity={0.6} strokeLinecap="round" strokeLinejoin="round" />
+              );
+            })}
+            {/* emphasized: top 5 + you */}
+            {labeled.map((e, i) => {
+              const idx = top5.findIndex((t) => t.userId === e.p.userId);
+              const color = e.p.isCurrentUser ? "var(--accent)" : BUMP_COLORS[(idx >= 0 ? idx : 5) % BUMP_COLORS.length];
+              const last = e.line.pts[e.line.pts.length - 1];
+              const shortName = e.p.displayName.split(" ")[0];
+              return (
+                <g key={e.p.userId}>
+                  <path d={e.line.d} fill="none" stroke={color} strokeWidth={e.p.isCurrentUser ? 3 : 2} strokeLinecap="round" strokeLinejoin="round" opacity={0.95} />
+                  {e.line.pts.map(([x, y], j) => (
+                    <circle key={j} cx={x} cy={y} r={e.p.isCurrentUser ? 4 : 3} fill={color} />
+                  ))}
+                  <text x={last[0] + 10} y={labelYs[i]} className="bump-name-label" fill={color}>
+                    {shortName}
+                    {e.p.isCurrentUser ? " (you)" : ""}
+                  </text>
+                </g>
+              );
+            })}
+          </>
         );
-      })}
+      })()}
     </svg>
   );
 }

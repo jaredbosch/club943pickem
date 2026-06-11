@@ -1378,6 +1378,58 @@ body {
     flex-direction: column;
   }
 
+  /* Desktop right rail — week at a glance (DESIGN.md picks layout) */
+  .ps-rail {
+    display: none;
+  }
+  @media (min-width: 1280px) {
+    .ps-rail {
+      display: block;
+      position: fixed;
+      top: 76px;
+      left: calc(50% + 396px);
+      width: 300px;
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      padding: 16px;
+      z-index: 10;
+    }
+  }
+  .ps-rail-title {
+    font-family: var(--font-code);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink2);
+    margin-bottom: 12px;
+  }
+  .ps-rail-stats { display: flex; gap: 24px; margin-bottom: 14px; }
+  .ps-rail-stat-val {
+    font-family: var(--font-disp);
+    font-weight: 900;
+    font-size: 30px;
+    line-height: 1;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 18px rgba(255, 204, 0, 0.35);
+  }
+  .ps-rail-stat-val.plain { color: var(--ink); text-shadow: none; }
+  .ps-rail-stat-label {
+    font-family: var(--font-code);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink2);
+    margin-top: 4px;
+  }
+  .ps-rail-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .ps-rail-done {
+    font-family: var(--font-code);
+    font-size: 11px;
+    color: var(--win);
+  }
+
   /* Hero */
   .ps-hero {
     padding: 22px 24px;
@@ -4813,6 +4865,9 @@ body {
 
 .wt-row:last-child .wt-td { border-bottom: none; }
 .wt-row:last-child .wt-td-player { border-bottom: none; }
+.wt-row:hover .wt-td,
+.wt-row:hover .wt-td-player { background: var(--bg3); }
+.wt-td { font-variant-numeric: tabular-nums; }
 
 .wt-row.me .wt-td { background: color-mix(in oklab, var(--accent) 5%, transparent); }
 .wt-row.me .wt-td-player { background: color-mix(in oklab, var(--accent) 5%, transparent); }
@@ -4848,12 +4903,19 @@ body {
   .ps-week-btn { min-width: 40px; min-height: 40px; }
   .ps-budget-bar-chip { width: 32px; height: 32px; }
 
+  /* Grid: player column ≤40% of viewport on mobile (DESIGN.md) */
+  .wg-left-col { min-width: 150px; max-width: 40vw; }
+  .wg-player-bar-wrap { display: none; }
+  .wg-player-avatar { display: none; }
+  .wg-player-name { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
   /* Nav — single row on mobile; links live in the overflow menu (DESIGN.md) */
   .app-nav {
     flex-wrap: nowrap;
     gap: 8px;
     padding: 8px 12px;
   }
+  .app-nav .dash-picks-btn { white-space: nowrap; padding: 8px 10px; font-size: 12px; }
   .app-nav-sep { display: none; }
   .app-nav-year { display: none; }
   .app-nav-spacer { flex: 1; min-width: 8px; }

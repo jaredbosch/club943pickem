@@ -303,6 +303,41 @@ export function PickSheet({
         )}
         </div>{/* end ps-sticky-header */}
 
+        {/* Desktop-only week-at-a-glance rail (hidden under 1280px) */}
+        {hasGames && !isFutureWeek && (
+          <aside className="ps-rail">
+            <div className="ps-rail-title">Week {week} at a glance</div>
+            <div className="ps-rail-stats">
+              <div>
+                <div className="ps-rail-stat-val">{picksIn}<span style={{ fontSize: 18 }}>/{totalGames}</span></div>
+                <div className="ps-rail-stat-label">picks in</div>
+              </div>
+              {gamesScored > 0 && (
+                <div>
+                  <div className="ps-rail-stat-val plain">{totalPointsEarned}</div>
+                  <div className="ps-rail-stat-label">pts this week</div>
+                </div>
+              )}
+            </div>
+            {showConfidence && (
+              usedConfidenceMap.size < totalGames ? (
+                <>
+                  <div className="ps-rail-title" style={{ marginBottom: 8 }}>Confidence left to spend</div>
+                  <div className="ps-rail-chips">
+                    {Array.from({ length: totalGames }, (_, i) => totalGames - i)
+                      .filter((n) => !usedConfidenceMap.has(n))
+                      .map((n) => (
+                        <div key={n} className="ps-budget-bar-chip">{n}</div>
+                      ))}
+                  </div>
+                </>
+              ) : (
+                <div className="ps-rail-done">✓ All confidence points spent</div>
+              )
+            )}
+          </aside>
+        )}
+
         {/* Hero */}
         <div className="ps-hero pp-hero-grad">
           <div>
