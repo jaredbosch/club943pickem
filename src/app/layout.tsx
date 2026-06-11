@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, Inter, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
+import { Barlow_Condensed, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const barlowCondensed = Barlow_Condensed({
@@ -9,10 +10,10 @@ const barlowCondensed = Barlow_Condensed({
   display: "swap",
 });
 
-const inter = Inter({
+const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-instrument",
   display: "swap",
 });
 
@@ -37,34 +38,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${barlowCondensed.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${barlowCondensed.variable} ${instrumentSans.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `
           try {
             var t = localStorage.getItem('pp-theme');
             if (t) document.documentElement.setAttribute('data-theme', t);
           } catch(e) {}
         `}} />
+      </head>
+      <body className="min-h-screen">
+        {children}
         {/* Google Analytics */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-LHQ35R4M0C" />
-        <script dangerouslySetInnerHTML={{ __html: `
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-LHQ35R4M0C" strategy="afterInteractive" />
+        <Script id="ga-init" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           gtag('config', 'G-LHQ35R4M0C');
-        `}} />
+        `}</Script>
         {/* Google AdSense — activates when NEXT_PUBLIC_ADSENSE_PUBLISHER_ID is set */}
         {process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID && (
-          <script
-            async
+          <Script
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID}`}
+            strategy="afterInteractive"
             crossOrigin="anonymous"
           />
         )}
-      </head>
-      <body className="min-h-screen">
-        {children}
       </body>
     </html>
   );

@@ -17,7 +17,10 @@
   --good:    #00d663;
   --bad:     #ff3d4c;
   --warn:    #ff8c1a;
-  --live:    #ff3d4c;
+  --live:    #ffb01a; /* in progress — never red; live ≠ loss (DESIGN.md) */
+  --push:    #8a8a9a;
+  --win:     var(--good);
+  --loss:    var(--bad);
 
   /* Legacy aliases for existing components */
   --card:    var(--bg2);
@@ -33,7 +36,7 @@
 
   /* Font stacks */
   --font-disp: var(--font-barlow), "Barlow Condensed", Impact, sans-serif;
-  --font-body: var(--font-inter), Inter, system-ui, sans-serif;
+  --font-body: var(--font-instrument), "Instrument Sans", system-ui, sans-serif;
   --font-code: var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
 }
 
@@ -58,7 +61,10 @@
   --good:    #008f44;
   --bad:     #d42030;
   --warn:    #c06010;
-  --live:    #d42030;
+  --live:    #b87500;
+  --push:    #6a6a75;
+  --win:     var(--good);
+  --loss:    var(--bad);
   --card:    var(--bg2);
   --card2:   var(--bg3);
   --border:  var(--line);
