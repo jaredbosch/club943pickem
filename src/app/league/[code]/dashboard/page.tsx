@@ -41,7 +41,8 @@ export default async function DashboardPage({
   const availableSeasons = [...new Set((seasonRows ?? []).map((r) => r.season_year))].sort((a, b) => b - a);
 
   const currentSeasonYear = league.season_year;
-  const requestedSeason = searchParams.season ? parseInt(searchParams.season) : null;
+  const parsedSeason = searchParams.season ? parseInt(searchParams.season, 10) : null;
+  const requestedSeason = parsedSeason !== null && !isNaN(parsedSeason) ? parsedSeason : null;
   const viewingSeason = requestedSeason ?? currentSeasonYear;
   const isArchive = viewingSeason !== currentSeasonYear;
 

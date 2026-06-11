@@ -6,8 +6,14 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = 'https://nmbadqaogfksyjwzrfmr.supabase.co';
-const SRK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tYmFkcWFvZ2Zrc3lqd3pyZm1yIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjYwNTI1MywiZXhwIjoyMDkyMTgxMjUzfQ.bksusQ-b3SrahA9LgCjbCrqNWS48UC7U2_PqtubDZw0';
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SRK = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL || !SRK) {
+  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY env vars');
+  process.exit(1);
+}
+
 const LEAGUE_ID = 'b30e4adb-6737-421e-be83-08675e9adb99';
 const REAL_USER_ID = '99810dab-0770-4d84-8c19-1f5713bd89c7';
 const SEASON_YEAR = 2026;

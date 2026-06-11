@@ -135,7 +135,10 @@ export function LeagueNotes({ leagueId, initialPosts, isCommissioner, currentUse
   }
 
   async function uploadImage(file: File, prefix: string): Promise<string | null> {
-    const ext = file.name.split(".").pop() ?? "jpg";
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (!ALLOWED_TYPES.includes(file.type) || file.size > MAX_SIZE) return null;
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
     const path = `${prefix}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("post-images").upload(path, file, { upsert: false });
     if (error) return null;

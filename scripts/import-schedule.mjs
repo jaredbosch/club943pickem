@@ -4,10 +4,15 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  'https://nmbadqaogfksyjwzrfmr.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tYmFkcWFvZ2Zrc3lqd3pyZm1yIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjYwNTI1MywiZXhwIjoyMDkyMTgxMjUzfQ.bksusQ-b3SrahA9LgCjbCrqNWS48UC7U2_PqtubDZw0'
-);
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SRK = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL || !SRK) {
+  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY env vars');
+  process.exit(1);
+}
+
+const supabase = createClient(SUPABASE_URL, SRK);
 
 // ET → UTC. EDT (UTC-4) for Sep-Oct; EST (UTC-5) for Nov-Mar.
 function toUtcIso(date, h, min) {
