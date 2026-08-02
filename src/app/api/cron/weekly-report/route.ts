@@ -22,14 +22,18 @@ export async function GET(request: NextRequest) {
   const [
     { count: totalLeagues },
     { count: newLeagues },
-    { count: totalPlayers },
-    { count: newPlayers },
+    { count: totalUsers },
+    { count: newUsers },
+    { count: totalTeams },
+    { count: newTeams },
     { count: totalPicks },
     { count: newPicks },
     { data: recentLeagues },
   ] = await Promise.all([
     supabase.from("leagues").select("*", { count: "exact", head: true }),
     supabase.from("leagues").select("*", { count: "exact", head: true }).gte("created_at", weekAgo),
+    supabase.from("users").select("*", { count: "exact", head: true }),
+    supabase.from("users").select("*", { count: "exact", head: true }).gte("created_at", weekAgo),
     supabase.from("league_members").select("*", { count: "exact", head: true }),
     supabase.from("league_members").select("*", { count: "exact", head: true }).gte("created_at", weekAgo),
     supabase.from("picks").select("*", { count: "exact", head: true }),
@@ -70,15 +74,15 @@ export async function GET(request: NextRequest) {
       </div>
 
       <div style="background:#111827;border:1px solid #1f2937;border-radius:10px;padding:20px;">
-        <div style="font-size:11px;color:#6b7280;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">New Players</div>
-        <div style="font-size:36px;font-weight:900;color:#facc15;line-height:1;">${newPlayers ?? 0}</div>
-        <div style="font-size:11px;color:#374151;margin-top:6px;">${totalPlayers ?? 0} total</div>
+        <div style="font-size:11px;color:#6b7280;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">New Users</div>
+        <div style="font-size:36px;font-weight:900;color:#facc15;line-height:1;">${newUsers ?? 0}</div>
+        <div style="font-size:11px;color:#374151;margin-top:6px;">${totalUsers ?? 0} total</div>
       </div>
 
       <div style="background:#111827;border:1px solid #1f2937;border-radius:10px;padding:20px;">
-        <div style="font-size:11px;color:#6b7280;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Picks This Week</div>
-        <div style="font-size:36px;font-weight:900;color:#facc15;line-height:1;">${newPicks ?? 0}</div>
-        <div style="font-size:11px;color:#374151;margin-top:6px;">${totalPicks ?? 0} total</div>
+        <div style="font-size:11px;color:#6b7280;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">New Teams</div>
+        <div style="font-size:36px;font-weight:900;color:#facc15;line-height:1;">${newTeams ?? 0}</div>
+        <div style="font-size:11px;color:#374151;margin-top:6px;">${totalTeams ?? 0} total</div>
       </div>
 
     </div>
@@ -120,7 +124,7 @@ export async function GET(request: NextRequest) {
     body: JSON.stringify({
       from: "thepickempool <admin@thepickempool.com>",
       to: [reportEmail],
-      subject: `TPP Weekly · ${newLeagues ?? 0} new league${newLeagues !== 1 ? "s" : ""} · ${newPlayers ?? 0} new player${newPlayers !== 1 ? "s" : ""}`,
+      subject: `TPP Weekly · ${newUsers ?? 0} new user${newUsers !== 1 ? "s" : ""} · ${newTeams ?? 0} new team${newTeams !== 1 ? "s" : ""} · ${newLeagues ?? 0} new league${newLeagues !== 1 ? "s" : ""}`,
       html,
     }),
   });
@@ -132,6 +136,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     ok: true,
-    stats: { newLeagues, totalLeagues, newPlayers, totalPlayers, newPicks, totalPicks },
+    stats: { newUsers, totalUsers, newTeams, totalTeams, newLeagues, totalLeagues, newPicks, totalPicks },
   });
 }

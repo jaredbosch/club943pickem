@@ -25,12 +25,13 @@ export default async function AdminPage() {
 
   const admin = createAdminClient();
 
-  const [{ data: usersPage, error: usersErr }, { data: leagues, error: leaguesErr }] = await Promise.all([
+  const [{ data: usersPage, error: usersErr }, { data: leagues, error: leaguesErr }, { count: teamCount }] = await Promise.all([
     admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     admin
       .from("leagues")
       .select("id, name, invite_code, status, season_year, created_at, league_members(count)")
       .order("created_at", { ascending: false }),
+    admin.from("league_members").select("*", { count: "exact", head: true }),
   ]);
 
   const allUsers = usersPage?.users ?? [];
@@ -151,6 +152,10 @@ export default async function AdminPage() {
         <div style={tile}>
           <div style={eyebrow}>New · 30 days</div>
           <div style={bigNum}>{newLast30}</div>
+        </div>
+        <div style={tile}>
+          <div style={eyebrow}>Teams</div>
+          <div style={bigNum}>{teamCount ?? 0}</div>
         </div>
         <div style={tile}>
           <div style={eyebrow}>Leagues</div>
