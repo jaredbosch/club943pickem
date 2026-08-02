@@ -43,10 +43,14 @@ export async function GET(request: NextRequest) {
 
   const date = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 
+  // League names are user input — escape before interpolating into email HTML
+  const esc = (s: unknown) =>
+    String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
   const leagueRows = (recentLeagues ?? []).map(l => `
     <tr>
-      <td style="padding:8px 12px;border-bottom:1px solid #333;">${l.name}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #333;color:#9ca3af;">${l.scoring_type}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #333;">${esc(l.name)}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #333;color:#9ca3af;">${esc(l.scoring_type)}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #333;color:#9ca3af;">$${(l.entry_fee_cents / 100).toFixed(0)} · ${l.max_players} max</td>
       <td style="padding:8px 12px;border-bottom:1px solid #333;color:#9ca3af;">${new Date(l.created_at).toLocaleDateString()}</td>
     </tr>
