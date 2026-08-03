@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { CommissionerPanel } from "@/components/commissioner/CommissionerPanel";
 
 export default async function CommissionerPage({
@@ -29,7 +30,9 @@ export default async function CommissionerPage({
   if (!membership) redirect("/league");
   if (!membership.is_commissioner) redirect(`/league/${params.code}/dashboard`);
 
-  const { data: members } = await supabase
+  // users.email is no longer readable by the authenticated role (email privacy
+  // migration) — commissioner is verified above, so use the admin client here.
+  const { data: members } = await createAdminClient()
     .from("league_members")
     .select("id, user_id, is_paid, paid_at, joined_at, phone, venmo, users(display_name, email)")
     .eq("league_id", league.id)

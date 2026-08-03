@@ -81,7 +81,7 @@ export default async function GridPage({
 
   const { data: members } = await supabase
     .from("league_members")
-    .select("user_id, users(display_name, email)")
+    .select("user_id, users(display_name)")
     .eq("league_id", league.id);
 
   const { data: weekStandings } = await supabase
@@ -93,8 +93,8 @@ export default async function GridPage({
   const standingsMap = new Map((weekStandings ?? []).map((s) => [s.user_id, s]));
 
   const playerRows = (members ?? []).map((m) => {
-    const u = m.users as unknown as { display_name: string | null; email: string } | null;
-    const displayName = u?.display_name ?? u?.email?.split("@")[0] ?? "Player";
+    const u = m.users as unknown as { display_name: string | null } | null;
+    const displayName = u?.display_name ?? "Player";
     const standing = standingsMap.get(m.user_id);
     const playerPicks = (allPicks ?? []).filter((p) => p.user_id === m.user_id);
     const pickMap: Record<string, { pickedTeam: string | null; isCorrect: boolean | null; confidence: number | null; selected?: boolean }> = {};

@@ -67,14 +67,14 @@ export default async function DashboardPage({
 
   const { data: members } = await supabase
     .from("league_members")
-    .select("user_id, is_paid, users(display_name, email)")
+    .select("user_id, is_paid, users(display_name)")
     .eq("league_id", league.id);
 
   const memberMap = new Map(
     (members ?? []).map((m) => {
-      const u = m.users as unknown as { display_name: string | null; email: string } | null;
+      const u = m.users as unknown as { display_name: string | null } | null;
       return [m.user_id, {
-        displayName: u?.display_name ?? u?.email?.split("@")[0] ?? "Member",
+        displayName: u?.display_name ?? "Member",
         isPaid: m.is_paid,
       }];
     }),
@@ -162,7 +162,7 @@ export default async function DashboardPage({
 
   const { data: rawPosts } = isArchive ? { data: [] } : await supabase
     .from("league_posts")
-    .select("id, body, image_url, is_pinned, created_at, user_id, users(display_name, email)")
+    .select("id, body, image_url, is_pinned, created_at, user_id, users(display_name)")
     .eq("league_id", league.id)
     .order("is_pinned", { ascending: false })
     .order("created_at", { ascending: false })
@@ -172,14 +172,14 @@ export default async function DashboardPage({
   const { data: rawComments } = postIds.length
     ? await supabase
         .from("post_comments")
-        .select("id, post_id, body, image_url, created_at, user_id, users(display_name, email)")
+        .select("id, post_id, body, image_url, created_at, user_id, users(display_name)")
         .in("post_id", postIds)
         .order("created_at", { ascending: true })
     : { data: [] };
 
   const commentsByPost = new Map<string, unknown[]>();
   for (const c of rawComments ?? []) {
-    const cu = (c as { users: unknown }).users as { display_name: string | null; email: string } | null;
+    const cu = (c as { users: unknown }).users as { display_name: string | null } | null;
     const comment = {
       id: (c as { id: string }).id,
       post_id: (c as { post_id: string }).post_id,
@@ -187,7 +187,7 @@ export default async function DashboardPage({
       image_url: (c as { image_url: string | null }).image_url,
       created_at: (c as { created_at: string }).created_at,
       user_id: (c as { user_id: string }).user_id,
-      authorName: cu?.display_name ?? cu?.email?.split("@")[0] ?? "Member",
+      authorName: cu?.display_name ?? "Member",
       isCurrentUser: (c as { user_id: string }).user_id === user.id,
     };
     const pid = (c as { post_id: string }).post_id;
@@ -196,7 +196,7 @@ export default async function DashboardPage({
   }
 
   const initialPosts = (rawPosts ?? []).map((p) => {
-    const u = p.users as unknown as { display_name: string | null; email: string } | null;
+    const u = p.users as unknown as { display_name: string | null } | null;
     return {
       id: p.id,
       body: p.body,
@@ -204,7 +204,7 @@ export default async function DashboardPage({
       is_pinned: p.is_pinned,
       created_at: p.created_at,
       user_id: p.user_id,
-      authorName: u?.display_name ?? u?.email?.split("@")[0] ?? "Member",
+      authorName: u?.display_name ?? "Member",
       isCurrentUser: p.user_id === user.id,
       comments: (commentsByPost.get(p.id) ?? []) as [],
     };

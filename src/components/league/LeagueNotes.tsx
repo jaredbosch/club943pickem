@@ -58,7 +58,7 @@ export function LeagueNotes({ leagueId, initialPosts, isCommissioner, currentUse
   const fetchPosts = useCallback(async () => {
     const { data: postRows } = await supabase
       .from("league_posts")
-      .select("id, body, image_url, is_pinned, created_at, user_id, users(display_name, email)")
+      .select("id, body, image_url, is_pinned, created_at, user_id, users(display_name)")
       .eq("league_id", leagueId)
       .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false })
@@ -70,14 +70,14 @@ export function LeagueNotes({ leagueId, initialPosts, isCommissioner, currentUse
     const { data: commentRows } = postIds.length
       ? await supabase
           .from("post_comments")
-          .select("id, post_id, body, image_url, created_at, user_id, users(display_name, email)")
+          .select("id, post_id, body, image_url, created_at, user_id, users(display_name)")
           .in("post_id", postIds)
           .order("created_at", { ascending: true })
       : { data: [] };
 
     const commentsByPost = new Map<string, Comment[]>();
     for (const c of commentRows ?? []) {
-      const u = c.users as unknown as { display_name: string | null; email: string } | null;
+      const u = c.users as unknown as { display_name: string | null } | null;
       const comment: Comment = {
         id: c.id,
         post_id: c.post_id,
@@ -85,7 +85,7 @@ export function LeagueNotes({ leagueId, initialPosts, isCommissioner, currentUse
         image_url: c.image_url,
         created_at: c.created_at,
         user_id: c.user_id,
-        authorName: u?.display_name ?? u?.email?.split("@")[0] ?? "Member",
+        authorName: u?.display_name ?? "Member",
         isCurrentUser: c.user_id === currentUserId,
       };
       if (!commentsByPost.has(c.post_id)) commentsByPost.set(c.post_id, []);
@@ -93,7 +93,7 @@ export function LeagueNotes({ leagueId, initialPosts, isCommissioner, currentUse
     }
 
     setPosts(postRows.map((p) => {
-      const u = p.users as unknown as { display_name: string | null; email: string } | null;
+      const u = p.users as unknown as { display_name: string | null } | null;
       return {
         id: p.id,
         body: p.body,
@@ -101,7 +101,7 @@ export function LeagueNotes({ leagueId, initialPosts, isCommissioner, currentUse
         is_pinned: p.is_pinned,
         created_at: p.created_at,
         user_id: p.user_id,
-        authorName: u?.display_name ?? u?.email?.split("@")[0] ?? "Member",
+        authorName: u?.display_name ?? "Member",
         isCurrentUser: p.user_id === currentUserId,
         comments: commentsByPost.get(p.id) ?? [],
       };
