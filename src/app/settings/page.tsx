@@ -9,7 +9,7 @@ export default async function SettingsPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("display_name, email")
+    .select("display_name")
     .eq("id", user.id)
     .single();
 
@@ -25,7 +25,7 @@ export default async function SettingsPage() {
   return (
     <PlayerSettings
       userId={user.id}
-      email={profile?.email ?? user.email ?? ""}
+      email={user.email ?? ""}
       displayName={profile?.display_name ?? ""}
       phone={membership?.phone ?? ""}
       venmo={membership?.venmo ?? ""}

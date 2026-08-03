@@ -59,11 +59,11 @@ export default async function HomePage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("display_name, email")
+    .select("display_name")
     .eq("id", user.id)
     .single();
 
-  const displayName = profile?.display_name ?? profile?.email?.split("@")[0] ?? "Player";
+  const displayName = profile?.display_name ?? user.email?.split("@")[0] ?? "Player";
 
   return (
     <div className="home-shell pp-gridbg">

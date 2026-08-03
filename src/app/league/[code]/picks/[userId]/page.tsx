@@ -33,13 +33,13 @@ export default async function PlayerProfilePage({
 
   const { data: profile } = await supabase
     .from("users")
-    .select("display_name, email")
+    .select("display_name")
     .eq("id", params.userId)
     .maybeSingle();
 
   if (!profile) notFound();
 
-  const displayName = profile.display_name ?? profile.email?.split("@")[0] ?? "Player";
+  const displayName = profile.display_name ?? "Player";
 
   const { data: seasonRow } = await supabase
     .from("standings")
