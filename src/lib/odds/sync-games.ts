@@ -57,12 +57,50 @@ export async function syncGames(
       continue;
     }
 
-    // Upsert the game
-    const { data: upserted, error } = await supabase
+    // Find the existing row: by external_id first, then by matchup — schedule
+    // rows seeded by scripts/import-schedule.mjs have no external_id, and an
+    // external_id-only upsert would duplicate them instead of adopting them.
+    const { data: byExt, error: extErr } = await supabase
       .from("games")
-      .upsert(row, { onConflict: "external_id" })
-      .select("id, spread_home")
+      .select("id")
+      .eq("external_id", row.external_id)
+      .limit(1)
       .maybeSingle();
+    if (extErr) {
+      stats.skipped.push({ id: game.id, reason: extErr.message });
+      continue;
+    }
+
+    let gameId = byExt?.id ?? null;
+    if (!gameId) {
+      const { data: byMatchup, error: matchErr } = await supabase
+        .from("games")
+        .select("id")
+        .eq("season_year", row.season_year)
+        .eq("week", row.week)
+        .eq("home_team", row.home_team)
+        .eq("away_team", row.away_team)
+        .limit(1)
+        .maybeSingle();
+      if (matchErr) {
+        stats.skipped.push({ id: game.id, reason: matchErr.message });
+        continue;
+      }
+      gameId = byMatchup?.id ?? null;
+    }
+
+    const { data: upserted, error } = gameId
+      ? await supabase
+          .from("games")
+          .update(row)
+          .eq("id", gameId)
+          .select("id, spread_home")
+          .maybeSingle()
+      : await supabase
+          .from("games")
+          .insert(row)
+          .select("id, spread_home")
+          .maybeSingle();
 
     if (error) {
       stats.skipped.push({ id: game.id, reason: error.message });
