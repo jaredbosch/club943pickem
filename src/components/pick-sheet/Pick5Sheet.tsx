@@ -212,7 +212,7 @@ export function Pick5Sheet({
         )}
         {isFutureWeek && (
           <div className="ps-future-banner">
-            Schedule for Week {week} — picks open once Week {activeWeek} wraps up.
+            Schedule for Week {week} — game lines go live the Monday before the games, and picks open with them.
           </div>
         )}
         {isThursdayLocked && !isFutureWeek && (

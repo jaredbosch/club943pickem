@@ -394,7 +394,7 @@ export function PickSheet({
             {/* Pick rows */}
             {isFutureWeek && (
               <div className="ps-future-banner">
-                Schedule for Week {week} — picks and spreads open once Week {activeWeek} wraps up.
+                Schedule for Week {week} — game lines go live the Monday before the games, and picks open with them.
               </div>
             )}
             <div className="ps-pick-list">
@@ -456,7 +456,7 @@ export function PickSheet({
         {isFutureWeek ? (
           <div className="ps-bottom-bar">
             <div className="ps-score-display">
-              Week {week} opens once Week {activeWeek} wraps up
+              Week {week} opens Monday before the games — lines post then
             </div>
           </div>
         ) : (
