@@ -11,6 +11,15 @@ Files in `migrations/` are timestamped SQL scripts applied in filename order.
 | `20260420000001_initial_schema.sql` | Enums, tables, indexes, `updated_at` triggers, `auth.users` → `public.users` sync, `create_league` / `join_league_by_code` RPCs |
 | `20260420000002_rls_policies.sql`   | Enables RLS on every table, plus `is_league_member` / `is_league_commissioner` helpers and per-table policies |
 
+Later migrations follow the same pattern (see file headers). On 2026-08-02 the
+directory was reconciled with prod's `supabase_migrations.schema_migrations`
+history: migrations that had only ever been applied via the dashboard/MCP were
+recovered into files, and version prefixes were renamed to match the remote
+history, so `supabase migration list` and `supabase db push` now line up.
+Keep it that way — add schema changes as timestamped files here and apply them
+via `supabase db push` (or Supabase MCP `apply_migration` with the same
+version), never as ad-hoc SQL-editor runs.
+
 Tables follow spec §5.1. Notable deltas from the spec:
 
 - `public.users.id` references `auth.users.id` directly (Clerk is gone; Supabase Auth is the source of truth).
