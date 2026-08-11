@@ -13,7 +13,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { LEAGUES, MOCK_SEASON, fetchPreseasonWk1 } from './mock-preseason-week.mjs';
+import { LEAGUES, MOCK_SEASON, MOCK_WEEK, fetchPreseasonWk1 } from './mock-preseason-week.mjs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SRK = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -95,7 +95,7 @@ async function main() {
     }
     const { data: standings } = await supabase.from('standings')
       .select('user_id, week, total_points, correct_picks, rank, users:user_id(display_name)')
-      .eq('league_id', lg.id).eq('season_year', MOCK_SEASON).eq('week', 1)
+      .eq('league_id', lg.id).eq('season_year', MOCK_SEASON).eq('week', MOCK_WEEK)
       .order('rank');
     const pass = mismatches.length === 0 && !rpcErr;
     if (!pass) allPass = false;

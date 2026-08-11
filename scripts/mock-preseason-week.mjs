@@ -25,7 +25,7 @@ if (!SUPABASE_URL || !SRK) {
 const supabase = createClient(SUPABASE_URL, SRK);
 
 export const MOCK_SEASON = 1998;
-export const MOCK_WEEK = 1;
+export const MOCK_WEEK = 18; // nflWeek() clamps a past season to 18, so the UI lands here
 const JARED = '99810dab-0770-4d84-8c19-1f5713bd89c7';
 
 export const LEAGUES = [
@@ -150,6 +150,7 @@ async function main() {
     const isPick5 = lg.scoring.startsWith('pick5');
     const isConf = lg.scoring.endsWith('confidence');
     for (const uid of memberIds) {
+      if (uid === JARED) continue; // Jared enters his own picks through the UI
       const rng = seededRng(hashSeed(`${lg.id}:${uid}`));
       const slate = isPick5
         ? games.slice().sort(() => rng() - 0.5).slice(0, 5)
