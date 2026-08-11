@@ -14,6 +14,26 @@ if (!SUPABASE_URL || !SRK) {
   process.exit(1);
 }
 
+// ── PRODUCTION GUARD ─────────────────────────────────────────────────────────
+// This script rewrites the REAL shared games table: it sets weeks 1-7 of the
+// season to `final` with fabricated scores and locks week 8. The games table
+// is global across ALL leagues, so on production this corrupts every real
+// league — the score-sync cron would immediately grade real users' picks
+// against fake results. Only run it against a local or branch database.
+const PROD_PROJECT_REF = 'nmbadqaogfksyjwzrfmr';
+if (SUPABASE_URL.includes(PROD_PROJECT_REF) && !process.argv.includes('--force-prod')) {
+  console.error(
+    '\n🛑 REFUSING TO RUN: SUPABASE_URL points at the PRODUCTION project ' +
+    `(${PROD_PROJECT_REF}).\n\n` +
+    'This script overwrites the real 2026 NFL schedule with fake final scores.\n' +
+    'Every real league shares those game rows; their picks would be graded\n' +
+    'against fabricated results within minutes by the score-sync cron.\n\n' +
+    'Point SUPABASE_URL at a local/branch database instead.\n' +
+    'If you truly intend to do this to production, re-run with --force-prod.\n'
+  );
+  process.exit(1);
+}
+
 const LEAGUE_ID = 'b30e4adb-6737-421e-be83-08675e9adb99';
 const REAL_USER_ID = '99810dab-0770-4d84-8c19-1f5713bd89c7';
 const SEASON_YEAR = 2026;
@@ -286,10 +306,6 @@ async function main() {
       gameResults[g.id] = { home_score, away_score, homeCovers: covered };
       return { id: g.id, home_score, away_score, status: 'final' };
     });
-    for (const u of updates) {
-      await supabase.from('games').update({ home_score: u.home_score, away_score: u.away_score, status: 'status' })
-        .eq('id', u.id);
-    }
     // Batch update status separately (simpler)
     await supabase.from('games').update({ status: 'final' })
       .eq('season_year', SEASON_YEAR).eq('week', week);

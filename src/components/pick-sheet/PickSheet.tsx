@@ -193,7 +193,7 @@ export function PickSheet({
     setTbSaving(true);
     await supabase.from("tiebreaker_guesses").upsert(
       { user_id: userId, league_id: leagueId, game_id: mnfGame.id, week, guess: val },
-      { onConflict: "user_id,league_id,week" },
+      { onConflict: "user_id,league_id,season_year,week" },
     );
     setTbSaving(false);
     setTbSaved(true);

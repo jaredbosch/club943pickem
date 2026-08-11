@@ -11,5 +11,9 @@ In QA mode, flag any code that doesn't match DESIGN.md.
 - Test data: `node scripts/seed-test-season.mjs` (needs `.env.local` sourced) seeds
   league `6V7A3F` "Club943 Test" with 25 fake users (password `SeedUser2026!!`,
   e.g. `matt.thompson.tpp@mailinator.com`), weeks 1–7 final, week 8 live.
-  Safe to re-run; cleans its own data.
+  ⚠️ LOCAL/BRANCH DATABASES ONLY — it overwrites the real shared 2026 games
+  table with fake final scores, which would corrupt every production league
+  now that real users exist. The script refuses to run against the prod
+  project ref unless passed `--force-prod`. Safe to re-run locally; cleans
+  its own data.
 - Design audit (Phase 1, 2026-06-10): docs/design-audit-2026-06-10.md
