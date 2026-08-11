@@ -245,15 +245,15 @@ export function LeagueDashboard({ league, leagueCode, standings, isCommissioner,
 
   const me = standings.find((r) => r.isCurrentUser);
   const leader = standings[0];
-  const gapToFirst = me && leader && !leader.isCurrentUser
+  const gapToFirst = me && leader && !leader.isCurrentUser && leader.rank > 0
     ? leader.totalPoints - me.totalPoints
     : null;
 
   const tickerItems = [
     `${league.name} · ${league.season_year} Season`,
     `${standings.length} players competing`,
-    leader ? `🏆 Leader: ${leader.displayName} · ${leader.totalPoints} pts` : "Season starting soon",
-    me ? `You are ranked #${me.rank}` : "Make your picks",
+    leader && leader.rank > 0 ? `🏆 Leader: ${leader.displayName} · ${leader.totalPoints} pts` : "Season starting soon",
+    me && me.rank > 0 ? `You are ranked #${me.rank}` : "Make your picks",
     "Confidence pool · 1 point per game · higher = more confident",
     league.status === "active" ? "Season in progress" : `Status: ${league.status}`,
   ];
@@ -304,7 +304,7 @@ export function LeagueDashboard({ league, leagueCode, standings, isCommissioner,
           {me && (
             <div className="dash-kpi">
               <div className="dash-kpi-label">Your Rank</div>
-              <div className="dash-kpi-val good">#{me.rank}</div>
+              <div className="dash-kpi-val good">{me.rank > 0 ? `#${me.rank}` : "—"}</div>
               <div className="dash-kpi-sub">{me.totalPoints} pts</div>
             </div>
           )}
@@ -315,7 +315,7 @@ export function LeagueDashboard({ league, leagueCode, standings, isCommissioner,
               <div className="dash-kpi-sub">{leader?.displayName}</div>
             </div>
           )}
-          {leader && (
+          {leader && leader.rank > 0 && (
             <div className="dash-kpi">
               <div className="dash-kpi-label">League Leader</div>
               <div className="dash-kpi-val accent">{leader.totalPoints}</div>
@@ -378,7 +378,7 @@ export function LeagueDashboard({ league, leagueCode, standings, isCommissioner,
                         key={row.userId}
                         className={`dash-row${row.isCurrentUser ? " dash-row-me" : " dash-row-link"}${i === 0 ? " dash-row-first" : ""}`}
                       >
-                        <td className="dash-td dash-td-rank">{row.rank}</td>
+                        <td className="dash-td dash-td-rank">{row.rank > 0 ? row.rank : "—"}</td>
                         <td className="dash-td dash-td-name">
                           <Link
                             href={row.isCurrentUser ? `/league/${leagueCode}/picks` : `/league/${leagueCode}/picks/${row.userId}`}

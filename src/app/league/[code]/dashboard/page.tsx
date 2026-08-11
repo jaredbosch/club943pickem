@@ -126,8 +126,12 @@ export default async function DashboardPage({
   const totalPlayers = (members ?? []).length;
   const midpoint = Math.ceil(totalPlayers / 2);
 
-  const rows = (seasonStandings ?? []).map((s) => {
-    const weekly = (weeklyByPlayer.get(s.user_id) ?? []).sort((a, b) => b.week - a.week);
+  // Every member gets a row from the moment they join (Yahoo-style); graded
+  // standings fill in points/rank once weeks are final.
+  const standingsByUser = new Map((seasonStandings ?? []).map((s) => [s.user_id, s]));
+  const rows = (members ?? []).map((m) => {
+    const s = standingsByUser.get(m.user_id);
+    const weekly = (weeklyByPlayer.get(m.user_id) ?? []).sort((a, b) => b.week - a.week);
     const form = weekly.slice(0, 5).map((w) =>
       w.rank != null && w.rank <= midpoint ? "W" : "L"
     ) as ("W" | "L")[];
@@ -142,23 +146,26 @@ export default async function DashboardPage({
       if (dir === "L") streak = -streak;
     }
 
-    const totalGraded = gradedByUser.get(s.user_id) ?? 0;
-    const correctPicks = correctByUser.get(s.user_id) ?? 0;
+    const totalGraded = gradedByUser.get(m.user_id) ?? 0;
+    const correctPicks = correctByUser.get(m.user_id) ?? 0;
     const losses = Math.max(0, totalGraded - correctPicks);
 
     return {
-      userId: s.user_id,
-      rank: s.rank ?? 0,
-      displayName: memberMap.get(s.user_id)?.displayName ?? "Member",
-      isPaid: memberMap.get(s.user_id)?.isPaid ?? false,
-      totalPoints: s.total_points,
+      userId: m.user_id,
+      rank: s?.rank ?? 0,
+      displayName: memberMap.get(m.user_id)?.displayName ?? "Member",
+      isPaid: memberMap.get(m.user_id)?.isPaid ?? false,
+      totalPoints: s?.total_points ?? 0,
       correctPicks,
       losses,
       form,
       streak,
-      isCurrentUser: s.user_id === user.id,
+      isCurrentUser: m.user_id === user.id,
     };
-  });
+  }).sort((a, b) =>
+    (a.rank || Number.MAX_SAFE_INTEGER) - (b.rank || Number.MAX_SAFE_INTEGER) ||
+    a.displayName.localeCompare(b.displayName)
+  );
 
   const { data: rawPosts } = isArchive ? { data: [] } : await supabase
     .from("league_posts")
