@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { WeeklyGrid } from "@/components/grid/WeeklyGrid";
 import { nflSeasonYear, nflWeek } from "@/lib/nfl/week";
+import { formatClock } from "@/lib/picks/transform";
 import { sampleGames, samplePlayers } from "@/components/grid/week7-grid-data";
 
 export default async function GridPage({
@@ -61,7 +62,7 @@ export default async function GridPage({
 
   const { data: games } = await supabase
     .from("games")
-    .select("id, home_team, away_team, status, time_slot, kickoff_time, home_score, away_score, spread_home")
+    .select("id, home_team, away_team, status, time_slot, kickoff_time, home_score, away_score, spread_home, period, display_clock")
     .eq("season_year", seasonYear)
     .eq("week", currentWeek)
     .order("kickoff_time", { ascending: true });
@@ -181,6 +182,12 @@ export default async function GridPage({
         kickoffTime: g.kickoff_time,
         awayScore: (g as Record<string, unknown>).away_score as number | null ?? null,
         homeScore: (g as Record<string, unknown>).home_score as number | null ?? null,
+        clock: g.status === "in_progress"
+          ? formatClock(
+              (g as Record<string, unknown>).period as number | null,
+              (g as Record<string, unknown>).display_clock as string | null,
+            )
+          : undefined,
         atsWinner: atsWinnerMap[g.id] ?? null,
         homeSpread: (g as Record<string, unknown>).spread_home as number | null ?? null,
       }))}

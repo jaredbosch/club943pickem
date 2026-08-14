@@ -67,13 +67,24 @@ export async function fetchPreseasonWk1() {
 
 // Map real kickoff to our time_slot enum. The latest game gets 'monday' so it
 // serves as the tiebreaker ("MNF") game in confidence formats.
+// Uses EASTERN day/hour (mirrors src/lib/nfl/time-slot.ts) — the old UTC
+// version pushed Thu 8:00PM ET games (= Fri 00:00 UTC) into sunday_early.
 function timeSlot(dateIso, isLast) {
   if (isLast) return 'monday';
-  const d = new Date(dateIso);
-  const day = d.getUTCDay(); // Thu=4 Fri=5 Sat=6
-  if (day === 4) return 'thursday';
-  if (day === 5) return 'sunday_early';
-  return d.getUTCHours() < 19 ? 'sunday_late' : 'sunday_night';
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', weekday: 'short', hour: '2-digit', hour12: false,
+  }).formatToParts(new Date(dateIso));
+  const day = parts.find(p => p.type === 'weekday')?.value;
+  const hour = parseInt(parts.find(p => p.type === 'hour')?.value ?? '0', 10) % 24;
+  if (day === 'Thu') return 'thursday';
+  if (day === 'Fri' || day === 'Sat') return hour < 19 ? 'sunday_early' : 'sunday_late';
+  if (day === 'Sun') {
+    if (hour < 12) return 'intl';
+    if (hour < 16) return 'sunday_early';
+    if (hour < 20) return 'sunday_late';
+    return 'sunday_night';
+  }
+  return 'monday';
 }
 
 async function main() {

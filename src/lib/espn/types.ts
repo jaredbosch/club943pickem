@@ -19,6 +19,8 @@ export type EspnEvent = {
   id: string;
   competitions: Array<{
     status: {
+      displayClock?: string;
+      period?: number;
       type: {
         name: EspnStatusName;
         state: "pre" | "in" | "post";

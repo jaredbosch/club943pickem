@@ -15,6 +15,11 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createAdminClient();
 
+    // 0. Lock anything at/past its posted kickoff (spec §2.3: 5 min before).
+    //    Piggybacks on this route because the external pinger hits it every
+    //    couple of minutes — Vercel crons alone are too coarse.
+    const { data: lockStats, error: lockError } = await supabase.rpc("lock_slots");
+
     // 1. Pull scores from ESPN
     const scoreStats = await syncScores(supabase);
 
@@ -33,7 +38,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ ok: true, scores: scoreStats, grading: gradingResults });
+    return NextResponse.json({
+      ok: true,
+      locks: lockError ? { error: lockError.message } : lockStats,
+      scores: scoreStats,
+      grading: gradingResults,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ ok: false, error: message }, { status: 500 });

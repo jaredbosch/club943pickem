@@ -9,7 +9,19 @@ export type DbGame = {
   status: "scheduled" | "locked" | "in_progress" | "final";
   time_slot: string;
   kickoff_time: string;
+  home_score?: number | null;
+  away_score?: number | null;
+  period?: number | null;
+  display_clock?: string | null;
 };
+
+// "Q2 4:32" / "HALF" / "OT" — compact clock line for live games.
+export function formatClock(period: number | null | undefined, clock: string | null | undefined): string | undefined {
+  if (period == null) return undefined;
+  if (period === 2 && (clock === "0:00" || !clock)) return "HALF";
+  const q = period <= 4 ? `Q${period}` : period === 5 ? "OT" : `${period - 4}OT`;
+  return clock ? `${q} ${clock}` : q;
+}
 
 export type DbPick = {
   game_id: string;
@@ -92,6 +104,8 @@ export function transformGamesAndPicks(games: DbGame[], picks: DbPick[]): Slot[]
       const p = pickMap.get(g.id);
       const spread = g.locked_spread_home ?? g.spread_home ?? 0;
 
+      const hasScore = g.home_score != null && g.away_score != null;
+
       return {
         id: g.id,
         away: { abbr: g.away_team, record: "", spread: formatSpread(-spread) },
@@ -104,6 +118,12 @@ export function transformGamesAndPicks(games: DbGame[], picks: DbPick[]): Slot[]
           : undefined,
         pointsEarned: p?.points_earned ?? undefined,
         gameTime: g.kickoff_time ? formatGameTime(g.kickoff_time) : undefined,
+        kickoffIso: g.kickoff_time || undefined,
+        status: g.status,
+        liveScore: hasScore && g.status !== "scheduled" && g.status !== "locked"
+          ? `${g.away_score}–${g.home_score}`
+          : undefined,
+        clock: g.status === "in_progress" ? formatClock(g.period, g.display_clock) : undefined,
         network: SLOT_NETWORK[g.time_slot],
         isPrimetime: SLOT_PRIMETIME.has(g.time_slot),
       };

@@ -8,6 +8,8 @@ export type Team = {
   spread: string;
 };
 
+export type GameStatus = "scheduled" | "locked" | "in_progress" | "final";
+
 export type Game = {
   id: string;
   away: Team;
@@ -17,7 +19,10 @@ export type Game = {
   result?: PickResult;
   pointsEarned?: number;
   liveScore?: string;
+  clock?: string;
   gameTime?: string;
+  kickoffIso?: string;
+  status?: GameStatus;
   network?: string;
   isPrimetime?: boolean;
 };

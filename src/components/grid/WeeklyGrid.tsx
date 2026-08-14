@@ -12,6 +12,7 @@ type GameCol = {
   kickoffTime: string;
   awayScore?: number | null;
   homeScore?: number | null;
+  clock?: string;
   atsWinner?: string | null;
   homeSpread?: number | null;
 };
@@ -155,7 +156,9 @@ function GameHeader({ game }: { game: GameCol }) {
         <div className="grid-game-matchup">{game.away}·{game.home}</div>
       )}
       <div className={`grid-game-status${isLive ? " live" : isFinal ? " final" : ""}`}>
-        {isFinal && game.atsWinner ? spreadLabel(game.atsWinner) : label}
+        {isFinal && game.atsWinner ? spreadLabel(game.atsWinner)
+          : isLive && game.clock ? game.clock
+          : label}
       </div>
     </div>
   );

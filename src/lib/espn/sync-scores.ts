@@ -46,6 +46,8 @@ export async function syncScores(supabase: SupabaseClient): Promise<ScoreSyncSta
       const awayTeam = normalizeEspnAbbr(awayComp.team.abbreviation);
       const { name, state } = comp.status.type;
       const newStatus = espnStatusToDb(name, state);
+      const displayClock = comp.status.displayClock ?? null;
+      const period = comp.status.period ?? null;
 
       const homeScore = homeComp.score != null ? parseInt(homeComp.score, 10) : null;
       const awayScore = awayComp.score != null ? parseInt(awayComp.score, 10) : null;
@@ -71,6 +73,11 @@ export async function syncScores(supabase: SupabaseClient): Promise<ScoreSyncSta
       if (homeScore !== null) update.home_score = homeScore;
       if (awayScore !== null) update.away_score = awayScore;
       if (newIdx > currentIdx) update.status = newStatus;
+      // Quarter + clock for the live UI; only meaningful once the game starts
+      if (newStatus === "in_progress" || newStatus === "final") {
+        update.period = period;
+        update.display_clock = displayClock;
+      }
 
       const { error } = await supabase.from("games").update(update).eq("id", game.id);
       if (error) {

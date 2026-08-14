@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Game, SlotStatus, PickResult } from "./types";
 import { teamColor } from "@/lib/nfl-colors";
@@ -23,6 +23,32 @@ type Props = {
   spreadHistory?: { spread: number; date: string }[];
 };
 
+// Picks close 5 minutes before the posted kickoff, matching lock_slots().
+const LOCK_LEAD_MS = 5 * 60_000;
+
+function formatCountdown(ms: number): string {
+  const mins = Math.max(0, Math.floor(ms / 60_000));
+  if (mins < 1) return "<1M";
+  const d = Math.floor(mins / 1440);
+  const h = Math.floor((mins % 1440) / 60);
+  const m = mins % 60;
+  if (d > 0) return `${d}D ${h}H`;
+  if (h > 0) return `${h}H ${m}M`;
+  return `${m}M`;
+}
+
+// Kickoff rendered in the viewer's timezone, e.g. "THU 5:00P MST".
+function formatLocalKickoff(iso: string): string {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString(undefined, { weekday: "short" }).toUpperCase();
+  const time = d
+    .toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", hour12: true })
+    .replace(" AM", "A").replace(" PM", "P");
+  const tz = new Intl.DateTimeFormat(undefined, { timeZoneName: "short" })
+    .formatToParts(d).find((p) => p.type === "timeZoneName")?.value ?? "";
+  return tz ? `${day} ${time} ${tz}` : `${day} ${time}`;
+}
+
 export function GameRow({
   game,
   slotStatus,
@@ -38,8 +64,34 @@ export function GameRow({
   globalPct,
   spreadHistory,
 }: Props) {
-  const isOpen = !scheduleOnly && slotStatus === "open";
-  const isLive = slotStatus === "live";
+  // Client clock — null until mounted so SSR output stays deterministic.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Per-game lock state. The game's own status is authoritative; the posted
+  // kickoff time is the client-side guard so a game locks on schedule even if
+  // the status cron lags. Sample data (no status) falls back to slot status.
+  const kickoffMs = game.kickoffIso ? Date.parse(game.kickoffIso) : null;
+  const lockMs = kickoffMs != null && !isNaN(kickoffMs) ? kickoffMs - LOCK_LEAD_MS : null;
+  const kickoffPassed = now != null && lockMs != null && now >= lockMs;
+  const hasGameStatus = game.status !== undefined;
+
+  const isLive = hasGameStatus ? game.status === "in_progress" : slotStatus === "live";
+  const isFinal = game.status === "final";
+  const isOpen = !scheduleOnly && !kickoffPassed && (
+    hasGameStatus ? game.status === "scheduled" : slotStatus === "open"
+  );
+  const isLockedPending = !isOpen && !isLive && !isFinal && !scheduleOnly;
+
+  const localTime = now != null && game.kickoffIso ? formatLocalKickoff(game.kickoffIso) : null;
+  const countdownMs = isOpen && now != null && lockMs != null ? lockMs - now : null;
+  const showCountdown = countdownMs != null && countdownMs < 48 * 3600_000;
+  const countdownSoon = countdownMs != null && countdownMs < 3600_000;
+
   const hasPick = !!game.pickedTeam;
   const conf = game.confidence;
   const isHighConf = hasPick && conf !== null && conf >= Math.ceil(totalGames * 0.8);
@@ -72,7 +124,7 @@ export function GameRow({
   const coords = pickerCoordsRef.current;
 
   return (
-    <div className={`pp-pick-row${!isOpen ? " locked" : ""}${hasPick ? " has-pick" : ""}${resultCls}${warnCls}`}>
+    <div className={`pp-pick-row${!isOpen ? " locked" : ""}${isLive ? " game-live" : ""}${isLockedPending ? " game-locked" : ""}${isFinal ? " game-final" : ""}${hasPick ? " has-pick" : ""}${resultCls}${warnCls}`}>
       <div className={`pp-pick-inner${!showConfidence ? " schedule-only" : ""}`}>
 
         {/* Left: confidence rail — hidden for future weeks or non-confidence leagues */}
@@ -136,7 +188,9 @@ export function GameRow({
         {/* Center: meta strip + team sides */}
         <div className="pp-pick-center">
           <div className="pp-pick-meta">
-            {game.gameTime && <span className="pp-pick-meta-time">{game.gameTime}</span>}
+            {(localTime ?? game.gameTime) && (
+              <span className="pp-pick-meta-time" suppressHydrationWarning>{localTime ?? game.gameTime}</span>
+            )}
             {game.network && <span className="pp-pick-meta-net">{game.network}</span>}
             {game.isPrimetime && <span className="pp-pick-meta-prime">★ PRIME</span>}
             {globalPct && (
@@ -168,7 +222,14 @@ export function GameRow({
             {!isOpen && game.result === "incorrect" && (
               <span className="pp-pick-meta-lost">0 pts</span>
             )}
-            {isLive && <span className="pp-pick-meta-live">LIVE</span>}
+            {showCountdown && (
+              <span className={`pp-pick-meta-countdown${countdownSoon ? " soon" : ""}`} suppressHydrationWarning>
+                LOCKS IN {formatCountdown(countdownMs!)}
+              </span>
+            )}
+            {isLive && <span className="pp-pick-meta-live">● LIVE</span>}
+            {isLockedPending && <span className="pp-pick-meta-lockedtag">LOCKED</span>}
+            {isFinal && <span className="pp-pick-meta-finaltag">FINAL</span>}
           </div>
 
           <div className="pp-pick-teams">
@@ -184,10 +245,14 @@ export function GameRow({
             />
 
             <div className="pp-pick-at">
-              {isLive && game.liveScore
-                ? <div className="pp-pick-live-center">{game.liveScore}</div>
-                : <div className="pp-pick-at-vs">@</div>
-              }
+              {(isLive || isFinal) && game.liveScore ? (
+                <>
+                  <div className="pp-pick-live-center">{game.liveScore}</div>
+                  {isLive && game.clock && <div className="pp-pick-clock">{game.clock}</div>}
+                </>
+              ) : (
+                <div className="pp-pick-at-vs">@</div>
+              )}
             </div>
 
             <TeamSide
@@ -247,6 +312,7 @@ function TeamSide({
       )}
       <div className="pp-pick-logo" style={{ background: logoGradient }}>
         {abbr}
+        {picked && <span className="pp-pick-check">✓</span>}
       </div>
       <div className="pp-pick-team-info">
         <span className="pp-pick-abbr">{abbr}</span>
