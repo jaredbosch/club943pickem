@@ -70,6 +70,46 @@ const SLOT_LABELS: Record<string, string> = {
 
 const SLOT_ORDER = ["thursday", "intl", "sunday_early", "sunday_late", "sunday_night", "monday"];
 
+// The ET weekday each slot normally holds. When a slot's actual games fall on
+// a different day (preseason weeks, Black Friday, Saturday doubleheaders),
+// the header derives from the real schedule instead of the canonical label.
+const SLOT_EXPECTED_DAY: Record<string, string> = {
+  thursday: "Thu",
+  intl: "Sun",
+  sunday_early: "Sun",
+  sunday_late: "Sun",
+  sunday_night: "Sun",
+  monday: "Mon",
+};
+
+const DAY_LABELS: Record<string, string> = {
+  Mon: "monday", Tue: "tuesday", Wed: "wednesday", Thu: "thursday",
+  Fri: "friday", Sat: "saturday", Sun: "sunday",
+};
+
+const DAY_ORDER = ["Wed", "Thu", "Fri", "Sat", "Sun", "Mon", "Tue"];
+
+function etWeekday(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("en-US", { weekday: "short", timeZone: "America/New_York" });
+  } catch {
+    return "";
+  }
+}
+
+function slotLabelFor(slotId: string, games: DbGame[]): string {
+  const canonical = SLOT_LABELS[slotId] ?? slotId;
+  const days = [...new Set(games.map((g) => etWeekday(g.kickoff_time)).filter(Boolean))]
+    .sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
+  if (days.length === 0) return canonical;
+  if (days.length === 1) {
+    return days[0] === SLOT_EXPECTED_DAY[slotId] ? canonical : (DAY_LABELS[days[0]] ?? canonical);
+  }
+  const allExpected = days.every((d) => d === SLOT_EXPECTED_DAY[slotId]);
+  if (allExpected) return canonical;
+  return `${DAY_LABELS[days[0]]}–${DAY_LABELS[days[days.length - 1]]}`;
+}
+
 function slotStatus(games: DbGame[]): SlotStatus {
   if (games.some((g) => g.status === "in_progress")) return "live";
   if (games.some((g) => g.status !== "scheduled")) return "locked";
@@ -131,7 +171,7 @@ export function transformGamesAndPicks(games: DbGame[], picks: DbPick[]): Slot[]
 
     slots.push({
       id: slotId,
-      label: SLOT_LABELS[slotId] ?? slotId,
+      label: slotLabelFor(slotId, slotGames),
       status,
       statusText,
       games: mappedGames,

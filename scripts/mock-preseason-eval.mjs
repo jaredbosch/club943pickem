@@ -68,6 +68,11 @@ async function main() {
     if (!Number.isNaN(as)) { upd.away_score = as; g.away_score = as; }
     const order = ['scheduled', 'locked', 'in_progress', 'final'];
     if (st && order.indexOf(st) > order.indexOf(g.status)) { upd.status = st; g.status = st; }
+    // Quarter + clock for the live UI (mirrors lib/espn/sync-scores)
+    if (st === 'in_progress' || st === 'final') {
+      upd.period = c.status.period ?? null;
+      upd.display_clock = c.status.displayClock ?? null;
+    }
     if (Object.keys(upd).length) await supabase.from('games').update(upd).eq('id', g.id);
     if (g.status === 'final') finals++; else if (g.status === 'in_progress') live++; else pending++;
   }
