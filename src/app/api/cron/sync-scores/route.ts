@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { syncScores } from "@/lib/espn/sync-scores";
+import { nflSeasonYear } from "@/lib/nfl/week";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +21,35 @@ export async function GET(request: NextRequest) {
     //    couple of minutes — Vercel crons alone are too coarse.
     const { data: lockStats, error: lockError } = await supabase.rpc("lock_slots");
     if (lockError) console.error("lock_slots failed:", lockError.message);
+
+    // 0.5 Idle guard — the pinger hits this route every ~2 min around the
+    // clock, but ESPN only needs polling when something can actually change:
+    // a live game, a kickoff within 30 min (or one ESPN hasn't flipped yet),
+    // or a recent final that might still get corrected. Otherwise skip the
+    // fetch entirely (~95% of calls). Locking above always runs — pure DB.
+    const now = new Date();
+    const seasonYear = nflSeasonYear(now);
+    const in30m = new Date(now.getTime() + 30 * 60_000).toISOString();
+    const sixHoursAgo = new Date(now.getTime() - 6 * 3600_000).toISOString();
+    const oneHourAgo = new Date(now.getTime() - 3600_000).toISOString();
+    const { data: activeGames } = await supabase
+      .from("games")
+      .select("id")
+      .eq("season_year", seasonYear)
+      .or(
+        `status.eq.in_progress,` +
+        `and(status.in.(scheduled,locked),kickoff_time.gte.${sixHoursAgo},kickoff_time.lte.${in30m}),` +
+        `and(status.eq.final,updated_at.gte.${oneHourAgo})`
+      )
+      .limit(1);
+
+    if (!activeGames?.length) {
+      return NextResponse.json({
+        ok: true,
+        locks: lockError ? { error: lockError.message } : lockStats,
+        skipped: "idle — no live, imminent, or recently-final games",
+      });
+    }
 
     // 1. Pull scores from ESPN
     const scoreStats = await syncScores(supabase);
