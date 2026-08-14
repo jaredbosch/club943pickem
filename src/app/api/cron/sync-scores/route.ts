@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     //    Piggybacks on this route because the external pinger hits it every
     //    couple of minutes — Vercel crons alone are too coarse.
     const { data: lockStats, error: lockError } = await supabase.rpc("lock_slots");
+    if (lockError) console.error("lock_slots failed:", lockError.message);
 
     // 1. Pull scores from ESPN
     const scoreStats = await syncScores(supabase);
