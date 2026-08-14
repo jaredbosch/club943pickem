@@ -18,9 +18,16 @@ export async function fetchEspnScoreboard(week: number, seasonYear: number): Pro
   url.searchParams.set("week", String(week));
   url.searchParams.set("dates", String(seasonYear));
 
+  // ESPN's CDN 403s minimal/bot user agents from datacenter IPs (seen from
+  // Vercel with "thepickempool/1.0"); a browser-style UA gets through.
   const res = await fetch(url.toString(), {
     cache: "no-store",
-    headers: { "User-Agent": "thepickempool/1.0" },
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+      Accept: "application/json, text/plain, */*",
+      Referer: "https://www.espn.com/",
+    },
   });
 
   if (!res.ok) throw new Error(`ESPN scoreboard ${res.status}: ${await res.text()}`);

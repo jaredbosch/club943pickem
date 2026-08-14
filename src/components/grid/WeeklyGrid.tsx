@@ -40,6 +40,7 @@ type Props = {
   hasGames: boolean;
   isSampleData?: boolean;
   isPick5?: boolean;
+  isAts?: boolean;
 };
 
 function initials(name: string) {
@@ -55,9 +56,30 @@ const SLOT_LABELS: Record<string, string> = {
   monday: "MNF",
 };
 
+// The ET weekday each slot normally holds; when a game's real kickoff day
+// differs (preseason weeks, Black Friday, Saturday games), show the real day.
+const SLOT_EXPECTED_DAY: Record<string, string> = {
+  thursday: "Thu",
+  intl: "Sun",
+  sunday_early: "Sun",
+  sunday_late: "Sun",
+  sunday_night: "Sun",
+  monday: "Mon",
+};
+
+function etWeekday(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("en-US", { weekday: "short", timeZone: "America/New_York" });
+  } catch {
+    return "";
+  }
+}
+
 function gameLabel(game: GameCol): string {
   if (game.status === "final" || game.status === "complete") return "FINAL";
   if (game.status === "live" || game.status === "in_progress") return "LIVE";
+  const day = etWeekday(game.kickoffTime);
+  if (day && day !== SLOT_EXPECTED_DAY[game.timeSlot]) return day.toUpperCase();
   return SLOT_LABELS[game.timeSlot] ?? "SUN";
 }
 
@@ -83,10 +105,12 @@ function HeatCell({
 
   const color = NFL_COLORS[pick.pickedTeam!]?.primary ?? "#333";
   const isLive = gameStatus === "live" || gameStatus === "in_progress";
+  const isFinal = gameStatus === "final" || gameStatus === "complete";
   const isGraded = pick.isCorrect !== null;
   const isWin = pick.isCorrect === true;
   const isLoss = pick.isCorrect === false;
-  const isPush = pick.isCorrect === null && isGraded === false; // can't happen, but safety
+  // Game final, pick made, but is_correct never resolved → graded as a push
+  const isPush = isFinal && !isGraded;
 
   let bg: string;
   let cellClass = "grid-cell";
@@ -97,6 +121,9 @@ function HeatCell({
   } else if (isLoss) {
     bg = `color-mix(in oklab, ${color} 30%, var(--bg2))`;
     cellClass += " grid-cell-loss";
+  } else if (isPush) {
+    bg = `color-mix(in oklab, ${color} 35%, var(--bg2))`;
+    cellClass += " grid-cell-push";
   } else if (isLive) {
     bg = `linear-gradient(135deg, ${color}, color-mix(in oklab, ${color} 75%, #000))`;
     cellClass += " grid-cell-live";
@@ -113,12 +140,13 @@ function HeatCell({
       )}
       {isWin  && <span className="grid-cell-icon win">✓</span>}
       {isLoss && <span className="grid-cell-icon loss">✗</span>}
+      {isPush && <span className="grid-cell-icon push">＝</span>}
       {isLive && !isGraded && <span className="pp-live-dot grid-cell-dot" />}
     </div>
   );
 }
 
-function GameHeader({ game }: { game: GameCol }) {
+function GameHeader({ game, isAts }: { game: GameCol; isAts: boolean }) {
   const label = gameLabel(game);
   const isLive = game.status === "live" || game.status === "in_progress";
   const isFinal = game.status === "final" || game.status === "complete";
@@ -133,6 +161,7 @@ function GameHeader({ game }: { game: GameCol }) {
   const homeWon = game.atsWinner === game.home;
 
   function spreadLabel(team: string): string {
+    if (!isAts) return `${team} WIN`;
     if (game.homeSpread == null) return `${team} CVR`;
     const line = team === game.home ? game.homeSpread : -game.homeSpread;
     const fmt = line > 0 ? `+${line}` : `${line}`;
@@ -157,6 +186,7 @@ function GameHeader({ game }: { game: GameCol }) {
       )}
       <div className={`grid-game-status${isLive ? " live" : isFinal ? " final" : ""}`}>
         {isFinal && game.atsWinner ? spreadLabel(game.atsWinner)
+          : isFinal && hasScore ? (isAts ? "PUSH" : "TIE")
           : isLive && game.clock ? game.clock
           : label}
       </div>
@@ -176,6 +206,7 @@ export function WeeklyGrid({
   hasGames,
   isSampleData,
   isPick5 = false,
+  isAts = false,
 }: Props) {
   const hasLiveGames = games.some((g) => g.status === "in_progress");
   const anyGraded = games.some((g) => g.status === "final" || g.status === "complete");
@@ -291,7 +322,7 @@ export function WeeklyGrid({
             <div className="wg-right-col">
               {/* Game headers */}
               <div className="wg-game-headers">
-                {games.map((g) => <GameHeader key={g.id} game={g} />)}
+                {games.map((g) => <GameHeader key={g.id} game={g} isAts={isAts} />)}
               </div>
 
               {/* Player pick rows */}

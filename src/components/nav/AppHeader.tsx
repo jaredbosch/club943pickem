@@ -38,7 +38,7 @@ export function AppHeader({ leagueCode, leagueName, contextLabel, currentUserId,
 
   return (
     <header className="app-nav">
-      <Link href={leagueCode ? `/league/${leagueCode}/dashboard` : "/"} className="app-nav-logo">
+      <Link href="/home" className="app-nav-logo" title="My leagues">
         <div className="app-nav-badge">TPP</div>
         <span className="app-nav-name">thepickempool</span>
       </Link>
@@ -73,6 +73,9 @@ export function AppHeader({ leagueCode, leagueName, contextLabel, currentUserId,
         </button>
         {open && (
           <div className="app-menu">
+            <Link className="app-menu-item" href="/home" onClick={close}>
+              ← My Leagues
+            </Link>
             {leagueCode && (
               <Link className="app-menu-item" href={`/league/${leagueCode}/dashboard`} onClick={close}>
                 Standings

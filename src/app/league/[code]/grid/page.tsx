@@ -62,7 +62,7 @@ export default async function GridPage({
 
   const { data: games } = await supabase
     .from("games")
-    .select("id, home_team, away_team, status, time_slot, kickoff_time, home_score, away_score, spread_home, period, display_clock")
+    .select("id, home_team, away_team, status, time_slot, kickoff_time, home_score, away_score, spread_home, locked_spread_home, period, display_clock")
     .eq("season_year", seasonYear)
     .eq("week", currentWeek)
     .order("kickoff_time", { ascending: true });
@@ -124,7 +124,6 @@ export default async function GridPage({
   });
 
   const consensus: Record<string, { team: string; count: number; total: number }> = {};
-  const atsWinnerMap: Record<string, string | null> = {};
   for (const gameId of gameIds) {
     const gamePicks = (allPicks ?? []).filter((p) => p.game_id === gameId && p.picked_team);
     if (!gamePicks.length) continue;
@@ -132,8 +131,18 @@ export default async function GridPage({
     for (const p of gamePicks) counts[p.picked_team!] = (counts[p.picked_team!] ?? 0) + 1;
     const [topTeam, topCount] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
     consensus[gameId] = { team: topTeam, count: topCount, total: gamePicks.length };
-    const winningPick = gamePicks.find((p) => p.is_correct === true);
-    atsWinnerMap[gameId] = winningPick?.picked_team ?? null;
+  }
+
+  // Winning side per final game, straight from the scores — not from picks,
+  // which left the header at "FINAL" whenever nobody in the league had the
+  // winning side. ATS formats use the locked spread; SU formats use margin.
+  const isAtsFormat = ["ats_confidence", "ats", "pick5_ats"].includes(scoringType);
+  const atsWinnerMap: Record<string, string | null> = {};
+  for (const g of games ?? []) {
+    if (g.status !== "final" || g.home_score == null || g.away_score == null) continue;
+    const spread = Number((g as Record<string, unknown>).locked_spread_home ?? g.spread_home ?? 0);
+    const margin = g.home_score - g.away_score + (isAtsFormat ? spread : 0);
+    atsWinnerMap[g.id] = margin > 0 ? g.home_team : margin < 0 ? g.away_team : null;
   }
 
   const hasGames = (games ?? []).length > 0;
@@ -189,9 +198,10 @@ export default async function GridPage({
             )
           : undefined,
         atsWinner: atsWinnerMap[g.id] ?? null,
-        homeSpread: (g as Record<string, unknown>).spread_home as number | null ?? null,
+        homeSpread: ((g as Record<string, unknown>).locked_spread_home ?? (g as Record<string, unknown>).spread_home) as number | null ?? null,
       }))}
       isPick5={isPick5}
+      isAts={isAtsFormat}
       players={playerRows}
       consensus={consensus}
       currentUserId={user.id}

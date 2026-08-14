@@ -2735,6 +2735,9 @@ body {
   .grid-cell-live .grid-cell-abbr { color: rgba(255,255,255,0.6); }
   .grid-cell-win  { outline: 2px solid var(--good); outline-offset: -2px; }
   .grid-cell-loss { outline: 2px solid var(--bad);  outline-offset: -2px; }
+  .grid-cell-push { outline: 2px solid var(--push); outline-offset: -2px; }
+  .grid-cell-push .grid-cell-abbr { color: var(--ink2); }
+  .grid-cell-icon.push { color: var(--push); font-weight: 900; }
   .grid-cell-live { outline: 2px solid var(--accent); outline-offset: -2px; }
   .grid-cell-icon {
     position: absolute;
