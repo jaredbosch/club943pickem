@@ -1,6 +1,9 @@
 import type { EspnScoreboard } from "./types";
 
-const BASE = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
+// site.web.api.espn.com — same API as site.api.espn.com, but its Akamai
+// config doesn't 403 datacenter IPs (verified from Vercel 2026-08-14;
+// site.api.espn.com blocks Vercel egress regardless of user agent).
+const BASE = "https://site.web.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
 
 // ESPN abbreviations that differ from ours
 const ESPN_ABBR_MAP: Record<string, string> = {
