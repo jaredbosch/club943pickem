@@ -1,15 +1,18 @@
 /**
- * Mock Week 1 dry run — SETUP.
+ * Mock preseason dry run — SETUP.
  *
- * Seeds the 6 test-format leagues with the real 2026 preseason week 1 slate
- * (ESPN seasontype=1 week=2) under season_year 1998, so nothing collides with
- * the real 2026 season, real leagues, or the score-sync cron (which only
- * touches the current regular season). Creates 2 mock users and picks for all
- * 3 members (Jared + 2 mocks) in every league, per that league's format.
+ * Seeds the 6 test-format leagues with a real 2026 preseason slate (ESPN
+ * seasontype=1, week = PRESEASON_WEEK) under season_year 1998, so nothing
+ * collides with the real 2026 season, real leagues, or the score-sync cron
+ * (which only touches the current regular season). Creates 2 mock users and
+ * picks for all 3 members (Jared + 2 mocks) in every league, per that
+ * league's format.
  *
- * Companion: mock-preseason-eval.mjs pulls real finals, grades, verifies.
- * Idempotent — cleans its own 1998-season data first. Safe on prod by design:
- * it only writes season-1998 games and rows scoped to the 6 test league ids.
+ * Companion: mock-preseason-eval.mjs pulls real finals, grades, verifies —
+ * run it with the SAME MOCK_WEEK/PRESEASON_WEEK as the setup run.
+ * Idempotent — cleans its own 1998-season data for MOCK_WEEK first. Safe on
+ * prod by design: it only writes season-1998 games and rows scoped to the 6
+ * test league ids.
  *
  * Run: set -a; source .env.local; set +a; node scripts/mock-preseason-week.mjs
  */
@@ -25,7 +28,11 @@ if (!SUPABASE_URL || !SRK) {
 const supabase = createClient(SUPABASE_URL, SRK);
 
 export const MOCK_SEASON = 1998;
-export const MOCK_WEEK = 18; // nflWeek() clamps a past season to 18, so the UI lands here
+// nflWeek() clamps a past season to 18, so the UI lands on week 18 by default.
+// Keep the CURRENT test week at 18 and backfill earlier weeks at 17, 16, … so
+// the week rail has history to navigate and standings accumulate across weeks.
+//   MOCK_WEEK=17 PRESEASON_WEEK=2 node scripts/mock-preseason-week.mjs
+export const MOCK_WEEK = Number(process.env.MOCK_WEEK ?? 18);
 const JARED = '99810dab-0770-4d84-8c19-1f5713bd89c7';
 
 export const LEAGUES = [
@@ -58,12 +65,23 @@ function hashSeed(str) {
   return h;
 }
 
-export async function fetchPreseasonWk1() {
-  const url = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=1&week=2&dates=2026';
+// Which ESPN preseason week to mirror. ESPN's seasontype=1 numbering starts at
+// week=1 for the Hall of Fame game, so week=2 is "preseason week 1", week=3 is
+// preseason week 2, and so on. Override per run:
+//   PRESEASON_WEEK=4 node scripts/mock-preseason-week.mjs
+export const ESPN_PRESEASON_WEEK = Number(process.env.PRESEASON_WEEK ?? 3);
+
+export async function fetchPreseasonSlate() {
+  // site.web.api host: site.api.espn.com 403s datacenter IPs (see
+  // lib/espn/client.ts). Local runs work either way; keep the hosts aligned.
+  const url = `https://site.web.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=1&week=${ESPN_PRESEASON_WEEK}&dates=2026`;
   const res = await fetch(url, { headers: { 'User-Agent': 'thepickempool/1.0' } });
   if (!res.ok) throw new Error(`ESPN ${res.status}`);
   return res.json();
 }
+
+// Back-compat alias — mock-preseason-eval.mjs imports this name.
+export const fetchPreseasonWk1 = fetchPreseasonSlate;
 
 // Map real kickoff to our time_slot enum. The latest game gets 'monday' so it
 // serves as the tiebreaker ("MNF") game in confidence formats.
@@ -88,12 +106,16 @@ function timeSlot(dateIso, isLast) {
 }
 
 async function main() {
-  console.log('── Mock Week 1 setup (season 1998) ──');
+  console.log(`── Mock setup: season ${MOCK_SEASON} week ${MOCK_WEEK} ← ESPN preseason week ${ESPN_PRESEASON_WEEK} ──`);
 
-  // 1. Clean previous mock data
+  // 1. Clean previous mock data for THIS week only — earlier seeded weeks stay
+  //    so standings accumulate across a multi-week test run. (Week 0 rows are
+  //    season totals; grade_and_sync_standings rebuilds them.)
   await supabase.from('standings').delete().eq('season_year', MOCK_SEASON)
+    .in('week', [MOCK_WEEK, 0])
     .in('league_id', LEAGUES.map(l => l.id));
-  await supabase.from('games').delete().eq('season_year', MOCK_SEASON); // cascades picks/tiebreakers
+  await supabase.from('games').delete().eq('season_year', MOCK_SEASON)
+    .eq('week', MOCK_WEEK); // cascades picks/tiebreakers
 
   // 2. ESPN slate
   const sb = await fetchPreseasonWk1();
@@ -161,7 +183,6 @@ async function main() {
     const isPick5 = lg.scoring.startsWith('pick5');
     const isConf = lg.scoring.endsWith('confidence');
     for (const uid of memberIds) {
-      if (uid === JARED) continue; // Jared enters his own picks through the UI
       const rng = seededRng(hashSeed(`${lg.id}:${uid}`));
       const slate = isPick5
         ? games.slice().sort(() => rng() - 0.5).slice(0, 5)

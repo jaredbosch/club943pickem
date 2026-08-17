@@ -47,12 +47,15 @@ function expected(pick, game, scoring) {
 async function main() {
   const report = [];
   const log = (s) => { report.push(s); console.log(s); };
-  log(`# Mock Week 1 evaluation — ${new Date().toISOString()}`);
+  log(`# Mock evaluation — season ${MOCK_SEASON} week ${MOCK_WEEK} — ${new Date().toISOString()}`);
 
   // 1. Sync real scores onto mock games
   const sb = await fetchPreseasonWk1();
+  // Week-scoped: multiple mock weeks are seeded at once, and the ESPN→mock
+  // match below keys on team matchup only, so an unfiltered fetch could apply
+  // one week's scores to another week's game if a matchup repeats.
   const { data: games } = await supabase.from('games')
-    .select('*').eq('season_year', MOCK_SEASON);
+    .select('*').eq('season_year', MOCK_SEASON).eq('week', MOCK_WEEK);
   let finals = 0, live = 0, pending = 0;
   for (const e of sb.events ?? []) {
     const c = e.competitions[0];
