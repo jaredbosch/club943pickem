@@ -123,11 +123,18 @@ async function main() {
   if (events.length === 0) { console.error('No preseason events from ESPN'); process.exit(1); }
   const lastId = events[events.length - 1].id;
 
+  let missingOdds = 0;
   const gameRows = events.map(e => {
     const c = e.competitions[0];
     const home = c.competitors.find(x => x.homeAway === 'home');
     const away = c.competitors.find(x => x.homeAway === 'away');
-    const spread = (c.odds ?? [])[0]?.spread ?? 0; // ESPN spread = home-team line
+    // ESPN spread = home-team line. It posts DraftKings odds only a few days
+    // out and drops them once a game is final, so an early seed gets nothing
+    // here. Falling back to 0 is not neutral: it makes every ATS league grade
+    // as pick'em. Counted and warned about below; fix with
+    // mock-preseason-spreads.mjs once ESPN has lines.
+    const spread = (c.odds ?? [])[0]?.spread ?? 0;
+    if ((c.odds ?? [])[0]?.spread == null) missingOdds++;
     return {
       external_id: `mock1998-${e.id}`,
       week: MOCK_WEEK,
@@ -145,6 +152,10 @@ async function main() {
     .select('id, home_team, away_team, time_slot, locked_spread_home');
   if (gErr) { console.error('games insert:', gErr.message); process.exit(1); }
   console.log(`  ${games.length} mock games inserted`);
+  if (missingOdds) {
+    console.warn(`  ⚠ ${missingOdds}/${games.length} games had no ESPN odds — seeded at spread 0 (ATS leagues will grade as pick'em).`);
+    console.warn(`    Re-run once ESPN posts lines: MOCK_WEEK=${MOCK_WEEK} PRESEASON_WEEK=${ESPN_PRESEASON_WEEK} node scripts/mock-preseason-spreads.mjs`);
+  }
   const mnf = games.find(g => g.time_slot === 'monday');
 
   // 3. Mock users (idempotent)
