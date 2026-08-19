@@ -13,6 +13,8 @@ const NFL_DIVISIONS: Record<string, string> = {
 
 export type StatLine = { picks: number; wins: number; winRate: number };
 
+export type TeamStat = { team: string; picks: number; wins: number; winRate: number };
+
 export type ProfileStats = {
   // Confidence calibration — win% per tier
   confTiers: { label: string; range: string; picks: number; wins: number; winRate: number }[];
@@ -46,6 +48,10 @@ export type ProfileStats = {
   // MNF tiebreaker accuracy
   tbCount: number;
   tbAvgError: number | null;
+
+  // Teams picked best / worst (min 5 graded picks each)
+  trusted: TeamStat[];
+  blindSpots: TeamStat[];
 };
 
 type Pick = {
@@ -72,6 +78,78 @@ function sl(picks: number, wins: number): StatLine {
   return { picks, wins, winRate: picks > 0 ? wins / picks : 0 };
 }
 
+// Split 1..max into four contiguous quartile bands. Bands that would be empty
+// (max < 4) collapse, and labels are taken from the end so the top band is
+// always "Lock" — a player's highest confidence is their lock regardless of
+// how many values the format offers.
+const TIER_LABELS = ["Low", "Medium", "High", "Lock"];
+
+function confidenceTiers(graded: Pick[]): ProfileStats["confTiers"] {
+  const withConf = graded.filter((p) => p.confidence !== null);
+  const max = withConf.reduce((m, p) => Math.max(m, p.confidence!), 0);
+  // Formats without confidence (ats, straight_up, pick5_su) have nothing to
+  // calibrate; the client hides the gauges on an empty array.
+  if (max < 1) return [];
+
+  const bands: { lo: number; hi: number }[] = [];
+  let prev = 0;
+  for (let i = 1; i <= 4; i++) {
+    const hi = Math.ceil((max * i) / 4);
+    if (hi > prev) {
+      bands.push({ lo: prev + 1, hi });
+      prev = hi;
+    }
+  }
+
+  const labels = TIER_LABELS.slice(TIER_LABELS.length - bands.length);
+
+  return bands.map(({ lo, hi }, i) => {
+    const tier = withConf.filter((p) => p.confidence! >= lo && p.confidence! <= hi);
+    const wins = tier.filter((p) => p.is_correct === true).length;
+    return {
+      label: labels[i],
+      range: lo === hi ? `${lo}` : `${lo}\u2013${hi}`,
+      picks: tier.length,
+      wins,
+      winRate: tier.length > 0 ? wins / tier.length : 0,
+    };
+  });
+}
+
+// Teams the player picks best and worst. The minimum sample keeps a single
+// lucky pick off the leaderboard.
+const TEAM_TENDENCY_MIN_PICKS = 5;
+
+function teamTendencies(graded: Pick[]): { trusted: TeamStat[]; blindSpots: TeamStat[] } {
+  const byTeam = new Map<string, { picks: number; wins: number }>();
+  for (const p of graded) {
+    if (!p.picked_team) continue;
+    const s = byTeam.get(p.picked_team) ?? { picks: 0, wins: 0 };
+    s.picks++;
+    if (p.is_correct === true) s.wins++;
+    byTeam.set(p.picked_team, s);
+  }
+
+  const eligible: TeamStat[] = [...byTeam.entries()]
+    .filter(([, s]) => s.picks >= TEAM_TENDENCY_MIN_PICKS)
+    .map(([team, s]) => ({ team, picks: s.picks, wins: s.wins, winRate: s.wins / s.picks }));
+
+  // A team must actually be a winning or losing pick to appear. Without this,
+  // a player with few qualifying teams sees the same team in both lists, and a
+  // sub-.500 team can show up under "most trusted". Exactly .500 lands in
+  // neither. Ties break on sample size so the better-evidenced team ranks higher.
+  const trusted = eligible
+    .filter((t) => t.winRate > 0.5)
+    .sort((a, b) => b.winRate - a.winRate || b.picks - a.picks)
+    .slice(0, 3);
+  const blindSpots = eligible
+    .filter((t) => t.winRate < 0.5)
+    .sort((a, b) => a.winRate - b.winRate || b.picks - a.picks)
+    .slice(0, 3);
+
+  return { trusted, blindSpots };
+}
+
 export function computeProfileStats(
   allPicks: Pick[],
   allGames: Game[],
@@ -81,18 +159,13 @@ export function computeProfileStats(
   const graded = allPicks.filter((p) => p.is_correct !== null && p.picked_team);
 
   // ── Confidence calibration ──────────────────────────────────────
-  const tiers = [
-    { label: "Low",       range: "1–4",   min: 1,  max: 4  },
-    { label: "Medium",    range: "5–8",   min: 5,  max: 8  },
-    { label: "High",      range: "9–12",  min: 9,  max: 12 },
-    { label: "Lock",      range: "13–16", min: 13, max: 16 },
-  ];
-
-  const confTiers = tiers.map(({ label, range, min, max }) => {
-    const tier = graded.filter((p) => p.confidence !== null && p.confidence >= min && p.confidence <= max);
-    const wins = tier.filter((p) => p.is_correct === true).length;
-    return { label, range, picks: tier.length, wins, winRate: tier.length > 0 ? wins / tier.length : 0 };
-  });
+  // Tiers are quartiles of the confidence range the player actually used,
+  // not fixed bands. Fixed bands cannot work here: a Pick 5 league tops out
+  // at 5, a 14-game week tops out at 14, and a real 16-game week tops out at
+  // 16, so any single hardcoded set either buries three tiers or silently
+  // drops the most interesting one. Ranges are returned as strings so the
+  // client renders whatever the server decided.
+  const confTiers = confidenceTiers(graded);
 
   // ── Fav/dog, home/away, line size ──────────────────────────────
   let favPicks = 0, favWins = 0, dogPicks = 0, dogWins = 0;
@@ -203,5 +276,6 @@ export function computeProfileStats(
     longestWinStreak: longest,
     tbCount: gradedTb.length,
     tbAvgError,
+    ...teamTendencies(graded),
   };
 }
