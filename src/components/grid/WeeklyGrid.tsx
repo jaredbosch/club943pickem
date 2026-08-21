@@ -39,6 +39,7 @@ type Props = {
   currentUserId: string;
   hasGames: boolean;
   isSampleData?: boolean;
+  usesConfidence?: boolean;
   isPick5?: boolean;
   isAts?: boolean;
 };
@@ -87,10 +88,12 @@ function HeatCell({
   pick,
   gameStatus,
   masked,
+  usesConfidence,
 }: {
   pick: { pickedTeam: string | null; isCorrect: boolean | null; confidence: number | null; selected?: boolean } | undefined;
   gameStatus: string;
   masked?: boolean;
+  usesConfidence: boolean;
 }) {
   if (!pick) {
     return <div className="grid-cell grid-cell-empty" />;
@@ -135,7 +138,10 @@ function HeatCell({
   return (
     <div className={cellClass} style={{ background: bg }}>
       <span className="grid-cell-abbr">{pick.pickedTeam}</span>
-      {pick.confidence !== null && (
+      {/* Only confidence formats have a value here. A stray confidence written
+          into a flat format (Pick 5, straight up) must not render — a lone
+          number under the abbr reads as a spread. */}
+      {usesConfidence && pick.confidence !== null && (
         <span className="grid-cell-conf">{pick.confidence}</span>
       )}
       {isWin  && <span className="grid-cell-icon win">✓</span>}
@@ -205,6 +211,7 @@ export function WeeklyGrid({
   consensus,
   hasGames,
   isSampleData,
+  usesConfidence = false,
   isPick5 = false,
   isAts = false,
 }: Props) {
@@ -340,6 +347,7 @@ export function WeeklyGrid({
                         pick={p.picks[g.id]}
                         gameStatus={g.status}
                         masked={isPending && !p.isCurrentUser}
+                        usesConfidence={usesConfidence}
                       />
                     );
                   })}

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { WeeklyGrid } from "@/components/grid/WeeklyGrid";
 import { nflSeasonYear, nflWeek } from "@/lib/nfl/week";
 import { formatClock } from "@/lib/picks/transform";
+import { type ScoringType, isAtsFormat, isConfidenceFormat, isPick5Format } from "@/lib/scoring";
 import { sampleGames, samplePlayers } from "@/components/grid/week7-grid-data";
 
 export default async function GridPage({
@@ -69,8 +70,9 @@ export default async function GridPage({
 
   const gameIds = (games ?? []).map((g) => g.id);
 
-  const scoringType = (league.scoring_type ?? "ats_confidence") as string;
-  const isPick5 = scoringType === "pick5_su" || scoringType === "pick5_ats";
+  const scoringType = (league.scoring_type ?? "ats_confidence") as ScoringType;
+  const isPick5 = isPick5Format(scoringType);
+  const usesConfidence = isConfidenceFormat(scoringType);
 
   const { data: allPicks } = gameIds.length
     ? await supabase
@@ -136,12 +138,12 @@ export default async function GridPage({
   // Winning side per final game, straight from the scores — not from picks,
   // which left the header at "FINAL" whenever nobody in the league had the
   // winning side. ATS formats use the locked spread; SU formats use margin.
-  const isAtsFormat = ["ats_confidence", "ats", "pick5_ats"].includes(scoringType);
+  const isAts = isAtsFormat(scoringType);
   const atsWinnerMap: Record<string, string | null> = {};
   for (const g of games ?? []) {
     if (g.status !== "final" || g.home_score == null || g.away_score == null) continue;
     const spread = Number((g as Record<string, unknown>).locked_spread_home ?? g.spread_home ?? 0);
-    const margin = g.home_score - g.away_score + (isAtsFormat ? spread : 0);
+    const margin = g.home_score - g.away_score + (isAts ? spread : 0);
     atsWinnerMap[g.id] = margin > 0 ? g.home_team : margin < 0 ? g.away_team : null;
   }
 
@@ -171,6 +173,11 @@ export default async function GridPage({
         currentUserId={user.id}
         hasGames={true}
         isSampleData={true}
+        // The sample slate is ATS + confidence shaped (it carries spreads and
+        // 1–16 values), so it renders under those rules regardless of the
+        // league's own format.
+        isAts={true}
+        usesConfidence={true}
       />
     );
   }
@@ -201,7 +208,8 @@ export default async function GridPage({
         homeSpread: ((g as Record<string, unknown>).locked_spread_home ?? (g as Record<string, unknown>).spread_home) as number | null ?? null,
       }))}
       isPick5={isPick5}
-      isAts={isAtsFormat}
+      isAts={isAts}
+      usesConfidence={usesConfidence}
       players={playerRows}
       consensus={consensus}
       currentUserId={user.id}

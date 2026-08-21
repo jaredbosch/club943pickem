@@ -200,7 +200,10 @@ export function GameRow({
                 <span className={`pp-pick-meta-pct${globalPct.homePct >= 50 ? " pop" : ""}`}>{globalPct.homePct}%</span>
               </span>
             )}
-            {spreadHistory && spreadHistory.length >= 2 && (() => {
+            {/* Line movement is a spread fact. Straight-up formats never show
+                a number, so the chip is gated on showSpread like the line
+                itself — otherwise an SU league leaks "▼1.5 from -3". */}
+            {showSpread && spreadHistory && spreadHistory.length >= 2 && (() => {
               const open = spreadHistory[0].spread;
               const current = spreadHistory[spreadHistory.length - 1].spread;
               const diff = current - open;
