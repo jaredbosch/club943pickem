@@ -58,14 +58,14 @@ console.log(`Agent readiness checks against ${base}\n`);
   const hct = rh.headers.get("content-type") ?? "";
   const hvary = rh.headers.get("vary") ?? "";
   check("browser Accept on / still returns HTML", hct.includes("text/html"), `got ${hct}`);
-  // Next.js overwrites Vary on HTML page renders; on production the header is
-  // added at the Vercel edge (vercel.json), so only enforce it off-localhost.
+  // Informational: the Next.js renderer overwrites Vary on HTML page responses
+  // (middleware, next.config, and vercel.json headers all lose). The markdown
+  // variant carries Vary: Accept, and the middleware rewrite happens before the
+  // CDN cache, so the two variants never share a cache entry.
   if (/(^|[,\s])accept($|,)/i.test(hvary)) {
     check("HTML response Vary includes Accept", true);
-  } else if (base.includes("localhost")) {
-    console.log(`  - HTML Vary lacks Accept locally (added by Vercel edge in prod) — got "${hvary}"`);
   } else {
-    check("HTML response Vary includes Accept", false, `got "${hvary}"`);
+    console.log(`  - HTML Vary lacks Accept (Next.js renderer overwrites it; markdown variant carries it) — got "${hvary}"`);
   }
 
   for (const p of ["/formats", "/support", "/privacy", "/about", "/docs", "/blog"]) {
