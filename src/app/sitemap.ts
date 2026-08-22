@@ -22,6 +22,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/vs/runyourpool`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/formats`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     { url: `${base}/support`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${base}/about`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
+    { url: `${base}/docs`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     ...blogPosts,
     { url: `${base}/privacy`, lastModified: new Date("2026-05-15"), changeFrequency: "yearly", priority: 0.3 },

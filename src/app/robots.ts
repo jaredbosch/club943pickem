@@ -4,7 +4,7 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: ["/", "/vs/", "/blog/", "/formats", "/support", "/privacy"],
+      allow: ["/", "/vs/", "/blog/", "/formats", "/support", "/privacy", "/about", "/docs"],
       disallow: ["/league/", "/dashboard", "/picks", "/grid", "/commissioner", "/settings", "/api/"],
     },
     sitemap: "https://thepickempool.com/sitemap.xml",

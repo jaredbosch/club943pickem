@@ -9,7 +9,16 @@ const securityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    // Pages with a markdown variant (Accept negotiation in src/middleware.ts)
+    // must tell caches the response varies on Accept.
+    const negotiatedPages = ["/", "/formats", "/support", "/privacy", "/about", "/docs", "/blog", "/blog/:slug"];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      ...negotiatedPages.map((source) => ({
+        source,
+        headers: [{ key: "Vary", value: "Accept" }],
+      })),
+    ];
   },
 };
 

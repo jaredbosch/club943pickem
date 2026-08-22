@@ -26,6 +26,53 @@ export const metadata: Metadata = {
   },
 };
 
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://thepickempool.com/#organization",
+      name: "thepickempool",
+      url: "https://thepickempool.com",
+      logo: "https://thepickempool.com/tpp-logo.svg",
+      description:
+        "Independent, free platform for private NFL pick'em pools with confidence scoring, live ATS spreads, and commissioner tools.",
+      email: "admin@thepickempool.com",
+      contactPoint: [
+        {
+          "@type": "ContactPoint",
+          contactType: "customer support",
+          email: "admin@thepickempool.com",
+          url: "https://thepickempool.com/support",
+          availableLanguage: "English",
+        },
+      ],
+      sameAs: ["https://x.com/thepickempool"],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://thepickempool.com/#website",
+      url: "https://thepickempool.com",
+      name: "thepickempool",
+      publisher: { "@id": "https://thepickempool.com/#organization" },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://thepickempool.com/#app",
+      name: "thepickempool",
+      url: "https://thepickempool.com",
+      description:
+        "Run a private NFL pick'em pool with live ATS spreads, confidence point scoring, and real commissioner tools. Six formats, free to start, no ads.",
+      applicationCategory: "SportsApplication",
+      operatingSystem: "Web",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      publisher: { "@id": "https://thepickempool.com/#organization" },
+      featureList:
+        "Live ATS spreads, confidence scoring, six pool formats, commissioner payment tracking, real-time picks grid, player analytics",
+    },
+  ],
+};
+
 export default async function Home() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -53,5 +100,13 @@ export default async function Home() {
     redirect("/home");
   }
 
-  return <LandingPage />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <LandingPage />
+    </>
+  );
 }

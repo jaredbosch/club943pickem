@@ -1,4 +1,14 @@
 {
+  "headers": [
+    { "source": "/", "headers": [{ "key": "Vary", "value": "Accept" }] },
+    { "source": "/formats", "headers": [{ "key": "Vary", "value": "Accept" }] },
+    { "source": "/support", "headers": [{ "key": "Vary", "value": "Accept" }] },
+    { "source": "/privacy", "headers": [{ "key": "Vary", "value": "Accept" }] },
+    { "source": "/about", "headers": [{ "key": "Vary", "value": "Accept" }] },
+    { "source": "/docs", "headers": [{ "key": "Vary", "value": "Accept" }] },
+    { "source": "/blog", "headers": [{ "key": "Vary", "value": "Accept" }] },
+    { "source": "/blog/:slug", "headers": [{ "key": "Vary", "value": "Accept" }] }
+  ],
   "crons": [
     {
       "path": "/api/cron/sync-scores",
