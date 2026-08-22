@@ -1626,17 +1626,6 @@ body {
     color: var(--ink3);
     letter-spacing: 0.02em;
   }
-  .ps-sample-banner {
-    margin: 0 24px 12px;
-    background: color-mix(in oklab, var(--warn) 12%, transparent);
-    border: 1px solid color-mix(in oklab, var(--warn) 35%, transparent);
-    border-radius: 3px;
-    color: var(--warn);
-    font-family: var(--font-code);
-    font-size: 11px;
-    padding: 8px 14px;
-  }
-
   /* Empty state */
   .ps-empty {
     background: var(--bg2);
@@ -2433,16 +2422,6 @@ body {
     margin-top: 8px;
     font-family: var(--font-code);
     font-size: 10px;
-  }
-  .wg-sample-banner {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 20px;
-    background: color-mix(in oklab, var(--accent) 12%, var(--bg2));
-    border-bottom: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
-    font-size: 12px;
-    color: var(--ink2);
   }
   .wg-week-nav {
     display: flex;

@@ -38,7 +38,6 @@ type Props = {
   consensus: Record<string, { team: string; count: number; total: number }>;
   currentUserId: string;
   hasGames: boolean;
-  isSampleData?: boolean;
   usesConfidence?: boolean;
   isPick5?: boolean;
   isAts?: boolean;
@@ -210,7 +209,6 @@ export function WeeklyGrid({
   players,
   consensus,
   hasGames,
-  isSampleData,
   usesConfidence = false,
   isPick5 = false,
   isAts = false,
@@ -261,14 +259,6 @@ export function WeeklyGrid({
           ))}
         </div>
       </div>
-
-      {/* Sample data banner */}
-      {isSampleData && (
-        <div className="wg-sample-banner">
-          <span className="tag">SAMPLE DATA</span>
-          <span>Showing Week 7 preview — live picks appear once the season starts</span>
-        </div>
-      )}
 
       {/* Grid */}
       {!hasGames ? (

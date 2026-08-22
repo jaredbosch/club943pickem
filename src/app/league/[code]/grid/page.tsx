@@ -4,7 +4,6 @@ import { WeeklyGrid } from "@/components/grid/WeeklyGrid";
 import { nflSeasonYear, nflWeek } from "@/lib/nfl/week";
 import { formatClock } from "@/lib/picks/transform";
 import { type ScoringType, isAtsFormat, isConfidenceFormat, isPick5Format } from "@/lib/scoring";
-import { sampleGames, samplePlayers } from "@/components/grid/week7-grid-data";
 
 export default async function GridPage({
   params,
@@ -148,39 +147,6 @@ export default async function GridPage({
   }
 
   const hasGames = (games ?? []).length > 0;
-
-  if (!hasGames) {
-    const sampleConsensus: Record<string, { team: string; count: number; total: number }> = {};
-    for (const g of sampleGames) {
-      const counts: Record<string, number> = {};
-      for (const p of samplePlayers) {
-        const pick = p.picks[g.id];
-        if (pick) counts[pick.pickedTeam] = (counts[pick.pickedTeam] ?? 0) + 1;
-      }
-      const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-      if (entries.length) sampleConsensus[g.id] = { team: entries[0][0], count: entries[0][1], total: samplePlayers.length };
-    }
-    return (
-      <WeeklyGrid
-        leagueName={league.name}
-        leagueCode={leagueCode}
-        week={7}
-        seasonYear={seasonYear}
-        availableWeeks={[7]}
-        games={sampleGames}
-        players={samplePlayers.map((p, i) => ({ ...p, isCurrentUser: i === 0, userId: i === 0 ? user.id : p.userId }))}
-        consensus={sampleConsensus}
-        currentUserId={user.id}
-        hasGames={true}
-        isSampleData={true}
-        // The sample slate is ATS + confidence shaped (it carries spreads and
-        // 1–16 values), so it renders under those rules regardless of the
-        // league's own format.
-        isAts={true}
-        usesConfidence={true}
-      />
-    );
-  }
 
   return (
     <WeeklyGrid

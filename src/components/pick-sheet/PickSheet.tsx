@@ -38,7 +38,6 @@ type Props = {
   scoringType: ScoringType;
   userId: string;
   hasGames: boolean;
-  isSampleData?: boolean;
   mnfGame?: MnfGame | null;
   initialTiebreakerGuess?: number | null;
   globalPickPcts?: GlobalPickPcts;
@@ -80,7 +79,6 @@ export function PickSheet({
   scoringType,
   userId,
   hasGames,
-  isSampleData = false,
   mnfGame = null,
   initialTiebreakerGuess = null,
   globalPickPcts,
@@ -109,7 +107,6 @@ export function PickSheet({
 
   // Autosave every 3s (belt-and-suspenders behind per-tap saves)
   useEffect(() => {
-    if (isSampleData) return;
     const id = setInterval(async () => {
       if (!isDirtyRef.current) return;
       isDirtyRef.current = false;
@@ -117,11 +114,11 @@ export function PickSheet({
     }, 3_000);
     return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSampleData]);
+  }, []);
 
   // Warn before tab close if there are unsaved picks
   useEffect(() => {
-    if (isSampleData || !showConfidence) return;
+    if (!showConfidence) return;
     const handler = (e: BeforeUnloadEvent) => {
       if (isDirtyRef.current) {
         e.preventDefault();
@@ -130,7 +127,7 @@ export function PickSheet({
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
-  }, [isSampleData, showConfidence]);
+  }, [showConfidence]);
 
   const allGames = slots.flatMap((s) => s.games);
   const totalGames = allGames.length;
@@ -142,7 +139,7 @@ export function PickSheet({
   }
 
   async function upsertPick(gameId: string, state: PickState) {
-    if (isSampleData || (state.pickedTeam === null && state.confidence === null)) return;
+    if (state.pickedTeam === null && state.confidence === null) return;
     const { error } = await supabase.from("picks").upsert(
       {
         user_id: userId,
@@ -159,7 +156,6 @@ export function PickSheet({
   }
 
   async function saveAllPicks() {
-    if (isSampleData) return;
     setSaving(true);
     setSaveError(null);
     const rows = [...picks.entries()]
@@ -187,7 +183,7 @@ export function PickSheet({
   }
 
   async function saveTiebreaker() {
-    if (!mnfGame || isSampleData || mnfGame.isLocked) return;
+    if (!mnfGame || mnfGame.isLocked) return;
     const val = parseInt(tbGuess, 10);
     if (isNaN(val) || val < 0 || val > 120) return;
     setTbSaving(true);
@@ -376,12 +372,6 @@ export function PickSheet({
           </div>
         </div>
 
-        {isSampleData && (
-          <div className="ps-sample-banner">
-            Sample data — picks here won&apos;t be saved. Games load automatically once the season schedule is released.
-          </div>
-        )}
-
         {!hasGames ? (
           <div className="ps-pick-list">
             <div className="ps-empty">
@@ -438,13 +428,13 @@ export function PickSheet({
                 max={120}
                 value={tbGuess}
                 onChange={(e) => setTbGuess(e.target.value)}
-                disabled={mnfGame.isLocked || isSampleData}
+                disabled={mnfGame.isLocked}
               />
               <button
                 type="button"
                 className={`ps-tb-btn${tbSaved ? " saved" : ""}`}
                 onClick={saveTiebreaker}
-                disabled={mnfGame.isLocked || tbSaving || isSampleData || tbGuess === ""}
+                disabled={mnfGame.isLocked || tbSaving || tbGuess === ""}
               >
                 {tbSaved ? "✓ Saved" : tbSaving ? "…" : "Submit"}
               </button>
@@ -469,7 +459,7 @@ export function PickSheet({
               type="button"
               className={`ps-save-btn${saved ? " saved" : ""}${saving ? " saving" : ""}`}
               onClick={saveAllPicks}
-              disabled={saving || isSampleData}
+              disabled={saving}
             >
               {saved ? "✓ Saved!" : saving ? "Saving…" : "Save Picks"}
             </button>

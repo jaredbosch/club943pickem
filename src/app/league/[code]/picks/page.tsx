@@ -4,7 +4,6 @@ import { PickSheet } from "@/components/pick-sheet/PickSheet";
 import { Pick5Sheet } from "@/components/pick-sheet/Pick5Sheet";
 import { transformGamesAndPicks } from "@/lib/picks/transform";
 import { nflSeasonYear, nflWeek } from "@/lib/nfl/week";
-import { week7Slots } from "@/components/pick-sheet/week7-data";
 import { type ScoringType, isPick5Format } from "@/lib/scoring";
 
 export default async function PicksPage({
@@ -111,9 +110,7 @@ export default async function PicksPage({
   }
 
   const hasGames = (games ?? []).length > 0;
-  const slots = hasGames
-    ? transformGamesAndPicks(games ?? [], picks ?? [])
-    : week7Slots;
+  const slots = transformGamesAndPicks(games ?? [], picks ?? []);
 
   const mnfGame = (games ?? []).find((g) => g.time_slot === "monday") ?? null;
   const { data: tiebreakerRow } = mnfGame
@@ -133,9 +130,9 @@ export default async function PicksPage({
     leagueName: league.name,
     leagueCode,
     userId: user.id,
-    week: hasGames ? currentWeek : 7,
+    week: currentWeek,
     seasonYear,
-    availableWeeks: hasGames ? availableWeeks : [7],
+    availableWeeks,
     scoringType,
     activeWeek,
     globalPickPcts,
@@ -178,8 +175,7 @@ export default async function PicksPage({
       key={currentWeek}
       {...sharedProps}
       slots={slots}
-      hasGames={true}
-      isSampleData={!hasGames}
+      hasGames={hasGames}
       mnfGame={mnfGame ? {
         id: mnfGame.id,
         homeTeam: mnfGame.home_team,
