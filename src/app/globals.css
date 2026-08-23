@@ -5901,6 +5901,41 @@ body {
   padding: 12px 16px 4px;
   letter-spacing: 0.03em;
 }
+/* Pick 5 confidence rank chips (leagues with pick5_confidence on) */
+.p5-rank-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 10px;
+}
+.p5-rank-label {
+  font-family: var(--font-code);
+  font-size: 10px;
+  color: var(--ink3);
+  letter-spacing: 0.08em;
+  margin-right: 4px;
+}
+.p5-rank-chip {
+  font-family: var(--font-code);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  min-width: 44px;
+  min-height: 44px;
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  color: var(--ink2);
+  cursor: pointer;
+}
+.p5-rank-chip:hover:not(:disabled) { border-color: var(--line2); color: var(--ink); }
+.p5-rank-chip.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0a0b;
+  font-weight: 700;
+}
+.p5-rank-chip:disabled { opacity: 0.4; cursor: not-allowed; }
+
 .p5-game-row {
   display: flex;
   align-items: center;

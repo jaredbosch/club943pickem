@@ -17,7 +17,7 @@ type Member = {
   joinedAt: string;
 };
 
-import { type ScoringType, SCORING_OPTIONS } from "@/lib/scoring";
+import { type ScoringType, type Pick5LockMode, SCORING_OPTIONS, isPick5Format } from "@/lib/scoring";
 type WeeklyPotType = "percentage" | "fixed";
 
 type LeagueSettings = {
@@ -33,6 +33,8 @@ type LeagueSettings = {
   drop_lowest_weeks: number;
   commissioner_can_edit: boolean;
   registration_locked: boolean;
+  pick5_lock_mode: Pick5LockMode;
+  pick5_confidence: boolean;
 };
 
 type Props = {
@@ -157,6 +159,8 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
     drop_lowest_weeks: league.drop_lowest_weeks,
     commissioner_can_edit: league.commissioner_can_edit,
     registration_locked: league.registration_locked,
+    pick5_lock_mode: league.pick5_lock_mode ?? "thursday",
+    pick5_confidence: league.pick5_confidence ?? false,
   });
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -192,6 +196,8 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
         drop_lowest_weeks: settings.drop_lowest_weeks,
         commissioner_can_edit: settings.commissioner_can_edit,
         registration_locked: settings.registration_locked,
+        pick5_lock_mode: settings.pick5_lock_mode,
+        pick5_confidence: settings.pick5_confidence,
       })
       .eq("id", league.id);
     setSettingsSaving(false);
@@ -447,6 +453,48 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
                 </div>
               </div>
             </div>
+
+            {/* Pick 5 options — only meaningful for Pick 5 formats */}
+            {isPick5Format(settings.scoring_type) && (
+              <div className="comm-settings-group">
+                <div className="comm-settings-group-label">PICK 5 OPTIONS</div>
+                <div className="comm-settings-row">
+                  <label className="comm-settings-label">Pick Lock Deadline</label>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <label className={`comm-type-option${settings.pick5_lock_mode === "thursday" ? " selected" : ""}`}>
+                      <input type="radio" name="pick5_lock_mode" value="thursday"
+                        checked={settings.pick5_lock_mode === "thursday"}
+                        onChange={() => setSetting("pick5_lock_mode", "thursday")} />
+                      <div>
+                        <div className="comm-type-option-label">Thursday kickoff (default)</div>
+                        <div className="comm-type-option-desc">All picks lock when the Thursday night game starts</div>
+                      </div>
+                    </label>
+                    <label className={`comm-type-option${settings.pick5_lock_mode === "sunday" ? " selected" : ""}`}>
+                      <input type="radio" name="pick5_lock_mode" value="sunday"
+                        checked={settings.pick5_lock_mode === "sunday"}
+                        onChange={() => setSetting("pick5_lock_mode", "sunday")} />
+                      <div>
+                        <div className="comm-type-option-label">Sunday kickoff</div>
+                        <div className="comm-type-option-desc">Picks lock at Sunday&apos;s first game — Thu/Fri/Sat games lock at their own kickoff</div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+                <div className="comm-settings-row">
+                  <label className="comm-settings-label">Confidence Ranking</label>
+                  <button type="button" className={`comm-toggle${settings.pick5_confidence ? " on" : ""}`}
+                    onClick={() => setSetting("pick5_confidence", !settings.pick5_confidence)}>
+                    <span className="comm-toggle-knob" />
+                    <span className="comm-toggle-label">
+                      {settings.pick5_confidence
+                        ? "On — rank picks 1–5, win pays the rank, push pays half"
+                        : "Off — flat 1 pt win, ½ pt push"}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Money */}
             <div className="comm-settings-group">

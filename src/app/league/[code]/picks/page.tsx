@@ -4,7 +4,7 @@ import { PickSheet } from "@/components/pick-sheet/PickSheet";
 import { Pick5Sheet } from "@/components/pick-sheet/Pick5Sheet";
 import { transformGamesAndPicks } from "@/lib/picks/transform";
 import { nflSeasonYear, nflWeek } from "@/lib/nfl/week";
-import { type ScoringType, isPick5Format } from "@/lib/scoring";
+import { type ScoringType, type Pick5LockMode, isPick5Format } from "@/lib/scoring";
 
 export default async function PicksPage({
   params,
@@ -19,7 +19,7 @@ export default async function PicksPage({
 
   const { data: league } = await supabase
     .from("leagues")
-    .select("id, name, season_year, invite_code, scoring_type")
+    .select("id, name, season_year, invite_code, scoring_type, pick5_lock_mode, pick5_confidence")
     .eq("invite_code", params.code.toUpperCase())
     .maybeSingle();
 
@@ -141,8 +141,17 @@ export default async function PicksPage({
 
   // Pick 5 formats get a dedicated pick sheet
   if (isPick5Format(scoringType)) {
-    const thursdayGame = (games ?? []).find(g => g.time_slot === "thursday") ?? null;
-    const isThursdayLocked = thursdayGame ? new Date(thursdayGame.kickoff_time) <= now : false;
+    const lockMode = (league.pick5_lock_mode ?? "thursday") as Pick5LockMode;
+    const confidenceEnabled = league.pick5_confidence ?? false;
+
+    // Weekly deadline per lock mode; mirrors public.pick_window_open(). A week
+    // without the deadline slot has no weekly deadline (per-game kickoff only).
+    const sundaySlots = new Set(["sunday_early", "sunday_late", "sunday_night"]);
+    const deadlineKickoffs = (games ?? [])
+      .filter(g => lockMode === "sunday" ? sundaySlots.has(g.time_slot) : g.time_slot === "thursday")
+      .map(g => new Date(g.kickoff_time).getTime());
+    const deadlineMs = deadlineKickoffs.length ? Math.min(...deadlineKickoffs) : null;
+    const isDeadlinePassed = deadlineMs !== null && now.getTime() >= deadlineMs;
 
     return (
       <Pick5Sheet
@@ -160,10 +169,13 @@ export default async function PicksPage({
         existingPicks={(picks ?? []).map(p => ({
           gameId: p.game_id,
           pickedTeam: p.picked_team,
+          confidence: p.confidence,
           isCorrect: p.is_correct,
           pointsEarned: p.points_earned,
         }))}
-        isThursdayLocked={isThursdayLocked}
+        lockMode={lockMode}
+        confidenceEnabled={confidenceEnabled}
+        isDeadlinePassed={isDeadlinePassed}
         hasGames={hasGames}
       />
     );
