@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { SlotGroup } from "./SlotGroup";
+import { GameRow } from "./GameRow";
 import type { Slot, Game } from "./types";
 
 type PickState = {
@@ -98,12 +99,42 @@ export function PickSheet({
   const [tbGuess, setTbGuess] = useState<string>(initialTiebreakerGuess != null ? String(initialTiebreakerGuess) : "");
   const [tbSaving, setTbSaving] = useState(false);
   const [tbSaved, setTbSaved] = useState(false);
+  const [sortByConfidence, setSortByConfidence] = useState(false);
 
   // Always-fresh ref to picks — lets callbacks save without stale closures
   const picksRef = useRef(picks);
   useEffect(() => { picksRef.current = picks; }, [picks]);
 
   const isDirtyRef = useRef(false);
+
+  // Game ids the user has edited in this session — these win over server data
+  // when a router refresh delivers fresh props mid-edit.
+  const touchedRef = useRef<Set<string>>(new Set());
+
+  // The Next 14 client router cache can replay a stale RSC payload when the
+  // user navigates back to this page, making saved picks look like they were
+  // lost. Refetch server data on mount and whenever the tab becomes visible.
+  useEffect(() => {
+    router.refresh();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") router.refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fold refreshed server picks into local state, keeping this session's edits
+  useEffect(() => {
+    setPicks((prev) => {
+      const next = buildPickState(slots);
+      for (const id of touchedRef.current) {
+        const p = prev.get(id);
+        if (p) next.set(id, p);
+      }
+      return next;
+    });
+  }, [slots]);
 
   // Autosave every 3s (belt-and-suspenders behind per-tap saves)
   useEffect(() => {
@@ -209,6 +240,7 @@ export function PickSheet({
         next.set(gameId, updated);
         return next;
       });
+      touchedRef.current.add(gameId);
       isDirtyRef.current = true;
 
       // Save immediately — no setTimeout, no double-setState
@@ -243,6 +275,8 @@ export function PickSheet({
         next.set(gameId, updated);
         return next;
       });
+      touchedRef.current.add(gameId);
+      if (clearedId) touchedRef.current.add(clearedId);
       isDirtyRef.current = true;
 
       // Save both affected picks immediately
@@ -255,6 +289,14 @@ export function PickSheet({
 
   const mergedSlots = mergeSlots(slots, picks);
   const picksIn = [...picks.values()].filter((p) => p.pickedTeam).length;
+
+  // Optional confidence-ordered view (confidence leagues only, kickoff is the
+  // default): flat list, highest rank first, unranked games last in kickoff order
+  const confidenceOrdered = showConfidence && sortByConfidence
+    ? mergedSlots
+        .flatMap((s) => s.games.map((g) => ({ game: g, slotStatus: s.status })))
+        .sort((a, b) => (b.game.confidence ?? -1) - (a.game.confidence ?? -1))
+    : null;
   const weeksToShow = availableWeeks.length > 0 ? availableWeeks : [week];
 
   const totalPointsEarned = mergedSlots.flatMap((s) => s.games).reduce((sum, g) => {
@@ -387,8 +429,53 @@ export function PickSheet({
                 Schedule for Week {week} — game lines go live the Monday before the games, and picks open with them.
               </div>
             )}
+            {showConfidence && (
+              <div className="ps-sort-row">
+                <span className="ps-sort-label">SORT</span>
+                <button
+                  type="button"
+                  className={`ps-week-btn${!sortByConfidence ? " active" : ""}`}
+                  onClick={() => setSortByConfidence(false)}
+                >
+                  Kickoff
+                </button>
+                <button
+                  type="button"
+                  className={`ps-week-btn${sortByConfidence ? " active" : ""}`}
+                  onClick={() => setSortByConfidence(true)}
+                >
+                  Confidence
+                </button>
+              </div>
+            )}
             <div className="ps-pick-list">
-              {mergedSlots.map((slot) => (
+              {confidenceOrdered ? (
+                <div className="ps-slot-group">
+                  <div className="ps-slot-header">
+                    <span className="ps-slot-label">Ranked by confidence</span>
+                    <span className="ps-slot-spacer" />
+                    <span className="ps-slot-status open">high → low</span>
+                  </div>
+                  {confidenceOrdered.map(({ game, slotStatus }) => (
+                    <GameRow
+                      key={game.id}
+                      game={game}
+                      slotStatus={slotStatus}
+                      onPickTeam={pickTeam}
+                      onConfidenceChange={setConfidence}
+                      totalGames={totalGames}
+                      usedConfidenceMap={usedConfidenceMap}
+                      isPickerOpen={openPickerId === game.id}
+                      onOpenPicker={setOpenPickerId}
+                      showConfidence
+                      showSpread={showSpread}
+                      globalPct={globalPickPcts?.get(game.id)}
+                      spreadHistory={spreadHistoryMap?.get(game.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+              mergedSlots.map((slot) => (
                 <SlotGroup
                   key={slot.id}
                   slot={slot}
@@ -404,7 +491,8 @@ export function PickSheet({
                   globalPickPcts={globalPickPcts}
                   spreadHistoryMap={spreadHistoryMap}
                 />
-              ))}
+              ))
+              )}
             </div>
           </>
         )}

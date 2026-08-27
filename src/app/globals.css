@@ -1594,6 +1594,24 @@ body {
     overflow-y: auto;
   }
 
+  /* Sort toggle (confidence leagues only — kickoff is the default) */
+  .ps-sort-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 12px 24px 0;
+  }
+  .ps-sort-label {
+    font-family: var(--font-code);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-right: 2px;
+  }
+
   /* Sample banner */
   .ps-save-error {
     font-family: var(--font-code);

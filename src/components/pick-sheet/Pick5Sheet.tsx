@@ -1,7 +1,8 @@
 "use client";
 import { AppHeader } from "@/components/nav/AppHeader";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { NFL_COLORS } from "@/lib/nfl-colors";
@@ -81,6 +82,7 @@ export function Pick5Sheet({
   lockMode, confidenceEnabled, isDeadlinePassed, hasGames,
 }: Props) {
   const supabase = createClient();
+  const router = useRouter();
   const showSpread = isAtsFormat(scoringType);
   const isFutureWeek = week > activeWeek;
   const isLocked = isDeadlinePassed || isFutureWeek;
@@ -120,6 +122,51 @@ export function Pick5Sheet({
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Game ids the user has edited in this session — these win over server data
+  // when a router refresh delivers fresh props mid-edit.
+  const touchedRef = useRef<Set<string>>(new Set());
+
+  // The Next 14 client router cache can replay a stale RSC payload when the
+  // user navigates back to this page, making saved picks look like they were
+  // lost. Refetch server data on mount and whenever the tab becomes visible.
+  useEffect(() => {
+    router.refresh();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") router.refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fold refreshed server picks into local state, keeping this session's edits
+  useEffect(() => {
+    setPicks((prev) => {
+      const next = new Map<string, string>();
+      for (const p of existingPicks) {
+        if (p.pickedTeam) next.set(p.gameId, p.pickedTeam);
+      }
+      for (const id of touchedRef.current) {
+        const t = prev.get(id);
+        if (t) next.set(id, t);
+        else next.delete(id);
+      }
+      return next;
+    });
+    setRanks((prev) => {
+      const next = new Map<string, number>();
+      for (const p of existingPicks) {
+        if (p.pickedTeam && p.confidence != null) next.set(p.gameId, p.confidence);
+      }
+      for (const id of touchedRef.current) {
+        const r = prev.get(id);
+        if (r != null) next.set(id, r);
+        else next.delete(id);
+      }
+      return next;
+    });
+  }, [existingPicks]);
+
   const pickCount = picks.size;
   const atLimit = pickCount >= MAX_PICKS;
   const unrankedCount = confidenceEnabled
@@ -155,6 +202,7 @@ export function Pick5Sheet({
     if (confidenceEnabled && isNewPick) confidence = nextFreeRank(ranks);
 
     // Update UI state
+    touchedRef.current.add(gameId);
     setPicks(prev => {
       const next = new Map(prev);
       if (newPick === null) next.delete(gameId);
@@ -196,6 +244,11 @@ export function Pick5Sheet({
     const clearing = ranks.get(gameId) === n;
     const value = clearing ? null : n;
 
+    touchedRef.current.add(gameId);
+    if (value !== null) {
+      // The previous holder of this rank goes unranked — remember that edit too
+      for (const [gid, r] of ranks) if (r === value && gid !== gameId) touchedRef.current.add(gid);
+    }
     setRanks(prev => {
       const next = new Map(prev);
       if (value === null) {

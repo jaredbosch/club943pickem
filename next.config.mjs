@@ -8,6 +8,12 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Never replay a cached client-router copy of a dynamic page (picks,
+    // board, standings) — stale copies made saved picks look lost. 0 means
+    // every navigation refetches fresh server data.
+    staleTimes: { dynamic: 0 },
+  },
   async headers() {
     // Pages with a markdown variant (Accept negotiation in src/middleware.ts)
     // must tell caches the response varies on Accept.
