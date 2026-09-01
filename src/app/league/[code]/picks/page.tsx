@@ -52,7 +52,7 @@ export default async function PicksPage({
 
   const { data: games } = await supabase
     .from("games")
-    .select("id, home_team, away_team, spread_home, locked_spread_home, status, time_slot, kickoff_time, home_score, away_score, period, display_clock")
+    .select("id, home_team, away_team, spread_home, locked_spread_home, status, time_slot, kickoff_time, home_score, away_score, period, display_clock, kalshi_prob, kalshi_ticker")
     .eq("season_year", seasonYear)
     .eq("week", currentWeek)
     .order("kickoff_time", { ascending: true });

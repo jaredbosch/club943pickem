@@ -25,6 +25,10 @@ export type Game = {
   status?: GameStatus;
   network?: string;
   isPrimetime?: boolean;
+  // Kalshi market-implied probability that the HOME team wins (0–1), and the
+  // Kalshi event ticker for deep-linking to the market.
+  kalshiProb?: number | null;
+  kalshiTicker?: string | null;
 };
 
 export type Slot = {

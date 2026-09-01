@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Game, SlotStatus, PickResult } from "./types";
 import { teamColor } from "@/lib/nfl-colors";
+import { KalshiPanel } from "./KalshiPanel";
 
 type GlobalPct = { awayPct: number; homePct: number; total: number };
 
@@ -100,6 +101,7 @@ export function GameRow({
   const pickedHome = game.pickedTeam === game.home.abbr;
   const canOpenPicker = isOpen && !!onConfidenceChange && !!onOpenPicker;
 
+  const [marketOpen, setMarketOpen] = useState(false);
   const confRailRef = useRef<HTMLDivElement>(null);
   const pickerCoordsRef = useRef<{ top: number; left: number } | null>(null);
 
@@ -141,6 +143,9 @@ export function GameRow({
             <div className="pp-pick-conf-tag">{canOpenPicker ? "TAP ▾" : "CONF"}</div>
           </div>
         )}
+
+        {/* Kalshi market panel — win-prob graph + spread market */}
+        {marketOpen && <KalshiPanel game={game} onClose={() => setMarketOpen(false)} />}
 
         {/* Confidence picker — rendered in a portal to avoid overflow clipping */}
         {isPickerOpen && canOpenPicker && coords && createPortal(
@@ -216,6 +221,26 @@ export function GameRow({
                   <span style={{ color }}>{dir}</span>
                   {Math.abs(diff).toFixed(1)} from {open > 0 ? "+" : ""}{open}
                 </span>
+              );
+            })()}
+            {/* Kalshi market-implied win probability. Hidden once final —
+                the market has settled and the cached price is stale. */}
+            {game.kalshiProb != null && game.kalshiTicker && !isFinal && (() => {
+              const homeFav = game.kalshiProb >= 0.5;
+              const pct = Math.round((homeFav ? game.kalshiProb : 1 - game.kalshiProb) * 100);
+              const abbr = homeFav ? game.home.abbr : game.away.abbr;
+              return (
+                <button
+                  type="button"
+                  className="pp-pick-meta-market"
+                  title={`${pct}% ${abbr} to win — market data via Kalshi`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMarketOpen(true);
+                  }}
+                >
+                  Market: {pct}% {abbr} · Kalshi ▾
+                </button>
               );
             })()}
             <span className="pp-pick-meta-spacer" />

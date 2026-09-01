@@ -13,6 +13,8 @@ export type DbGame = {
   away_score?: number | null;
   period?: number | null;
   display_clock?: string | null;
+  kalshi_prob?: number | null;
+  kalshi_ticker?: string | null;
 };
 
 // "Q2 4:32" / "HALF" / "OT" — compact clock line for live games.
@@ -166,6 +168,8 @@ export function transformGamesAndPicks(games: DbGame[], picks: DbPick[]): Slot[]
         clock: g.status === "in_progress" ? formatClock(g.period, g.display_clock) : undefined,
         network: SLOT_NETWORK[g.time_slot],
         isPrimetime: SLOT_PRIMETIME.has(g.time_slot),
+        kalshiProb: g.kalshi_prob != null ? Number(g.kalshi_prob) : null,
+        kalshiTicker: g.kalshi_ticker ?? null,
       };
     });
 

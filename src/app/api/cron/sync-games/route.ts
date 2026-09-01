@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { syncGames } from "@/lib/odds/sync-games";
+import { syncKalshiMarkets } from "@/lib/kalshi/sync-markets";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,7 +33,17 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createAdminClient();
     const stats = await syncGames(supabase, apiKey);
-    return NextResponse.json({ ok: true, fetched: stats.fetched, upserted: stats.upserted, snapshots: stats.snapshots, skipped: stats.skipped });
+
+    // Kalshi market prices ride the same cadence. Failures here must not
+    // block the spread sync the pool depends on.
+    let kalshi: Awaited<ReturnType<typeof syncKalshiMarkets>> | { error: string };
+    try {
+      kalshi = await syncKalshiMarkets(supabase);
+    } catch (err) {
+      kalshi = { error: err instanceof Error ? err.message : String(err) };
+    }
+
+    return NextResponse.json({ ok: true, fetched: stats.fetched, upserted: stats.upserted, snapshots: stats.snapshots, skipped: stats.skipped, kalshi });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ ok: false, error: message }, { status: 500 });

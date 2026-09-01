@@ -6541,6 +6541,221 @@ body {
   color: var(--line2);
 }
 
+/* Kalshi market-probability chip in picks meta strip. Mono ticker type per
+   THE BOOK — numbers are mono, color is meaning: the % pops to --ink2, the
+   attribution stays --ink3. */
+.pp-pick-meta-market {
+  appearance: none;
+  cursor: pointer;
+  font-family: var(--font-code);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink3);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-decoration: none;
+  padding: 1px 5px;
+  border-radius: 2px;
+  border: 1px solid var(--line);
+  background: var(--bg2);
+}
+.pp-pick-meta-market:hover {
+  color: var(--ink2);
+  border-color: var(--line2);
+}
+
+/* Kalshi market panel — opened from the meta-strip market chip */
+.pp-kalshi-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.55);
+}
+.pp-kalshi-panel {
+  position: fixed;
+  z-index: 91;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(340px, calc(100vw - 24px));
+  background: var(--bg2);
+  border: 1px solid var(--line2);
+  border-radius: 4px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pp-kalshi-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.pp-kalshi-title {
+  font-family: var(--font-disp);
+  font-weight: 800;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+.pp-kalshi-close {
+  background: none;
+  border: none;
+  color: var(--ink3);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 6px;
+  min-width: 44px;
+  min-height: 32px;
+}
+.pp-kalshi-close:hover { color: var(--ink); }
+.pp-kalshi-probs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.pp-kalshi-prob {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 8px 10px;
+}
+.pp-kalshi-prob.fav { border-color: var(--line2); }
+.pp-kalshi-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  flex: none;
+}
+.pp-kalshi-prob-team {
+  font-family: var(--font-code);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+.pp-kalshi-prob-num {
+  margin-left: auto;
+  font-family: var(--font-disp);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--ink3);
+  font-variant-numeric: tabular-nums;
+}
+.pp-kalshi-prob.fav .pp-kalshi-prob-num { color: var(--ink); }
+.pp-kalshi-section {
+  font-family: var(--font-code);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 6px;
+}
+.pp-kalshi-chart-wrap { position: relative; }
+.pp-kalshi-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: crosshair;
+}
+.pp-kalshi-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.pp-kalshi-crosshair {
+  stroke: var(--ink3);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+.pp-kalshi-tick {
+  font-family: var(--font-code);
+  font-size: 8px;
+  fill: var(--ink3);
+}
+.pp-kalshi-tooltip {
+  position: absolute;
+  top: 14px;
+  transform: translateX(-50%);
+  font-family: var(--font-code);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--bg3);
+  border: 1px solid var(--line2);
+  border-radius: 2px;
+  padding: 2px 6px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.pp-kalshi-empty {
+  font-family: var(--font-code);
+  font-size: 10px;
+  color: var(--ink3);
+  text-align: center;
+  padding: 18px 0;
+}
+.pp-kalshi-ats-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pp-kalshi-ats-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 6px 10px;
+}
+.pp-kalshi-ats-team {
+  font-family: var(--font-code);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+.pp-kalshi-ats-num {
+  margin-left: auto;
+  font-family: var(--font-code);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.pp-kalshi-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+.pp-kalshi-attrib {
+  font-family: var(--font-code);
+  font-size: 9px;
+  color: var(--ink3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.pp-kalshi-link {
+  font-family: var(--font-code);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent-ink);
+  text-decoration: none;
+  padding: 4px 8px;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line2);
+  border-radius: 2px;
+}
+.pp-kalshi-link:hover { border-color: var(--accent); }
+
 /* Line movement indicator in picks meta strip */
 .pp-pick-meta-movement {
   font-family: var(--font-code);
