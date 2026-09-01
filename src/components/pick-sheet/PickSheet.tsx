@@ -494,6 +494,21 @@ export function PickSheet({
               ))
               )}
             </div>
+            {showSpread && !isFutureWeek && (
+              <div
+                style={{
+                  fontFamily: "var(--font-code)",
+                  fontSize: 10,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--ink3)",
+                  textAlign: "center",
+                  padding: "10px 14px 2px",
+                }}
+              >
+                Lines refresh every 4 hours · your spread locks with the game
+              </div>
+            )}
           </>
         )}
 

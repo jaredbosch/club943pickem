@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { syncScores } from "@/lib/espn/sync-scores";
+import { syncGames } from "@/lib/odds/sync-games";
 import { nflSeasonYear } from "@/lib/nfl/week";
 
 export const runtime = "nodejs";
@@ -21,6 +22,36 @@ export async function GET(request: NextRequest) {
     //    couple of minutes — Vercel crons alone are too coarse.
     const { data: lockStats, error: lockError } = await supabase.rpc("lock_slots");
     if (lockError) console.error("lock_slots failed:", lockError.message);
+
+    // 0.3 Odds refresh — spreads update every 4 hours by riding the pinger,
+    // because Hobby-plan Vercel crons can only fire once a day. Marker is
+    // written before the fetch so concurrent pings don't double-spend Odds
+    // API credits (~6 calls/day ≈ 180 credits/mo of the free 500). Failures
+    // must never block the score sync below. Runs before the idle guard —
+    // most pings return early there and would otherwise never refresh odds.
+    const ODDS_REFRESH_MS = 4 * 3600_000;
+    let oddsRefresh: unknown = "fresh";
+    const oddsApiKey = process.env.ODDS_API_KEY;
+    if (oddsApiKey) {
+      const { data: oddsState } = await supabase
+        .from("sync_state")
+        .select("synced_at")
+        .eq("key", "odds")
+        .maybeSingle();
+      const lastOddsSync = oddsState ? new Date(oddsState.synced_at).getTime() : 0;
+      if (Date.now() - lastOddsSync >= ODDS_REFRESH_MS) {
+        await supabase
+          .from("sync_state")
+          .upsert({ key: "odds", synced_at: new Date().toISOString() });
+        try {
+          oddsRefresh = await syncGames(supabase, oddsApiKey);
+        } catch (err) {
+          oddsRefresh = { error: err instanceof Error ? err.message : String(err) };
+        }
+      }
+    } else {
+      oddsRefresh = { error: "ODDS_API_KEY not configured" };
+    }
 
     // 0.5 Idle guard — the pinger hits this route every ~2 min around the
     // clock, but ESPN only needs polling when something can actually change:
@@ -47,6 +78,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         ok: true,
         locks: lockError ? { error: lockError.message } : lockStats,
+        odds: oddsRefresh,
         skipped: "idle — no live, imminent, or recently-final games",
       });
     }
@@ -72,6 +104,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       locks: lockError ? { error: lockError.message } : lockStats,
+      odds: oddsRefresh,
       scores: scoreStats,
       grading: gradingResults,
     });
