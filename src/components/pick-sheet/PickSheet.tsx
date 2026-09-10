@@ -38,6 +38,10 @@ type Props = {
   activeWeek: number;
   scoringType: ScoringType;
   userId: string;
+  /** Set when a commissioner is editing another member's sheet (userId is theirs). */
+  editingFor?: { id: string; name: string } | null;
+  /** Owner's view: a commissioner wrote the latest version of a pick this week. */
+  commissionerEdited?: boolean;
   hasGames: boolean;
   mnfGame?: MnfGame | null;
   initialTiebreakerGuess?: number | null;
@@ -79,6 +83,8 @@ export function PickSheet({
   activeWeek,
   scoringType,
   userId,
+  editingFor = null,
+  commissionerEdited = false,
   hasGames,
   mnfGame = null,
   initialTiebreakerGuess = null,
@@ -306,7 +312,8 @@ export function PickSheet({
   const gamesScored = mergedSlots.flatMap((s) => s.games).filter((g) => g.result).length;
 
   function goToWeek(w: number) {
-    router.push(`/league/${leagueCode}/picks?week=${w}`);
+    const forQs = editingFor ? `&for=${editingFor.id}` : "";
+    router.push(`/league/${leagueCode}/picks?week=${w}${forQs}`);
   }
 
   return (
@@ -318,14 +325,28 @@ export function PickSheet({
         <AppHeader
           leagueCode={leagueCode}
           leagueName={leagueName}
-          contextLabel={`WEEK ${week} · ${seasonYear}`}
+          contextLabel={editingFor ? `WEEK ${week} · EDITING ${editingFor.name.toUpperCase()}` : `WEEK ${week} · ${seasonYear}`}
           extra={
             <>
               {isFutureWeek && <span className="ps-future-badge">SCHEDULE ONLY</span>}
+              {commissionerEdited && !isFutureWeek && (
+                <span className="ps-future-badge" title="Your commissioner submitted or changed a pick for you this week">COMMISSIONER EDITED</span>
+              )}
               {saveError && <span className="ps-save-error" title={saveError}>⚠ Save failed</span>}
             </>
           }
         />
+
+        {/* Commissioner editing on behalf of a member */}
+        {editingFor && (
+          <div className="ps-edit-banner" role="status">
+            <span className="ps-edit-banner-label">COMMISSIONER MODE</span>
+            <span className="ps-edit-banner-text">
+              Editing picks for <strong>{editingFor.name}</strong>. Every change saves to their sheet and is marked as edited by you.
+            </span>
+            <Link href={`/league/${leagueCode}/commissioner`} className="ps-edit-banner-exit">Done</Link>
+          </div>
+        )}
 
         {/* Confidence budget bar — only for confidence leagues on active week */}
         {hasGames && showConfidence && (

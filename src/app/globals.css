@@ -1644,6 +1644,51 @@ body {
     color: var(--ink3);
     letter-spacing: 0.02em;
   }
+  /* Commissioner editing a member's sheet — persistent, unmissable, but
+     still a status strip rather than a modal. */
+  .ps-edit-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 0 0 4px;
+    padding: 10px 16px;
+    min-height: 44px;
+    background: color-mix(in oklab, var(--accent) 10%, var(--bg2));
+    border-left: 3px solid var(--accent);
+    color: var(--ink2);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .ps-edit-banner-label {
+    font-family: var(--font-code);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #000;
+    background: var(--accent);
+    border-radius: 2px;
+    padding: 3px 6px;
+    white-space: nowrap;
+  }
+  .ps-edit-banner-text { flex: 1 1 240px; min-width: 0; }
+  .ps-edit-banner-text strong { color: var(--ink); font-weight: 600; }
+  .ps-edit-banner-exit {
+    font-family: var(--font-code);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+    border: 1px solid var(--line2);
+    border-radius: 2px;
+    padding: 6px 10px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .ps-edit-banner-exit:hover { border-color: var(--accent); }
   /* Empty state */
   .ps-empty {
     background: var(--bg2);
@@ -4446,6 +4491,7 @@ body {
     transition: all 0.15s;
   }
   .comm-edit-btn:hover { color: var(--ink); border-color: var(--accent-ink); }
+  a.comm-edit-btn { text-decoration: none; display: inline-flex; align-items: center; }
   .comm-save-btn {
     font-family: var(--font-code);
     font-size: 9px;
