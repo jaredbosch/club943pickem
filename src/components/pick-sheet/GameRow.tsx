@@ -15,6 +15,7 @@ type Props = {
   onConfidenceChange?: (gameId: string, value: number) => void;
   totalGames?: number;
   usedConfidenceMap?: Map<number, string>;
+  lockedConfidences?: Set<number>;
   isPickerOpen?: boolean;
   onOpenPicker?: (id: string | null) => void;
   scheduleOnly?: boolean;
@@ -57,6 +58,7 @@ export function GameRow({
   onConfidenceChange,
   totalGames = 16,
   usedConfidenceMap,
+  lockedConfidences,
   isPickerOpen = false,
   onOpenPicker,
   scheduleOnly = false,
@@ -169,11 +171,14 @@ export function GameRow({
                   const usedBy = usedConfidenceMap?.get(n);
                   const isCurrent = n === conf;
                   const isUsedByOther = !!usedBy && !isCurrent;
+                  const isLockedElsewhere = isUsedByOther && !!lockedConfidences?.has(n);
                   return (
                     <button
                       key={n}
                       type="button"
-                      className={`pp-conf-chip${isCurrent ? " current" : isUsedByOther ? " used" : " avail"}`}
+                      className={`pp-conf-chip${isCurrent ? " current" : isUsedByOther ? " used" : " avail"}${isLockedElsewhere ? " locked" : ""}`}
+                      disabled={isLockedElsewhere}
+                      title={isLockedElsewhere ? `${usedBy} already kicked off — can't take this back` : undefined}
                       onClick={() => {
                         onConfidenceChange!(game.id, n);
                         onOpenPicker!(null);

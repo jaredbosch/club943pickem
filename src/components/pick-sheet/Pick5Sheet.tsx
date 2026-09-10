@@ -269,7 +269,16 @@ export function Pick5Sheet({
   async function saveAllPicks() {
     setSaving(true);
     setSaveError(null);
-    const rows = [...picks.entries()].map(([gameId, pickedTeam]) => ({
+    // RLS refuses writes once a game is within 5 min of kickoff or no longer
+    // 'scheduled' — sending those rows fails the whole batch.
+    const gameById = new Map(games.map(g => [g.id, g]));
+    const isOpen = (gameId: string) => {
+      const g = gameById.get(gameId);
+      if (!g) return false;
+      const kickoff = new Date(g.kickoffTime).getTime();
+      return g.status === "scheduled" && (isNaN(kickoff) || kickoff - 5 * 60_000 > Date.now());
+    };
+    const rows = [...picks.entries()].filter(([gameId]) => isOpen(gameId)).map(([gameId, pickedTeam]) => ({
       user_id: userId, league_id: leagueId, game_id: gameId,
       week, picked_team: pickedTeam,
       confidence: confidenceEnabled ? (ranks.get(gameId) ?? null) : null,
