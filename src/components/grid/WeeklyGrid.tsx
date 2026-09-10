@@ -83,17 +83,28 @@ function gameLabel(game: GameCol): string {
   return SLOT_LABELS[game.timeSlot] ?? "SUN";
 }
 
+// Signed line for a side, from the home spread: "-3", "+3", "PK".
+function sideLine(game: GameCol, team: string): string | null {
+  if (game.homeSpread == null) return null;
+  const line = team === game.home ? game.homeSpread : -game.homeSpread;
+  if (line === 0) return "PK";
+  return line > 0 ? `+${line}` : `${line}`;
+}
+
 function HeatCell({
   pick,
-  gameStatus,
+  game,
   masked,
   usesConfidence,
+  isAts,
 }: {
   pick: { pickedTeam: string | null; isCorrect: boolean | null; confidence: number | null; selected?: boolean } | undefined;
-  gameStatus: string;
+  game: GameCol;
   masked?: boolean;
   usesConfidence: boolean;
+  isAts: boolean;
 }) {
+  const gameStatus = game.status;
   if (!pick) {
     return <div className="grid-cell grid-cell-empty" />;
   }
@@ -134,12 +145,21 @@ function HeatCell({
     cellClass += " grid-cell-pending";
   }
 
+  // ATS formats: the line the pick was made against, so a cell reads
+  // "DAL -3" rather than a bare abbreviation. Uses the locked spread once
+  // the game has kicked off (homeSpread already prefers it).
+  const line = isAts ? sideLine(game, pick.pickedTeam!) : null;
+
   return (
     <div className={cellClass} style={{ background: bg }}>
-      <span className="grid-cell-abbr">{pick.pickedTeam}</span>
-      {/* Only confidence formats have a value here. A stray confidence written
-          into a flat format (Pick 5, straight up) must not render — a lone
-          number under the abbr reads as a spread. */}
+      <span className="grid-cell-abbr">
+        {pick.pickedTeam}
+        {line && <span className="grid-cell-line">{line}</span>}
+      </span>
+      {/* Only confidence formats have a value here (classic confidence, or
+          Pick 5 with 1–5 ranking on). A stray confidence written into a flat
+          format must not render — a lone number under the abbr reads as a
+          spread. */}
       {usesConfidence && pick.confidence !== null && (
         <span className="grid-cell-conf">{pick.confidence}</span>
       )}
@@ -335,9 +355,10 @@ export function WeeklyGrid({
                       <HeatCell
                         key={g.id}
                         pick={p.picks[g.id]}
-                        gameStatus={g.status}
+                        game={g}
                         masked={isPending && !p.isCurrentUser}
                         usesConfidence={usesConfidence}
+                        isAts={isAts}
                       />
                     );
                   })}
