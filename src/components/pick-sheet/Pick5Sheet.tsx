@@ -32,6 +32,10 @@ type Props = {
   leagueName: string;
   leagueCode: string;
   userId: string;
+  /** Set when a commissioner is editing another member's sheet (userId is theirs). */
+  editingFor?: { id: string; name: string } | null;
+  /** Owner's view: a commissioner wrote the latest version of a pick this week. */
+  commissionerEdited?: boolean;
   week: number;
   seasonYear: number;
   availableWeeks: number[];
@@ -80,7 +84,9 @@ export function Pick5Sheet({
   leagueId, leagueName, leagueCode, userId, week, seasonYear,
   availableWeeks, scoringType, activeWeek, games, existingPicks,
   lockMode, confidenceEnabled, isDeadlinePassed, hasGames,
+  editingFor = null, commissionerEdited = false,
 }: Props) {
+  const forQs = editingFor ? `&for=${editingFor.id}` : "";
   const supabase = createClient();
   const router = useRouter();
   const showSpread = isAtsFormat(scoringType);
@@ -262,9 +268,10 @@ export function Pick5Sheet({
 
     const { error } = await supabase.rpc("set_pick_confidence", {
       p_league_id: leagueId, p_game_id: gameId, p_value: value,
+      ...(editingFor ? { p_user_id: userId } : {}),
     });
     if (error) setSaveError(error.message);
-  }, [isLocked, confidenceEnabled, picks, ranks, games, gameLocked, leagueId, supabase]);
+  }, [isLocked, confidenceEnabled, picks, ranks, games, gameLocked, leagueId, userId, editingFor, supabase]);
 
   async function saveAllPicks() {
     setSaving(true);
@@ -307,9 +314,27 @@ export function Pick5Sheet({
           <AppHeader
             leagueCode={leagueCode}
             leagueName={leagueName}
-            contextLabel={`WEEK ${week}`}
-            extra={saveError && <span className="ps-save-error" title={saveError}>⚠ Save failed</span>}
+            contextLabel={editingFor ? `WEEK ${week} · EDITING ${editingFor.name.toUpperCase()}` : `WEEK ${week}`}
+            extra={
+              <>
+                {commissionerEdited && !isFutureWeek && (
+                  <span className="ps-future-badge" title="Your commissioner submitted or changed a pick for you this week">COMMISSIONER EDITED</span>
+                )}
+                {saveError && <span className="ps-save-error" title={saveError}>⚠ Save failed</span>}
+              </>
+            }
           />
+
+          {/* Commissioner editing on behalf of a member */}
+          {editingFor && (
+            <div className="ps-edit-banner" role="status">
+              <span className="ps-edit-banner-label">COMMISSIONER MODE</span>
+              <span className="ps-edit-banner-text">
+                Editing picks for <strong>{editingFor.name}</strong>. Every change saves to their sheet and is marked as edited by you.
+              </span>
+              <Link href={`/league/${leagueCode}/commissioner`} className="ps-edit-banner-exit">Done</Link>
+            </div>
+          )}
 
           {/* Pick counter bar */}
           <div className="p5-count-bar">
@@ -344,7 +369,7 @@ export function Pick5Sheet({
               {availableWeeks.map(w => (
                 <Link
                   key={w}
-                  href={`/league/${leagueCode}/picks?week=${w}`}
+                  href={`/league/${leagueCode}/picks?week=${w}${forQs}`}
                   className={`ps-week-btn${w === week ? " active" : ""}`}
                 >
                   {w}

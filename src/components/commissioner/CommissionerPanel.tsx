@@ -69,7 +69,7 @@ const HELP_ITEMS = [
       },
       {
         q: "Can I edit picks for a player?",
-        a: "If Commissioner Can Edit Picks is enabled in League Settings, you can submit picks on behalf of a player before the game kicks off. This is useful if someone is having trouble submitting.",
+        a: "Yes, when Commissioner Can Edit Picks is on in League Settings. Use the Picks button next to a player in the Members table to open their pick sheet. You can only change picks for games that haven't locked, and the player sees a Commissioner Edited badge on their sheet so nothing happens silently.",
       },
     ],
   },
@@ -399,6 +399,15 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
                       ) : (
                         <div style={{ display: "flex", gap: 4 }}>
                           <button type="button" className="comm-edit-btn" onClick={() => startEdit(m)}>Edit</button>
+                          {league.commissioner_can_edit && m.userId !== currentUserId && (
+                            <Link
+                              href={`/league/${leagueCode}/picks?for=${m.userId}`}
+                              className="comm-edit-btn"
+                              title={`Open ${m.displayName.split(" ")[0]}'s pick sheet`}
+                            >
+                              Picks
+                            </Link>
+                          )}
                           {m.userId !== currentUserId && (
                             <button type="button" className="comm-remove-btn" onClick={() => setConfirmRemove(m.memberId)}>Remove</button>
                           )}

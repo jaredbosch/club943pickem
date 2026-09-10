@@ -11,7 +11,7 @@ export default async function PicksPage({
   searchParams,
 }: {
   params: { code: string };
-  searchParams: { week?: string };
+  searchParams: { week?: string; for?: string };
 }) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -19,7 +19,7 @@ export default async function PicksPage({
 
   const { data: league } = await supabase
     .from("leagues")
-    .select("id, name, season_year, invite_code, scoring_type, pick5_lock_mode, pick5_confidence")
+    .select("id, name, season_year, invite_code, scoring_type, pick5_lock_mode, pick5_confidence, commissioner_can_edit")
     .eq("invite_code", params.code.toUpperCase())
     .maybeSingle();
 
@@ -27,12 +27,37 @@ export default async function PicksPage({
 
   const { data: membership } = await supabase
     .from("league_members")
-    .select("is_paid")
+    .select("is_paid, is_commissioner")
     .eq("league_id", league.id)
     .eq("user_id", user.id)
     .maybeSingle();
 
   if (!membership) redirect("/league");
+
+  // Commissioner editing a member's picks: ?for=<userId>. The database
+  // enforces this too (picks RLS via can_write_picks_for), so the checks here
+  // are about landing on a sensible page rather than security — an
+  // unauthorised ?for= just falls back to the requester's own sheet.
+  const forParam = searchParams.for && searchParams.for !== user.id ? searchParams.for : null;
+  let editingFor: { id: string; name: string } | null = null;
+  if (forParam) {
+    if (!membership.is_commissioner || !league.commissioner_can_edit) {
+      redirect(`/league/${params.code}/picks${searchParams.week ? `?week=${searchParams.week}` : ""}`);
+    }
+    const { data: target } = await supabase
+      .from("league_members")
+      .select("user_id, users(display_name)")
+      .eq("league_id", league.id)
+      .eq("user_id", forParam)
+      .maybeSingle();
+    if (!target) {
+      redirect(`/league/${params.code}/picks${searchParams.week ? `?week=${searchParams.week}` : ""}`);
+    }
+    const tu = target.users as unknown as { display_name: string | null } | null;
+    editingFor = { id: target.user_id, name: tu?.display_name ?? "Player" };
+  }
+  // Whose picks this sheet reads and writes.
+  const sheetUserId = editingFor?.id ?? user.id;
 
   const now = new Date();
   const seasonYear = league.season_year;
@@ -84,8 +109,8 @@ export default async function PicksPage({
   const { data: picks } = gameIds.length
     ? await supabase
         .from("picks")
-        .select("game_id, picked_team, confidence, is_locked, is_correct, points_earned")
-        .eq("user_id", user.id)
+        .select("game_id, picked_team, confidence, is_locked, is_correct, points_earned, edited_by")
+        .eq("user_id", sheetUserId)
         .eq("league_id", league.id)
         .in("game_id", gameIds)
     : { data: [] };
@@ -117,7 +142,7 @@ export default async function PicksPage({
     ? await supabase
         .from("tiebreaker_guesses")
         .select("guess")
-        .eq("user_id", user.id)
+        .eq("user_id", sheetUserId)
         .eq("league_id", league.id)
         .eq("week", currentWeek)
         .maybeSingle()
@@ -125,11 +150,16 @@ export default async function PicksPage({
 
   const scoringType = (league.scoring_type ?? "ats_confidence") as ScoringType;
   const leagueCode = params.code.toUpperCase();
+  // Shown to the member on their own sheet when a commissioner wrote the
+  // latest version of any pick this week.
+  const commissionerEdited = !editingFor && (picks ?? []).some((p) => p.edited_by !== null);
   const sharedProps = {
     leagueId: league.id,
     leagueName: league.name,
     leagueCode,
-    userId: user.id,
+    userId: sheetUserId,
+    editingFor,
+    commissionerEdited,
     week: currentWeek,
     seasonYear,
     availableWeeks,
