@@ -21,11 +21,10 @@
 --     as grading leave it untouched).
 --   * set_pick_confidence gains an optional p_user_id so the Pick 5 rank
 --     RPC can act on a member's pick under the same rule.
---   * Found while testing: set_pick_confidence and the
---     picks_clear_confidence_in_flat_format trigger both predate Pick 5
---     confidence (20260823) and rejected / nulled ranks in Pick 5 leagues,
---     so ranking never worked there. Both now allow 1–5 when
---     pick5_confidence is on.
+--
+-- Depends on 20260910120000_pick5_confidence_persists (league_uses_confidence,
+-- Pick 5 ranks allowed through the format trigger, pick_window_open() lock
+-- checks in the RPC). The RPC body below is that version plus p_user_id.
 
 -- ---------------------------------------------------------------------------
 -- Helpers
@@ -206,55 +205,13 @@ create policy tiebreaker_update
   );
 
 -- ---------------------------------------------------------------------------
--- picks_clear_confidence_in_flat_format: stop nulling Pick 5 ranks.
---
--- Same pre-20260823 assumption as set_pick_confidence: the trigger treated
--- every non-confidence format as flat and cleared confidence on write, which
--- silently discarded Pick 5 ranks even with pick5_confidence on. The Pick 5
--- grader (grade_week) reads confidence, so nothing was being paid.
--- ---------------------------------------------------------------------------
-
-create or replace function public.picks_clear_confidence_in_flat_format()
-returns trigger
-language plpgsql
-set search_path to 'public', 'pg_temp'
-as $function$
-declare
-  v_scoring text;
-  v_p5_conf boolean;
-begin
-  if new.confidence is null then
-    return new;
-  end if;
-
-  select l.scoring_type, coalesce(l.pick5_confidence, false)
-    into v_scoring, v_p5_conf
-  from leagues l
-  where l.id = new.league_id;
-
-  if v_scoring is null then
-    return new;
-  end if;
-
-  if v_scoring in ('ats_confidence', 'su_confidence') then
-    return new;
-  end if;
-
-  if v_scoring in ('pick5_su', 'pick5_ats') and v_p5_conf then
-    return new;
-  end if;
-
-  new.confidence := null;
-  return new;
-end;
-$function$;
-
--- ---------------------------------------------------------------------------
 -- set_pick_confidence: optional target user.
 --
--- Same body as 20260821120000 with auth.uid() replaced by v_user. The 3-arg
--- overload is dropped rather than kept alongside: PostgREST resolves RPCs by
--- named parameters, and a 3-arg call would match both signatures.
+-- Body is 20260910120000_pick5_confidence_persists with auth.uid() replaced
+-- by v_user. The 3-arg overload is dropped rather than kept alongside:
+-- PostgREST resolves RPCs by named parameters, and a 3-arg call would match
+-- both signatures. 3-arg callers (the iOS app, the web sheet for a member's
+-- own picks) resolve to this one with p_user_id defaulting to null.
 -- ---------------------------------------------------------------------------
 
 drop function if exists public.set_pick_confidence(uuid, uuid, integer);
@@ -279,6 +236,7 @@ declare
   v_target_locked boolean;
   v_scoring text;
   v_p5_conf boolean;
+  v_max     int;
 begin
   if v_user is null then
     raise exception 'not authenticated' using errcode = '42501';
@@ -291,18 +249,10 @@ begin
     raise exception 'not allowed to edit picks for this user' using errcode = '42501';
   end if;
 
-  if p_value is not null and (p_value < 1 or p_value > 22) then
-    raise exception 'confidence must be between 1 and 22, got %', p_value
-      using errcode = '22003';
-  end if;
-
-  -- Only formats that score confidence may be assigned a value. Checked
-  -- before anything else touches picks so a mis-scoped client write fails
-  -- loudly instead of silently seeding a number the format cannot use.
-  --
-  -- Pick 5 with pick5_confidence on ranks picks 1–5 (20260823). The previous
-  -- version of this function predates that option and rejected every Pick 5
-  -- league, so ranking never worked there; fixed here.
+  -- Only confidence formats may be assigned a value. Checked before anything
+  -- else touches picks so a mis-scoped client write fails loudly instead of
+  -- silently seeding a number the format has no way to score or display.
+  -- Clearing (p_value is null) stays allowed in every format.
   if p_value is not null then
     select l.scoring_type, coalesce(l.pick5_confidence, false)
       into v_scoring, v_p5_conf
@@ -316,17 +266,21 @@ begin
     if v_scoring in ('pick5_su', 'pick5_ats') then
       if not v_p5_conf then
         raise exception
-          'league format % does not use confidence values (Pick 5 confidence is off)', v_scoring
+          'league format % does not use confidence values (pick5_confidence is off)', v_scoring
           using errcode = '22023';
       end if;
-      if p_value > 5 then
-        raise exception 'Pick 5 confidence must be between 1 and 5, got %', p_value
-          using errcode = '22003';
-      end if;
-    elsif v_scoring not in ('ats_confidence', 'su_confidence') then
+      v_max := 5;
+    elsif v_scoring in ('ats_confidence', 'su_confidence') then
+      v_max := 22;
+    else
       raise exception
         'league format % does not use confidence values', v_scoring
         using errcode = '22023';
+    end if;
+
+    if p_value < 1 or p_value > v_max then
+      raise exception 'confidence must be between 1 and %, got %', v_max, p_value
+        using errcode = '22003';
     end if;
   end if;
 
@@ -340,9 +294,8 @@ begin
   end if;
 
   -- The pick being written must exist and still be editable. Checked up front
-  -- for the same reason as the holder check below: otherwise the UPDATE's
-  -- WITH CHECK fires and the caller sees a bare row-level-security violation
-  -- naming an internal statement instead of the actual reason.
+  -- so the caller sees the actual reason instead of a bare row-level-security
+  -- violation from the UPDATE's WITH CHECK.
   select p.is_locked into v_target_locked
   from picks p
   where p.user_id   = v_user
@@ -353,19 +306,13 @@ begin
     raise exception 'no pick for this game in this league' using errcode = 'P0002';
   end if;
 
-  if v_target_locked or not public.game_is_open(p_game_id) then
+  if v_target_locked or not public.pick_window_open(p_league_id, p_game_id) then
     raise exception 'this pick is locked; its game has already started'
       using errcode = '42501';
   end if;
 
-  -- Release the value from whichever pick is holding it this week.
-  --
-  -- The holder is checked before the write rather than letting the UPDATE
-  -- fail: if its game has already started, RLS rejects the release and the
-  -- caller would otherwise see either a bare row-level-security error or a
-  -- unique-constraint violation on the following statement, neither of which
-  -- says what actually went wrong. A confidence value committed to a started
-  -- game is spent and cannot be reused.
+  -- Release the value from whichever pick is holding it this week. A value
+  -- committed to a locked pick is spent and cannot be reused.
   if p_value is not null then
     select p.game_id, p.is_locked
       into v_holder, v_locked
@@ -378,7 +325,7 @@ begin
       and p.game_id    <> p_game_id;
 
     if v_holder is not null then
-      if v_locked or not public.game_is_open(v_holder) then
+      if v_locked or not public.pick_window_open(p_league_id, v_holder) then
         raise exception
           'confidence % is committed to a game that has already started', p_value
           using errcode = '42501';
