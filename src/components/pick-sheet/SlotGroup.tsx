@@ -8,6 +8,7 @@ type Props = {
   onConfidenceChange?: (gameId: string, value: number) => void;
   totalGames?: number;
   usedConfidenceMap?: Map<number, string>;
+  lockedConfidences?: Set<number>;
   openPickerId?: string | null;
   onOpenPicker?: (id: string | null) => void;
   scheduleOnly?: boolean;
@@ -19,7 +20,7 @@ type Props = {
 
 export function SlotGroup({
   slot, onPickTeam, onConfidenceChange, totalGames = 16,
-  usedConfidenceMap, openPickerId, onOpenPicker,
+  usedConfidenceMap, lockedConfidences, openPickerId, onOpenPicker,
   scheduleOnly = false, showConfidence = true, showSpread = true,
   globalPickPcts, spreadHistoryMap,
 }: Props) {
@@ -43,6 +44,7 @@ export function SlotGroup({
           onConfidenceChange={onConfidenceChange}
           totalGames={totalGames}
           usedConfidenceMap={usedConfidenceMap}
+          lockedConfidences={lockedConfidences}
           isPickerOpen={openPickerId === game.id}
           onOpenPicker={onOpenPicker}
           scheduleOnly={scheduleOnly}

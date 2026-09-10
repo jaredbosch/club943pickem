@@ -45,6 +45,24 @@ type Props = {
   spreadHistoryMap?: SpreadHistoryMap;
 };
 
+// Mirrors public.game_is_open(): RLS refuses any write to a pick whose game
+// is no longer 'scheduled' or is within 5 minutes of kickoff. Sending those
+// rows (e.g. a finished Thursday game in the 3s autosave batch) fails the
+// whole upsert with "new row violates row-level security policy".
+const LOCK_LEAD_MS = 5 * 60_000;
+function buildOpenGameSet(slots: Slot[], nowMs: number): Set<string> {
+  const open = new Set<string>();
+  for (const slot of slots) {
+    for (const g of slot.games) {
+      const kickoff = g.kickoffIso ? Date.parse(g.kickoffIso) : NaN;
+      const kickoffOk = isNaN(kickoff) || kickoff - LOCK_LEAD_MS > nowMs;
+      const statusOk = g.status === undefined ? slot.status === "open" : g.status === "scheduled";
+      if (statusOk && kickoffOk) open.add(g.id);
+    }
+  }
+  return open;
+}
+
 function buildPickState(slots: Slot[]): Map<string, PickState> {
   const map = new Map<string, PickState>();
   for (const slot of slots) {
@@ -107,6 +125,12 @@ export function PickSheet({
 
   const isDirtyRef = useRef(false);
 
+  // Games still accepting writes. Ref so the save callbacks never see a stale
+  // set; rebuilt whenever server data refreshes.
+  const openGamesRef = useRef<Set<string>>(buildOpenGameSet(slots, Date.now()));
+  useEffect(() => { openGamesRef.current = buildOpenGameSet(slots, Date.now()); }, [slots]);
+  const isGameOpen = (gameId: string) => openGamesRef.current.has(gameId);
+
   // Game ids the user has edited in this session — these win over server data
   // when a router refresh delivers fresh props mid-edit.
   const touchedRef = useRef<Set<string>>(new Set());
@@ -165,12 +189,19 @@ export function PickSheet({
 
   // Map of confidence value → picked team abbr (for showing who has each value in the picker)
   const usedConfidenceMap = new Map<number, string>();
-  for (const [, p] of picks) {
-    if (p.confidence !== null) usedConfidenceMap.set(p.confidence, p.pickedTeam ?? "—");
+  // Confidence values held by games that can no longer be edited — the picker
+  // must not offer to "steal" these, the DB would refuse to clear them.
+  const lockedConfidences = new Set<number>();
+  for (const [gid, p] of picks) {
+    if (p.confidence !== null) {
+      usedConfidenceMap.set(p.confidence, p.pickedTeam ?? "—");
+      if (!openGamesRef.current.has(gid)) lockedConfidences.add(p.confidence);
+    }
   }
 
   async function upsertPick(gameId: string, state: PickState) {
     if (state.pickedTeam === null && state.confidence === null) return;
+    if (!isGameOpen(gameId)) return;
     const { error } = await supabase.from("picks").upsert(
       {
         user_id: userId,
@@ -183,14 +214,18 @@ export function PickSheet({
       },
       { onConflict: "user_id,league_id,game_id" },
     );
-    if (error) setSaveError(error.message);
+    setSaveError(error ? error.message : null);
   }
 
   async function saveAllPicks() {
     setSaving(true);
     setSaveError(null);
-    const rows = [...picks.entries()]
-      .filter(([, state]) => state.pickedTeam !== null || state.confidence !== null)
+    // Only this session's edits on games still open — never re-send a locked
+    // pick, RLS rejects it and takes the whole batch down with it.
+    const rows = [...picksRef.current.entries()]
+      .filter(([gameId, state]) =>
+        touchedRef.current.has(gameId) && isGameOpen(gameId) &&
+        (state.pickedTeam !== null || state.confidence !== null))
       .map(([gameId, state]) => ({
         user_id: userId,
         league_id: leagueId,
@@ -259,6 +294,9 @@ export function PickSheet({
       let clearedState: PickState | null = null;
       for (const [gid, p] of currentMap) {
         if (gid !== gameId && p.confidence === value) {
+          // Held by a game that already kicked off: can't be cleared server-side,
+          // and reassigning it would trip the per-week confidence uniqueness.
+          if (!isGameOpen(gid)) return;
           clearedId = gid;
           clearedState = { ...p, confidence: null };
           break;
@@ -465,6 +503,7 @@ export function PickSheet({
                       onConfidenceChange={setConfidence}
                       totalGames={totalGames}
                       usedConfidenceMap={usedConfidenceMap}
+                      lockedConfidences={lockedConfidences}
                       isPickerOpen={openPickerId === game.id}
                       onOpenPicker={setOpenPickerId}
                       showConfidence
@@ -483,6 +522,7 @@ export function PickSheet({
                   onConfidenceChange={showConfidence ? setConfidence : undefined}
                   totalGames={totalGames}
                   usedConfidenceMap={usedConfidenceMap}
+                  lockedConfidences={lockedConfidences}
                   openPickerId={openPickerId}
                   onOpenPicker={setOpenPickerId}
                   scheduleOnly={isFutureWeek}

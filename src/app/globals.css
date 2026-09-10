@@ -1845,6 +1845,8 @@ body {
   }
   .pp-conf-chip.used { opacity: 0.55; }
   .pp-conf-chip.used:hover { opacity: 0.85; border-color: var(--line2); }
+  .pp-conf-chip.locked { opacity: 0.3; cursor: not-allowed; }
+  .pp-conf-chip.locked:hover { opacity: 0.3; border-color: inherit; }
   .pp-conf-chip-num {
     font-family: var(--font-disp);
     font-weight: 900;
