@@ -2719,6 +2719,16 @@ body {
     color: rgba(255,255,255,0.55);
     line-height: 1;
   }
+  /* ATS line beside the abbr — mono, per DESIGN.md "mono means numbers" */
+  .grid-cell-line {
+    font-family: var(--font-code);
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    font-size: 8px;
+    letter-spacing: 0;
+    margin-left: 3px;
+    color: rgba(255,255,255,0.7);
+  }
   .grid-cell-conf {
     font-family: var(--font-disp);
     font-weight: 900;

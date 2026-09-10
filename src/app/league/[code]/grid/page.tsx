@@ -18,7 +18,7 @@ export default async function GridPage({
 
   const { data: league } = await supabase
     .from("leagues")
-    .select("id, name, season_year, invite_code, scoring_type")
+    .select("id, name, season_year, invite_code, scoring_type, pick5_confidence")
     .eq("invite_code", params.code.toUpperCase())
     .maybeSingle();
 
@@ -71,7 +71,9 @@ export default async function GridPage({
 
   const scoringType = (league.scoring_type ?? "ats_confidence") as ScoringType;
   const isPick5 = isPick5Format(scoringType);
-  const usesConfidence = isConfidenceFormat(scoringType);
+  // Classic confidence formats always carry a value; Pick 5 only when the
+  // commissioner turned on 1–5 ranking.
+  const usesConfidence = isConfidenceFormat(scoringType) || (isPick5 && (league.pick5_confidence ?? false));
 
   const { data: allPicks } = gameIds.length
     ? await supabase
