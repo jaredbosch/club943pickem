@@ -21,6 +21,11 @@
 --     as grading leave it untouched).
 --   * set_pick_confidence gains an optional p_user_id so the Pick 5 rank
 --     RPC can act on a member's pick under the same rule.
+--   * Found while testing: set_pick_confidence and the
+--     picks_clear_confidence_in_flat_format trigger both predate Pick 5
+--     confidence (20260823) and rejected / nulled ranks in Pick 5 leagues,
+--     so ranking never worked there. Both now allow 1–5 when
+--     pick5_confidence is on.
 
 -- ---------------------------------------------------------------------------
 -- Helpers
@@ -201,6 +206,50 @@ create policy tiebreaker_update
   );
 
 -- ---------------------------------------------------------------------------
+-- picks_clear_confidence_in_flat_format: stop nulling Pick 5 ranks.
+--
+-- Same pre-20260823 assumption as set_pick_confidence: the trigger treated
+-- every non-confidence format as flat and cleared confidence on write, which
+-- silently discarded Pick 5 ranks even with pick5_confidence on. The Pick 5
+-- grader (grade_week) reads confidence, so nothing was being paid.
+-- ---------------------------------------------------------------------------
+
+create or replace function public.picks_clear_confidence_in_flat_format()
+returns trigger
+language plpgsql
+set search_path to 'public', 'pg_temp'
+as $function$
+declare
+  v_scoring text;
+  v_p5_conf boolean;
+begin
+  if new.confidence is null then
+    return new;
+  end if;
+
+  select l.scoring_type, coalesce(l.pick5_confidence, false)
+    into v_scoring, v_p5_conf
+  from leagues l
+  where l.id = new.league_id;
+
+  if v_scoring is null then
+    return new;
+  end if;
+
+  if v_scoring in ('ats_confidence', 'su_confidence') then
+    return new;
+  end if;
+
+  if v_scoring in ('pick5_su', 'pick5_ats') and v_p5_conf then
+    return new;
+  end if;
+
+  new.confidence := null;
+  return new;
+end;
+$function$;
+
+-- ---------------------------------------------------------------------------
 -- set_pick_confidence: optional target user.
 --
 -- Same body as 20260821120000 with auth.uid() replaced by v_user. The 3-arg
@@ -229,6 +278,7 @@ declare
   v_locked  boolean;
   v_target_locked boolean;
   v_scoring text;
+  v_p5_conf boolean;
 begin
   if v_user is null then
     raise exception 'not authenticated' using errcode = '42501';
@@ -246,11 +296,16 @@ begin
       using errcode = '22003';
   end if;
 
-  -- Only confidence formats may be assigned a value. Checked before anything
-  -- else touches picks so a mis-scoped client write fails loudly instead of
-  -- silently seeding a number the format has no way to score or display.
+  -- Only formats that score confidence may be assigned a value. Checked
+  -- before anything else touches picks so a mis-scoped client write fails
+  -- loudly instead of silently seeding a number the format cannot use.
+  --
+  -- Pick 5 with pick5_confidence on ranks picks 1–5 (20260823). The previous
+  -- version of this function predates that option and rejected every Pick 5
+  -- league, so ranking never worked there; fixed here.
   if p_value is not null then
-    select l.scoring_type into v_scoring
+    select l.scoring_type, coalesce(l.pick5_confidence, false)
+      into v_scoring, v_p5_conf
     from leagues l
     where l.id = p_league_id;
 
@@ -258,7 +313,17 @@ begin
       raise exception 'league % not found', p_league_id using errcode = 'P0002';
     end if;
 
-    if v_scoring not in ('ats_confidence', 'su_confidence') then
+    if v_scoring in ('pick5_su', 'pick5_ats') then
+      if not v_p5_conf then
+        raise exception
+          'league format % does not use confidence values (Pick 5 confidence is off)', v_scoring
+          using errcode = '22023';
+      end if;
+      if p_value > 5 then
+        raise exception 'Pick 5 confidence must be between 1 and 5, got %', p_value
+          using errcode = '22003';
+      end if;
+    elsif v_scoring not in ('ats_confidence', 'su_confidence') then
       raise exception
         'league format % does not use confidence values', v_scoring
         using errcode = '22023';
