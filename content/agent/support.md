@@ -20,6 +20,12 @@ Live market lines from DraftKings, FanDuel, and BetMGM. They update through the 
 **How do tiebreakers work?**
 Weekly ties are broken by closest guess on the Monday Night Football combined score. See [NFL Pick'em Pool Tiebreaker Rules](https://thepickempool.com/blog/nfl-pickem-pool-tiebreaker-rules).
 
+**Can I see other players' tiebreaker guesses?**
+Yes, once the Monday night game kicks off. The Grid shows an MNF TB column with every player's guess; after the final whistle it also shows each guess's distance from the real total and marks the closest.
+
+**Is the ± tiebreaker number on a profile weekly or season-long?**
+Season-long: it's the average miss across every graded week, with "Weeks graded" showing how many weeks are included.
+
 **Is it really free?**
 Yes — free to create a league, free to join, no ads inside the app.
 

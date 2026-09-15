@@ -150,6 +150,37 @@ export default async function GridPage({
 
   const hasGames = (games ?? []).length > 0;
 
+  // MNF tiebreaker column. RLS already scopes tiebreaker_guesses: a member
+  // always sees their own guess, and everyone else's only once the MNF game
+  // is in_progress/final — so this query returns exactly what may be shown.
+  const mnfGame = (games ?? [])
+    .filter((g) => g.time_slot === "monday")
+    .sort((a, b) => new Date(a.kickoff_time).getTime() - new Date(b.kickoff_time).getTime())[0] ?? null;
+  const { data: tbRows } = mnfGame
+    ? await supabase
+        .from("tiebreaker_guesses")
+        .select("user_id, guess")
+        .eq("league_id", league.id)
+        .eq("game_id", mnfGame.id)
+    : { data: [] };
+  const tbGuesses: Record<string, number> = {};
+  for (const r of tbRows ?? []) tbGuesses[r.user_id] = r.guess;
+  const mnfStarted = mnfGame != null && mnfGame.status !== "scheduled";
+  const mnfFinal = mnfGame?.status === "final";
+  const mnfTotal =
+    mnfGame && mnfStarted && mnfGame.home_score != null && mnfGame.away_score != null
+      ? mnfGame.home_score + mnfGame.away_score
+      : null;
+  const tiebreaker = mnfGame
+    ? {
+        label: `${mnfGame.away_team}·${mnfGame.home_team}`,
+        revealed: mnfStarted,
+        isFinal: mnfFinal,
+        actualTotal: mnfTotal,
+        guesses: tbGuesses,
+      }
+    : null;
+
   return (
     <WeeklyGrid
       leagueName={league.name}
@@ -180,6 +211,7 @@ export default async function GridPage({
       usesConfidence={usesConfidence}
       players={playerRows}
       consensus={consensus}
+      tiebreaker={tiebreaker}
       currentUserId={user.id}
       hasGames={hasGames}
     />

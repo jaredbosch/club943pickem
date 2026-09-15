@@ -27,6 +27,16 @@ type PlayerRow = {
   picks: Record<string, { pickedTeam: string | null; isCorrect: boolean | null; confidence: number | null; selected?: boolean }>;
 };
 
+// MNF tiebreaker column. `guesses` only contains what the viewer may see:
+// their own guess always, leaguemates' once the MNF game has kicked off.
+type TiebreakerCol = {
+  label: string;
+  revealed: boolean;
+  isFinal: boolean;
+  actualTotal: number | null;
+  guesses: Record<string, number>;
+};
+
 type Props = {
   leagueName: string;
   leagueCode: string;
@@ -36,6 +46,7 @@ type Props = {
   games: GameCol[];
   players: PlayerRow[];
   consensus: Record<string, { team: string; count: number; total: number }>;
+  tiebreaker?: TiebreakerCol | null;
   currentUserId: string;
   hasGames: boolean;
   usesConfidence?: boolean;
@@ -171,6 +182,41 @@ function HeatCell({
   );
 }
 
+function TiebreakerHeader({ tb }: { tb: TiebreakerCol }) {
+  return (
+    <div className="grid-game-header wg-tb-header">
+      <div className="tag" style={{ fontSize: 8 }}>MNF TB</div>
+      <div className="grid-game-matchup">{tb.label}</div>
+      <div className={`grid-game-status${tb.isFinal ? " final" : tb.revealed ? " live" : ""}`}>
+        {tb.actualTotal != null ? `TOTAL ${tb.actualTotal}` : tb.revealed ? "LIVE" : "TOTAL"}
+      </div>
+    </div>
+  );
+}
+
+function TiebreakerCell({
+  guess,
+  tb,
+  masked,
+  closest,
+}: {
+  guess: number | undefined;
+  tb: TiebreakerCol;
+  masked: boolean;
+  closest: boolean;
+}) {
+  if (masked) return <div className="grid-cell grid-cell-masked" />;
+  if (guess == null) return <div className="grid-cell grid-cell-empty" />;
+  const diff = tb.actualTotal != null ? Math.abs(guess - tb.actualTotal) : null;
+  return (
+    <div className={`grid-cell wg-tb-cell${closest && tb.isFinal ? " closest" : ""}`}>
+      <span className="wg-tb-guess">{guess}</span>
+      {diff != null && <span className="wg-tb-diff">{diff === 0 ? "exact" : `±${diff}`}</span>}
+      {closest && tb.isFinal && <span className="grid-cell-icon win">✓</span>}
+    </div>
+  );
+}
+
 function GameHeader({ game, isAts }: { game: GameCol; isAts: boolean }) {
   const label = gameLabel(game);
   const isLive = game.status === "live" || game.status === "in_progress";
@@ -228,12 +274,23 @@ export function WeeklyGrid({
   games,
   players,
   consensus,
+  tiebreaker = null,
   hasGames,
   usesConfidence = false,
   isPick5 = false,
   isAts = false,
 }: Props) {
   const hasLiveGames = games.some((g) => g.status === "in_progress");
+  // Closest tiebreaker guess(es) once the MNF total is known — ties share it.
+  let closestTb: Set<string> = new Set();
+  if (tiebreaker?.revealed && tiebreaker.actualTotal != null) {
+    let best = Infinity;
+    for (const [uid, g] of Object.entries(tiebreaker.guesses)) {
+      const d = Math.abs(g - tiebreaker.actualTotal);
+      if (d < best) { best = d; closestTb = new Set([uid]); }
+      else if (d === best) closestTb.add(uid);
+    }
+  }
   const anyGraded = games.some((g) => g.status === "final" || g.status === "complete");
   const maxPoints = players.length > 0 ? Math.max(...players.map((p) => p.weekPoints), 1) : 1;
   const prevWeek = availableWeeks.findIndex((w) => w === week) > 0
@@ -340,6 +397,7 @@ export function WeeklyGrid({
               {/* Game headers */}
               <div className="wg-game-headers">
                 {games.map((g) => <GameHeader key={g.id} game={g} isAts={isAts} />)}
+                {tiebreaker && <TiebreakerHeader tb={tiebreaker} />}
               </div>
 
               {/* Player pick rows */}
@@ -362,6 +420,14 @@ export function WeeklyGrid({
                       />
                     );
                   })}
+                  {tiebreaker && (
+                    <TiebreakerCell
+                      guess={tiebreaker.guesses[p.userId]}
+                      tb={tiebreaker}
+                      masked={!tiebreaker.revealed && !p.isCurrentUser}
+                      closest={closestTb.has(p.userId)}
+                    />
+                  )}
                 </div>
               ))}
 
@@ -388,6 +454,21 @@ export function WeeklyGrid({
                       </div>
                     );
                   })}
+                  {tiebreaker && (
+                    tiebreaker.revealed && Object.keys(tiebreaker.guesses).length > 0 ? (
+                      <div className="wg-consensus-cell">
+                        <div className="tag" style={{ fontSize: 7 }}>AVG</div>
+                        <div className="wg-tb-avg">
+                          {Math.round(
+                            Object.values(tiebreaker.guesses).reduce((a, b) => a + b, 0) /
+                              Object.keys(tiebreaker.guesses).length,
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid-cell grid-cell-masked wg-tb-cell" />
+                    )
+                  )}
                 </div>
               )}
             </div>
