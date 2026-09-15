@@ -2871,14 +2871,6 @@ body {
     color: var(--ink);
     line-height: 1;
   }
-  .wg-tb-diff {
-    font-family: var(--font-code);
-    font-variant-numeric: tabular-nums;
-    font-size: 9px;
-    color: var(--ink3);
-    line-height: 1;
-  }
-  .wg-tb-cell.closest .wg-tb-diff { color: var(--good); }
   .wg-consensus-row .wg-tb-avg {
     font-family: var(--font-code);
     font-variant-numeric: tabular-nums;

@@ -207,12 +207,11 @@ function TiebreakerCell({
 }) {
   if (masked) return <div className="grid-cell grid-cell-masked" />;
   if (guess == null) return <div className="grid-cell grid-cell-empty" />;
-  const diff = tb.actualTotal != null ? Math.abs(guess - tb.actualTotal) : null;
+  const isClosest = closest && tb.isFinal;
   return (
-    <div className={`grid-cell wg-tb-cell${closest && tb.isFinal ? " closest" : ""}`}>
+    <div className={`grid-cell wg-tb-cell${isClosest ? " closest" : ""}`}>
       <span className="wg-tb-guess">{guess}</span>
-      {diff != null && <span className="wg-tb-diff">{diff === 0 ? "exact" : `±${diff}`}</span>}
-      {closest && tb.isFinal && <span className="grid-cell-icon win">✓</span>}
+      {isClosest && <span className="grid-cell-icon win">✓</span>}
     </div>
   );
 }

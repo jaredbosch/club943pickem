@@ -59,11 +59,11 @@ const FAQS = [
       },
       {
         q: "Can I see other players' tiebreaker guesses?",
-        a: "Yes — once the Monday night game kicks off. Open The Grid for that week and look at the MNF TB column on the far right. Before kickoff you only see your own guess; after kickoff everyone's guess appears, and once the game is final each one shows how far off it was, with the closest guess marked.",
+        a: "Yes — once the Monday night game kicks off. Open The Grid for that week and look at the MNF TB column on the far right. Before kickoff you only see your own guess; after kickoff everyone's guess appears next to the game's running total, and once the game is final the closest guess is marked.",
       },
       {
         q: "What does the ± number under MNF Tiebreaker on a player's profile mean?",
-        a: "It's a season running average: the average number of points each of that player's graded tiebreaker guesses missed the real total by. 'Weeks graded' is how many weeks are included. So after one week at ±5 and a second at ±3, it shows ±4.0 across 2 weeks. For a single week's result, use the MNF TB column on The Grid.",
+        a: "It's a season running average: the average number of points each of that player's graded tiebreaker guesses missed the real total by. 'Weeks graded' is how many weeks are included. So after one week at ±5 and a second at ±3, it shows ±4.0 across 2 weeks. To see who won a given week's tiebreaker, use the MNF TB column on The Grid.",
       },
     ],
   },
