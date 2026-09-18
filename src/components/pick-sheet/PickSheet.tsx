@@ -580,7 +580,7 @@ export function PickSheet({
               <span className="ps-tb-tag">MNF TIEBREAKER</span>
               <span className="ps-tb-matchup">{mnfGame.awayTeam} @ {mnfGame.homeTeam}</span>
               <span className="ps-tb-hint">
-                {mnfGame.isLocked ? "Locked — game has started" : "Predict total combined score · used only if picks tie"}
+                {mnfGame.isLocked ? "Locked — everyone's guesses are on The Grid" : "Predict total combined score · used only if picks tie"}
               </span>
             </div>
             <div className="ps-tb-input-row">

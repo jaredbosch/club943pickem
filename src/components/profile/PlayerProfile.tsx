@@ -477,11 +477,11 @@ export function PlayerProfile({
                   <div className="prof-streak-row">
                     <div className="prof-streak-item">
                       <div className="prof-streak-val">{profileStats.tbAvgError != null ? `±${profileStats.tbAvgError.toFixed(1)}` : "—"}</div>
-                      <div className="prof-streak-label">Avg error (pts)</div>
+                      <div className="prof-streak-label">Season avg error (pts)</div>
                     </div>
                     <div className="prof-streak-item">
                       <div className="prof-streak-val">{profileStats.tbCount}</div>
-                      <div className="prof-streak-label">Guesses made</div>
+                      <div className="prof-streak-label">Weeks graded</div>
                     </div>
                   </div>
                 </>

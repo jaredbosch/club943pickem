@@ -2847,6 +2847,42 @@ body {
     line-height: 1;
   }
 
+  /* MNF tiebreaker column — sits after the last game column. Numbers are
+     mono per DESIGN.md; the closest guess gets the win treatment once final. */
+  .wg-tb-header {
+    margin-left: 6px;
+    padding-left: 6px;
+    border-left: 1px solid var(--line2);
+  }
+  .wg-tb-cell {
+    margin-left: 6px;
+    background: var(--bg3);
+    border: 1px solid var(--line);
+  }
+  .wg-tb-cell.closest {
+    background: color-mix(in oklab, var(--good) 18%, var(--bg2));
+    border-color: color-mix(in oklab, var(--good) 55%, transparent);
+  }
+  .wg-tb-guess {
+    font-family: var(--font-code);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .wg-consensus-row .wg-tb-avg {
+    font-family: var(--font-code);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .wg-consensus-row > .wg-consensus-cell:has(.wg-tb-avg) {
+    margin-left: 6px;
+  }
+
   /* ── Player Profile ──────────────────────────────────────────────── */
 
   .prof-shell {
