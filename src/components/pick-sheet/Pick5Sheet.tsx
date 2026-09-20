@@ -238,36 +238,44 @@ export function Pick5Sheet({
     }
   }, [isLocked, picks, ranks, games, gameLocked, confidenceEnabled, nextFreeRank, leagueId, userId, week, supabase]);
 
-  // Assign a 1–5 rank to a picked game. The set_pick_confidence RPC releases
-  // the rank from whichever pick held it, so the local map mirrors that: the
-  // old holder goes unranked and needs a new number. Tapping the current rank
-  // clears it.
+  // Assign a 1–5 rank to a picked game. The set_pick_confidence RPC swaps:
+  // whichever pick held this rank takes the tapped pick's old rank (or goes
+  // unranked if the tapped pick had none). The local map mirrors that. A pick
+  // never loses its rank by another pick being ranked, so a game can't kick
+  // off unranked because of a re-rank. Tapping the current rank is a no-op.
   const assignRank = useCallback(async (gameId: string, n: number) => {
     if (isLocked || !confidenceEnabled || !picks.has(gameId)) return;
     const game = games.find(g => g.id === gameId);
     if (game && gameLocked(game)) return;
 
-    const clearing = ranks.get(gameId) === n;
-    const value = clearing ? null : n;
+    const oldRank = ranks.get(gameId) ?? null;
+    if (oldRank === n) return;
+
+    // A rank held by a locked pick is spent; the RPC refuses, so don't pretend.
+    let holder: string | null = null;
+    for (const [gid, r] of ranks) if (r === n && gid !== gameId) holder = gid;
+    if (holder) {
+      const hg = games.find(g => g.id === holder);
+      if (hg && gameLocked(hg)) {
+        setSaveError(`Rank ${n} is on a game that has already started`);
+        return;
+      }
+      touchedRef.current.add(holder);
+    }
 
     touchedRef.current.add(gameId);
-    if (value !== null) {
-      // The previous holder of this rank goes unranked — remember that edit too
-      for (const [gid, r] of ranks) if (r === value && gid !== gameId) touchedRef.current.add(gid);
-    }
     setRanks(prev => {
       const next = new Map(prev);
-      if (value === null) {
-        next.delete(gameId);
-      } else {
-        for (const [gid, r] of next) if (r === value && gid !== gameId) next.delete(gid);
-        next.set(gameId, value);
+      if (holder) {
+        if (oldRank != null) next.set(holder, oldRank);
+        else next.delete(holder);
       }
+      next.set(gameId, n);
       return next;
     });
 
     const { error } = await supabase.rpc("set_pick_confidence", {
-      p_league_id: leagueId, p_game_id: gameId, p_value: value,
+      p_league_id: leagueId, p_game_id: gameId, p_value: n,
       ...(editingFor ? { p_user_id: userId } : {}),
     });
     if (error) setSaveError(error.message);
