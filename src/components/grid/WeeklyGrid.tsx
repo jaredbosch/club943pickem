@@ -1,7 +1,9 @@
+"use client";
+
 import { AppHeader } from "@/components/nav/AppHeader";
 import Link from "next/link";
 import { NFL_COLORS } from "@/lib/nfl-colors";
-import { LiveRefresher } from "./LiveRefresher";
+import { useLiveScores } from "./useLiveScores";
 
 type GameCol = {
   id: string;
@@ -10,6 +12,7 @@ type GameCol = {
   status: string;
   timeSlot: string;
   kickoffTime: string;
+  updatedAt?: string | null;
   awayScore?: number | null;
   homeScore?: number | null;
   clock?: string;
@@ -270,7 +273,7 @@ export function WeeklyGrid({
   week,
   seasonYear,
   availableWeeks,
-  games,
+  games: serverGames,
   players,
   consensus,
   tiebreaker = null,
@@ -279,6 +282,7 @@ export function WeeklyGrid({
   isPick5 = false,
   isAts = false,
 }: Props) {
+  const { games } = useLiveScores(serverGames, seasonYear, week, isAts);
   const hasLiveGames = games.some((g) => g.status === "in_progress");
   // Closest tiebreaker guess(es) once the MNF total is known — ties share it.
   let closestTb: Set<string> = new Set();
@@ -309,7 +313,12 @@ export function WeeklyGrid({
         contextLabel={`WEEK ${week} · PICKS MATRIX`}
         action={<Link href={`/league/${leagueCode}/picks`} className="dash-picks-btn">Make Picks →</Link>}
       />
-      <LiveRefresher hasLiveGames={hasLiveGames} />
+      {hasLiveGames && (
+        <div className="live-indicator">
+          <span className="pp-live-dot" />
+          LIVE · updating every 60s
+        </div>
+      )}
 
       {/* Hero */}
       <div className="wg-hero pp-hero-grad">
