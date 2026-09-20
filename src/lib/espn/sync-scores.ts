@@ -55,7 +55,7 @@ export async function syncScores(supabase: SupabaseClient): Promise<ScoreSyncSta
       // Find matching game by teams + week + season
       const { data: game } = await supabase
         .from("games")
-        .select("id, status")
+        .select("id, status, home_score, away_score, period, display_clock")
         .eq("home_team", homeTeam)
         .eq("away_team", awayTeam)
         .eq("week", week)
@@ -69,15 +69,22 @@ export async function syncScores(supabase: SupabaseClient): Promise<ScoreSyncSta
       const currentIdx = statusOrder.indexOf(game.status);
       const newIdx = newStatus ? statusOrder.indexOf(newStatus) : -1;
 
-      const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
-      if (homeScore !== null) update.home_score = homeScore;
-      if (awayScore !== null) update.away_score = awayScore;
+      // Only write fields that actually changed. The sync-scores route's idle
+      // guard treats "final game updated in the last hour" as a reason to keep
+      // polling, so unconditionally bumping updated_at on week-old finals kept
+      // every ping fetching ESPN and regrading every league around the clock.
+      const update: Record<string, unknown> = {};
+      if (homeScore !== null && homeScore !== game.home_score) update.home_score = homeScore;
+      if (awayScore !== null && awayScore !== game.away_score) update.away_score = awayScore;
       if (newIdx > currentIdx) update.status = newStatus;
       // Quarter + clock for the live UI; only meaningful once the game starts
       if (newStatus === "in_progress" || newStatus === "final") {
-        update.period = period;
-        update.display_clock = displayClock;
+        if (period !== game.period) update.period = period;
+        if (displayClock !== game.display_clock) update.display_clock = displayClock;
       }
+
+      if (Object.keys(update).length === 0) continue;
+      update.updated_at = new Date().toISOString();
 
       const { error } = await supabase.from("games").update(update).eq("id", game.id);
       if (error) {
@@ -86,6 +93,8 @@ export async function syncScores(supabase: SupabaseClient): Promise<ScoreSyncSta
       }
 
       stats.updated++;
+      // A final that changed this call (status flipped, or a stat correction
+      // moved the score) needs regrading. Untouched finals do not.
       if (newStatus === "final") stats.finalGames++;
     }
   }
