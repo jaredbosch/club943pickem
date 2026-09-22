@@ -50,13 +50,31 @@ Mono means numbers.
 - **Scale:** 2xs(2) xs(4) sm(8) md(16) lg(24) xl(32) 2xl(48) 3xl(64)
 
 ## Layout
-- **App shell:** ONE single-row header on every authenticated page: TPP logo block · league name + context subline · spacer · grid icon · overflow menu (⋯ holds Settings, Profile, Sign Out, theme). Sign Out never appears as a top-level header button. Save Picks lives ONLY in the sticky bottom bar.
+- **App shell:** see **Navigation** below. Save Picks lives ONLY in the sticky bottom bar.
 - **Week rail:** horizontally scrollable pill row with right-edge fade; completed weeks dimmed/struck, current week solid yellow.
 - **Picks desktop:** centered content + 320px right rail (confidence budget, unpicked count, submit state). No dead right-side void.
 - **Reading content:** 680px max measure.
 - **Grid (mobile):** player column ≤40% viewport; live week gets `--live` treatment, not zero-state.
 - **Max content width:** 1100–1200px app, 680px prose.
 - **Border radius:** 2px standard, 4px phone-frame/large cards. Square corners are the brand — never above 4px except pills (9999px on tiny status pills only).
+
+## Navigation
+One nav, identical on every authenticated screen and on both platforms (web + iOS).
+The nav never takes per-page props: items don't appear or disappear by screen.
+
+- **Four destinations, fixed order, same words everywhere:**
+  1. **PICKS** — this week's pick sheet. Carries the unpicked-count badge (`--accent`) — this replaces every "Make Picks →" button.
+  2. **GRID** — everyone's picks for the week, live.
+  3. **LEAGUE** — standings, **Chat** (the message board), and a Commissioner section shown only to commissioners.
+  4. **ME** — your profile/stats, My Leagues, Create/Join, Settings, Theme, Sign Out (last).
+- **Vocabulary (one meaning per word):** "Board" is retired (iOS picks tab → PICKS; message board → Chat). Don't label nav "Dashboard", "Standings", "Home", "My Profile", or "Make Picks".
+- **League chip:** current league name + ▾ at the top of every screen; opens the switcher (leagues, Create/Join). It's a switcher, not a destination.
+- **Mobile (iOS + web < 768px):** bottom tab bar — Barlow Condensed 800, 13px caps, tracked 0.08em; active = `--ink` + 2px `--accent` rule on the TOP edge; inactive `--ink3`; `--bg` with 1px `--line` top border; 44px min cells; safe-area padding. The sticky Save Picks bar stacks directly ABOVE the tab bar, never over it. Top bar = league chip + context eyebrow only.
+- **Desktop web (≥ 768px):** ONE single-row header: TPP logo · league chip + context eyebrow · the four tabs as text links (same type; active = 2px `--accent` underline) · spacer · page badges. No ⋯ overflow menu, no ▦ icon, no page-specific action buttons in the header.
+- **Active state:** deep pages highlight their parent tab (another player's picks → GRID; Commissioner → LEAGUE). Active item gets `aria-current="page"`, never color alone.
+- **No-league state:** tabs stay visible; PICKS/GRID/LEAGUE open a "join a league" empty state rather than disappearing.
+- **Commissioner** is never a tab — role-gated items live inside LEAGUE so the bar never changes shape.
+- **Money / paid status** belongs in Commissioner controls (who has paid), not in a member-facing League view.
 
 ## Motion
 - **Approach:** minimal-functional + exactly 3 signature moments:
@@ -80,3 +98,4 @@ Mono means numbers.
 | 2026-06-10 | Inter → Instrument Sans for body | De-genericize without changing metrics; display + mono unchanged |
 | 2026-06-10 | New `--live #ffb01a` token | Live previously shared red with loss — Grid live-week read as broken |
 | 2026-06-10 | Mono restricted to ticker/numbers | Mono-everywhere diluted the sportsbook signal |
+| 2026-09-22 | Unified nav: PICKS · GRID · LEAGUE · ME on web + iOS; retire ⋯ menu, ▦ icon, header "Make Picks" buttons | Per-page header props made items vanish screen to screen; web/iOS used different words ("Board" meant two things). 4-agent review; bottom tabs on mobile, single-row tab header on desktop |

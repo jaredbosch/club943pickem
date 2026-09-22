@@ -1,92 +1,105 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { usePathname } from "next/navigation";
+import { useNav } from "@/components/nav/NavProvider";
+import { switchLeagueHref } from "@/lib/nav";
 
-type LeagueEntry = {
-  id: string;
-  name: string;
-  invite_code: string;
-  season_year: number;
-};
-
-type Props = {
-  currentLeagueCode: string;
-  currentLeagueName: string;
-};
-
-export function LeagueSwitcher({ currentLeagueCode, currentLeagueName }: Props) {
+/**
+ * League chip + context eyebrow. Always a dropdown (even with one league) so
+ * Create/Join is always reachable. Leagues come from server-provided nav
+ * context — no client re-fetch.
+ */
+export function LeagueSwitcher({ contextLabel }: { contextLabel?: string | null }) {
+  const nav = useNav();
+  const pathname = usePathname() ?? "";
   const [open, setOpen] = useState(false);
-  const [leagues, setLeagues] = useState<LeagueEntry[]>([]);
-  const ref = useRef<HTMLDivElement>(null);
-  const supabase = createClient();
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      supabase
-        .from("league_members")
-        .select("leagues(id, name, invite_code, season_year)")
-        .eq("user_id", user.id)
-        .then(({ data }) => {
-          const entries = (data ?? [])
-            .map((m) => m.leagues as unknown as LeagueEntry)
-            .filter(Boolean);
-          setLeagues(entries);
-        });
-    });
-  }, []);
+  // Close on route change
+  useEffect(() => { setOpen(false); }, [pathname]);
 
-  // Close on outside click
+  // Close on outside pointerdown; Esc closes and returns focus to the chip
   useEffect(() => {
     if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    const onPointer = (e: PointerEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [open]);
 
-  const otherLeagues = leagues.filter((l) => l.invite_code !== currentLeagueCode);
-
-  // Single league — just show the name chip, no dropdown
-  if (otherLeagues.length === 0) {
-    return <span className="pp-chip solid">{currentLeagueName}</span>;
-  }
+  if (!nav) return null;
+  const current = nav.current;
+  const eyebrow = contextLabel ?? nav.contextLabel;
 
   return (
-    <div className="ls-wrap" ref={ref}>
+    <div className="ls-wrap" ref={wrapRef}>
       <button
+        ref={buttonRef}
         type="button"
-        className={`ls-trigger pp-chip solid${open ? " open" : ""}`}
+        className={`ls-trigger${open ? " open" : ""}`}
         onClick={() => setOpen((o) => !o)}
-        aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls={menuId}
       >
-        {currentLeagueName}
-        <span className="ls-chevron">{open ? "▲" : "▼"}</span>
+        <span className="ls-trigger-name">
+          <span className="ls-trigger-text">{current ? current.name : "No league"}</span>
+          <span className="ls-chevron" aria-hidden>▾</span>
+        </span>
+        {eyebrow && <span className="app-nav-context">{eyebrow}</span>}
       </button>
 
-      {open && (
-        <div className="ls-dropdown" role="listbox">
-          <div className="ls-dropdown-label">Switch League</div>
-          {otherLeagues.map((l) => (
-            <Link
-              key={l.id}
-              href={`/league/${l.invite_code}/dashboard`}
-              className="ls-item"
-              onClick={() => setOpen(false)}
-            >
-              <span className="ls-item-name">{l.name}</span>
-              <span className="ls-item-year">{l.season_year}</span>
+      <div id={menuId} className="ls-dropdown" hidden={!open}>
+        {nav.leagues.length > 0 && (
+          <>
+            <div className="ls-dropdown-label">Switch league</div>
+            <ul className="ls-list">
+              {nav.leagues.map((l) => {
+                const isCurrent = l.code === current?.code;
+                return (
+                  <li key={l.code}>
+                    <Link
+                      href={switchLeagueHref(pathname, nav.userId, l.code)}
+                      className={`ls-item${isCurrent ? " current" : ""}`}
+                      aria-current={isCurrent ? "true" : undefined}
+                      onClick={() => setOpen(false)}
+                    >
+                      <span className="ls-item-name">{l.name}</span>
+                      <span className="ls-item-year">{l.season_year}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+        <ul className="ls-list ls-actions">
+          <li>
+            <Link href="/league" className="ls-action" onClick={() => setOpen(false)}>
+              + Create or join a league
             </Link>
-          ))}
-          <Link href="/home" className="ls-all" onClick={() => setOpen(false)}>
-            All leagues →
-          </Link>
-        </div>
-      )}
+          </li>
+          <li>
+            <Link href="/home" className="ls-action" onClick={() => setOpen(false)}>
+              All leagues
+            </Link>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 }

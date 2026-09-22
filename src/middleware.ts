@@ -38,6 +38,9 @@ function markdownRewrite(request: NextRequest, pathname: string): NextResponse {
   return response;
 }
 
+// Keep in sync with LAST_LEAGUE_COOKIE in src/lib/nav-data.ts (server-only module).
+const LAST_LEAGUE_COOKIE = "tpp_last_league";
+
 const protectedRoutes = [
   "/picks",
   "/dashboard",
@@ -116,6 +119,21 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/sign-in";
     return NextResponse.redirect(url);
+  }
+
+  // Remember the league the user is in so /home, /settings and the legacy
+  // redirect stubs can point the nav at it. Only rewritten when it changes.
+  const leagueMatch = pathname.match(/^\/league\/([A-Za-z0-9]{3,32})\/[^/]/);
+  if (leagueMatch) {
+    const code = leagueMatch[1].toUpperCase();
+    if (request.cookies.get(LAST_LEAGUE_COOKIE)?.value !== code) {
+      supabaseResponse.cookies.set(LAST_LEAGUE_COOKIE, code, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: "lax",
+        httpOnly: false,
+      });
+    }
   }
 
   return supabaseResponse;

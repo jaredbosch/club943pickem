@@ -1,5 +1,6 @@
 "use client";
 import { AppHeader } from "@/components/nav/AppHeader";
+import { useNav } from "@/components/nav/NavProvider";
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -334,6 +335,15 @@ export function PickSheet({
   const mergedSlots = mergeSlots(slots, picks);
   const picksIn = [...picks.values()].filter((p) => p.pickedTeam).length;
 
+  // Keep the PICKS tab badge in step with this sheet between server refreshes
+  // (own sheet, current week only — same rule as getNavData's count).
+  const setLiveUnpicked = useNav()?.setLiveUnpickedCount;
+  const liveUnpicked = allGames.filter((g) => isGameOpen(g.id) && !picks.get(g.id)?.pickedTeam).length;
+  const reportsBadge = !editingFor && week === activeWeek;
+  useEffect(() => {
+    if (setLiveUnpicked && reportsBadge) setLiveUnpicked(liveUnpicked);
+  }, [setLiveUnpicked, reportsBadge, liveUnpicked]);
+
   // Optional confidence-ordered view (confidence leagues only, kickoff is the
   // default): flat list, highest rank first, unranked games last in kickoff order
   const confidenceOrdered = showConfidence && sortByConfidence
@@ -361,8 +371,6 @@ export function PickSheet({
         {/* Sticky header wrapper — nav + budget bar stick together as one unit */}
         <div className="ps-sticky-header">
         <AppHeader
-          leagueCode={leagueCode}
-          leagueName={leagueName}
           contextLabel={editingFor ? `WEEK ${week} · EDITING ${editingFor.name.toUpperCase()}` : `WEEK ${week} · ${seasonYear}`}
           extra={
             <>

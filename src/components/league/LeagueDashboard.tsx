@@ -263,14 +263,7 @@ export function LeagueDashboard({ league, leagueCode, standings, isCommissioner,
     <div className="dash-shell pp-gridbg">
 
       {/* Nav */}
-      <AppHeader
-        leagueCode={leagueCode}
-        leagueName={league.name}
-        contextLabel={`${league.season_year} SEASON`}
-        currentUserId={currentUserId}
-        isCommissioner={isCommissioner}
-        action={<Link href={`/league/${leagueCode}/picks`} className="dash-picks-btn">Make Picks →</Link>}
-      />
+      <AppHeader contextLabel={`${league.season_year} SEASON`} />
 
       {/* Archive banner */}
       {isArchive && (
@@ -284,7 +277,7 @@ export function LeagueDashboard({ league, leagueCode, standings, isCommissioner,
       <div className="dash-hero pp-hero-grad">
         <div className="dash-hero-left">
           <div className="dash-hero-tag">SEASON {viewingSeason} · {isArchive ? "FINAL STANDINGS" : "STANDINGS"}</div>
-          <div className="dash-hero-title">{isArchive ? "ARCHIVE" : "THE BOARD"}</div>
+          <div className="dash-hero-title">{isArchive ? "ARCHIVE" : "STANDINGS"}</div>
           <div className="dash-hero-sub">{league.name} · {standings.length} players</div>
           {availableSeasons.length > 1 && (
             <div className="dash-season-nav">
@@ -420,8 +413,17 @@ export function LeagueDashboard({ league, leagueCode, standings, isCommissioner,
           </div>
         </div>
 
-        {/* Right: invite code + league board */}
+        {/* Right: commissioner entry + invite code + chat */}
         <div className="dash-sidebar">
+          {isCommissioner && (
+            <Link href={`/league/${leagueCode}/commissioner`} className="dash-comm-link">
+              <span className="dash-comm-text">
+                <span className="dash-invite-label">Commissioner</span>
+                <span className="dash-comm-title">Members, payments &amp; league settings</span>
+              </span>
+              <span className="dash-comm-arrow" aria-hidden>→</span>
+            </Link>
+          )}
           {isCommissioner && !isArchive && (
             <div className="dash-invite">
               <span className="dash-invite-label">Invite</span>
