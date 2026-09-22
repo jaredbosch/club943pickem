@@ -45,6 +45,7 @@ type WeeklyPlayerRow = {
   totalSeasonPts: number;
   weekPts: Record<number, number>;
   weekRank: Record<number, number>;
+  overallRank: Record<number, number>;
 };
 
 type Props = {
@@ -165,7 +166,7 @@ function BumpChart({ weeklyRows, weeks }: { weeklyRows: WeeklyPlayerRow[]; weeks
       {/* Player lines — top 5 + you get color and labels; the field stays gray (DESIGN.md) */}
       {(() => {
         const lastWeek = weeks[weeks.length - 1];
-        const finalRank = (p: WeeklyPlayerRow) => p.weekRank[lastWeek] ?? Number.MAX_SAFE_INTEGER;
+        const finalRank = (p: WeeklyPlayerRow) => p.overallRank[lastWeek] ?? Number.MAX_SAFE_INTEGER;
         const top5 = [...weeklyRows].sort((a, b) => finalRank(a) - finalRank(b)).slice(0, 5);
         const emphasized = new Set(top5.map((p) => p.userId));
         const me = weeklyRows.find((p) => p.isCurrentUser);
@@ -174,7 +175,7 @@ function BumpChart({ weeklyRows, weeks }: { weeklyRows: WeeklyPlayerRow[]; weeks
         const lineFor = (player: WeeklyPlayerRow) => {
           const pts: [number, number][] = [];
           weeks.forEach((w, wi) => {
-            const rank = player.weekRank[w];
+            const rank = player.overallRank[w];
             if (rank != null) pts.push([xFor(wi), yFor(rank)]);
           });
           if (pts.length === 0) return null;
