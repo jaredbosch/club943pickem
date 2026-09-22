@@ -103,6 +103,7 @@ export default async function DashboardPage({
     totalSeasonPts: number;
     weekPts: Record<number, number>;
     weekRank: Record<number, number>;
+    overallRank: Record<number, number>;
   };
 
   const weeklyPlayerRows: WeeklyPlayerRow[] = (seasonStandings ?? []).map((s) => {
@@ -120,8 +121,28 @@ export default async function DashboardPage({
       totalSeasonPts: s.total_points,
       weekPts,
       weekRank,
+      overallRank: {},
     };
   });
+
+  // Season-to-date standing after each week (cumulative points, ties share a
+  // rank) — the bump chart plots this, not the one-week finish.
+  const cumulative = new Map(weeklyPlayerRows.map((r) => [r.userId, 0]));
+  for (const w of allWeeks) {
+    for (const r of weeklyPlayerRows) {
+      cumulative.set(r.userId, cumulative.get(r.userId)! + (r.weekPts[w] ?? 0));
+    }
+    const sorted = [...weeklyPlayerRows].sort(
+      (a, b) => cumulative.get(b.userId)! - cumulative.get(a.userId)!,
+    );
+    sorted.forEach((r, i) => {
+      const prev = sorted[i - 1];
+      r.overallRank[w] =
+        prev && cumulative.get(prev.userId) === cumulative.get(r.userId)
+          ? prev.overallRank[w]
+          : i + 1;
+    });
+  }
 
   const totalPlayers = (members ?? []).length;
   const midpoint = Math.ceil(totalPlayers / 2);
