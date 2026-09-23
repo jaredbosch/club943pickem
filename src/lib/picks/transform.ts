@@ -1,4 +1,5 @@
 import type { Slot, Game, SlotStatus } from "@/components/pick-sheet/types";
+import { isGradedPush } from "@/lib/scoring";
 
 export type DbGame = {
   id: string;
@@ -157,6 +158,7 @@ export function transformGamesAndPicks(games: DbGame[], picks: DbPick[]): Slot[]
         result:
           p?.is_correct === true ? "correct"
           : p?.is_correct === false ? "incorrect"
+          : p && isGradedPush(p.is_correct, p.points_earned) ? "push"
           : undefined,
         pointsEarned: p?.points_earned ?? undefined,
         gameTime: g.kickoff_time ? formatGameTime(g.kickoff_time) : undefined,

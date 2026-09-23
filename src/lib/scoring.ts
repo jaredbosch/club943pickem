@@ -48,6 +48,33 @@ export function isPick5Push(isCorrect: boolean | null, pointsEarned: number | nu
   return isCorrect === null && pointsEarned !== null && pointsEarned > 0;
 }
 
+// Classic confidence push rule (leagues.push_half_points). On: a graded push
+// pays half the pick's confidence (14 -> 7). Off: a push pays 0. Only the two
+// classic confidence formats read it — Pick 5 has its own fixed push payout.
+export function pushPaysHalf(t: ScoringType, pushHalfPoints: boolean | null | undefined): boolean {
+  return isConfidenceFormat(t) && pushHalfPoints === true;
+}
+
+// A graded pick that was neither a win nor a loss. Grading always writes
+// points_earned (0 or more), so a non-null value with is_correct = null is a
+// push in every format; ungraded picks have points_earned = null.
+export function isGradedPush(isCorrect: boolean | null | undefined, pointsEarned: number | null | undefined): boolean {
+  return isCorrect === null && pointsEarned !== null && pointsEarned !== undefined;
+}
+
+// Point values can be halves (pushes). Shows 0.5 as "½" and everything else
+// as-is ("7", "7.5") — the Pick 5 sheet's long-standing format.
+export function formatPoints(n: number): string {
+  return n === 0.5 ? "½" : `${n}`;
+}
+
+// One-line scoring summary for the classic confidence sheet.
+export function confidenceScoringNote(pushHalfPoints: boolean | null | undefined): string {
+  return pushHalfPoints
+    ? "win = your confidence · push = half your confidence · loss = 0"
+    : "win = your confidence · push or loss = 0";
+}
+
 export const SCORING_OPTIONS: [ScoringType, string, string][] = [
   ['ats_confidence', 'ATS + Confidence',        'Pick ATS winners and assign 1–16 confidence per game'],
   ['ats',           'ATS Only',                 'Pick ATS winners — 1 point per correct pick'],

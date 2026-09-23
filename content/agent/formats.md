@@ -5,10 +5,10 @@ thepickempool supports six distinct NFL pick'em pool formats. The commissioner c
 ## The six formats
 
 ### ATS + Confidence
-Pick every game against the spread and assign a unique confidence value from 1 up to the number of games that week (1–16 in a full week). Correct picks earn their confidence points; wrong picks earn zero; pushes are voided. The most skill-based format — you need both spread judgment and conviction calibration. Max 136 points in a 16-game week.
+Pick every game against the spread and assign a unique confidence value from 1 up to the number of games that week (1–16 in a full week). Correct picks earn their confidence points; wrong picks earn zero. A push pays half the pick's confidence (a 14 push earns 7) when the league's "Push = half points" option is on — the default for new leagues — or zero when the commissioner turns it off. The most skill-based format — you need both spread judgment and conviction calibration. Max 136 points in a 16-game week.
 
 ### Straight Up + Confidence
-Pick outright winners and assign confidence 1–16. The same conviction-calibration layer without requiring spread knowledge. Good for mixed groups where not everyone follows betting lines.
+Pick outright winners and assign confidence 1–16. The same conviction-calibration layer without requiring spread knowledge. A tie game is a push, scored like ATS + Confidence: half the confidence with "Push = half points" on, zero with it off. Good for mixed groups where not everyone follows betting lines.
 
 ### ATS Only
 Pick every game against the spread, 1 point per correct pick, 0.5 for a push. Simple flat scoring with the ATS skill element.

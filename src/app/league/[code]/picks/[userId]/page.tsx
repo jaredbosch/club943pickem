@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PlayerProfile } from "@/components/profile/PlayerProfile";
 import { computeProfileStats } from "@/lib/profile-stats";
+import { isGradedPush } from "@/lib/scoring";
 
 export default async function PlayerProfilePage({
   params,
@@ -100,7 +101,10 @@ export default async function PlayerProfilePage({
         pickedTeam: p.picked_team as string,
         opponent: opponent as string,
         confidence: p.confidence as number | null,
-        result: (p.is_correct === null ? "pending" : p.is_correct ? "won" : "lost") as "won" | "lost" | "pending",
+        result: (p.is_correct === true ? "won"
+          : p.is_correct === false ? "lost"
+          : isGradedPush(p.is_correct, p.points_earned as number | null) ? "push"
+          : "pending") as "won" | "lost" | "push" | "pending",
         pointsEarned: p.points_earned as number | null,
       };
     })

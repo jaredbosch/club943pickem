@@ -19,7 +19,7 @@ export default async function PicksPage({
 
   const { data: league } = await supabase
     .from("leagues")
-    .select("id, name, season_year, invite_code, scoring_type, pick5_lock_mode, pick5_confidence, commissioner_can_edit")
+    .select("id, name, season_year, invite_code, scoring_type, pick5_lock_mode, pick5_confidence, push_half_points, commissioner_can_edit")
     .eq("invite_code", params.code.toUpperCase())
     .maybeSingle();
 
@@ -225,6 +225,7 @@ export default async function PicksPage({
         isLocked: mnfGame.status !== "scheduled",
       } : null}
       initialTiebreakerGuess={tiebreakerRow?.guess ?? null}
+      pushHalfPoints={league.push_half_points ?? false}
     />
   );
 }

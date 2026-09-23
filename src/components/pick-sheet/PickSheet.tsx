@@ -23,7 +23,7 @@ type MnfGame = {
 };
 
 import type { ScoringType } from "@/lib/scoring";
-import { isConfidenceFormat, isAtsFormat, scoringTypeHeroLabel } from "@/lib/scoring";
+import { confidenceScoringNote, formatPoints, isConfidenceFormat, isAtsFormat, scoringTypeHeroLabel } from "@/lib/scoring";
 
 export type GlobalPickPcts = Map<string, { awayPct: number; homePct: number; total: number }>;
 export type SpreadHistoryMap = Map<string, { spread: number; date: string }[]>;
@@ -38,6 +38,8 @@ type Props = {
   leagueCode: string;
   activeWeek: number;
   scoringType: ScoringType;
+  /** leagues.push_half_points — classic confidence push pays half the confidence. */
+  pushHalfPoints?: boolean;
   userId: string;
   /** Set when a commissioner is editing another member's sheet (userId is theirs). */
   editingFor?: { id: string; name: string } | null;
@@ -101,6 +103,7 @@ export function PickSheet({
   leagueCode,
   activeWeek,
   scoringType,
+  pushHalfPoints = false,
   userId,
   editingFor = null,
   commissionerEdited = false,
@@ -355,6 +358,7 @@ export function PickSheet({
 
   const totalPointsEarned = mergedSlots.flatMap((s) => s.games).reduce((sum, g) => {
     if (g.result === "correct") return sum + (g.pointsEarned ?? g.confidence ?? 0);
+    if (g.result === "push") return sum + (g.pointsEarned ?? 0);
     return sum;
   }, 0);
   const gamesScored = mergedSlots.flatMap((s) => s.games).filter((g) => g.result).length;
@@ -419,7 +423,7 @@ export function PickSheet({
               </div>
               {gamesScored > 0 && (
                 <div>
-                  <div className="ps-rail-stat-val plain">{totalPointsEarned}</div>
+                  <div className="ps-rail-stat-val plain">{formatPoints(totalPointsEarned)}</div>
                   <div className="ps-rail-stat-label">pts this week</div>
                 </div>
               )}
@@ -457,7 +461,7 @@ export function PickSheet({
             {gamesScored > 0 && (
               <div className="ps-hero-kpis">
                 <div className="ps-hero-kpi">
-                  <div className="ps-hero-kpi-val">{totalPointsEarned}</div>
+                  <div className="ps-hero-kpi-val">{formatPoints(totalPointsEarned)}</div>
                   <div className="ps-hero-kpi-label">PTS THIS WEEK</div>
                 </div>
                 <div className="ps-hero-kpi">
@@ -576,6 +580,21 @@ export function PickSheet({
                 }}
               >
                 Lines refresh every 4 hours · your spread locks with the game
+              </div>
+            )}
+            {showConfidence && (
+              <div
+                style={{
+                  fontFamily: "var(--font-code)",
+                  fontSize: 10,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--ink3)",
+                  textAlign: "center",
+                  padding: "6px 14px 2px",
+                }}
+              >
+                {confidenceScoringNote(pushHalfPoints)}
               </div>
             )}
           </>

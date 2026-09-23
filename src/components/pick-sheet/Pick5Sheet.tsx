@@ -8,7 +8,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { NFL_COLORS } from "@/lib/nfl-colors";
 import type { ScoringType, Pick5LockMode } from "@/lib/scoring";
-import { isAtsFormat, isPick5Push } from "@/lib/scoring";
+import { formatPoints as formatPts, isAtsFormat, isPick5Push } from "@/lib/scoring";
 
 type Game = {
   id: string;
@@ -66,10 +66,6 @@ function formatTime(iso: string): string {
     const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York", hour12: true });
     return `${day} ${time.replace(" AM", "A").replace(" PM", "P")}`;
   } catch { return ""; }
-}
-
-function formatPts(n: number): string {
-  return n === 0.5 ? "½" : `${n}`;
 }
 
 function teamColor(abbr: string): string {
