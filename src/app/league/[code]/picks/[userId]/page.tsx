@@ -29,8 +29,6 @@ export default async function PlayerProfilePage({
 
   if (!membership) redirect("/league");
 
-  const leagueCode = params.code.toUpperCase();
-
   const { data: profile } = await supabase
     .from("users")
     .select("display_name")
@@ -163,8 +161,6 @@ export default async function PlayerProfilePage({
   return (
     <PlayerProfile
       displayName={displayName}
-      leagueName={league.name}
-      leagueCode={leagueCode}
       seasonYear={league.season_year}
       seasonPoints={seasonRow?.total_points ?? 0}
       correctPicks={correctCount}

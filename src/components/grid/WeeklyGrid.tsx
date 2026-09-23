@@ -41,7 +41,6 @@ type TiebreakerCol = {
 };
 
 type Props = {
-  leagueName: string;
   leagueCode: string;
   week: number;
   seasonYear: number;
@@ -268,7 +267,6 @@ function GameHeader({ game, isAts }: { game: GameCol; isAts: boolean }) {
 }
 
 export function WeeklyGrid({
-  leagueName,
   leagueCode,
   week,
   seasonYear,
@@ -307,12 +305,7 @@ export function WeeklyGrid({
     <div className="wg-shell pp-gridbg">
 
       {/* Nav */}
-      <AppHeader
-        leagueCode={leagueCode}
-        leagueName={leagueName}
-        contextLabel={`WEEK ${week} · PICKS MATRIX`}
-        action={<Link href={`/league/${leagueCode}/picks`} className="dash-picks-btn">Make Picks →</Link>}
-      />
+      <AppHeader contextLabel={`WEEK ${week} · PICKS MATRIX`} />
       {hasLiveGames && (
         <div className="live-indicator">
           <span className="pp-live-dot" />

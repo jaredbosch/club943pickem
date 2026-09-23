@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { SignOutButton } from "@/components/ui/SignOutButton";
+import { AppShell } from "@/components/nav/AppShell";
+import { AppHeader } from "@/components/nav/AppHeader";
+import { AccountSection } from "@/components/me/AccountSection";
 import { scoringTypeHeroLabel } from "@/lib/scoring";
 import type { ScoringType } from "@/lib/scoring";
 
@@ -66,17 +67,9 @@ export default async function HomePage() {
   const displayName = profile?.display_name ?? user.email?.split("@")[0] ?? "Player";
 
   return (
+    <AppShell leagueCode={null}>
     <div className="home-shell pp-gridbg">
-      <header className="app-nav">
-        <Link href="/home" className="app-nav-logo">
-          <div className="app-nav-badge">TPP</div>
-          <span className="app-nav-name">thepickempool</span>
-        </Link>
-        <div className="app-nav-spacer" />
-        <span className="home-user-name">{displayName}</span>
-        <SignOutButton />
-        <ThemeToggle />
-      </header>
+      <AppHeader />
 
       <div className="home-hero pp-hero-grad">
         <div className="home-hero-tag">YOUR LEAGUES</div>
@@ -144,6 +137,11 @@ export default async function HomePage() {
           </div>
         </div>
       </div>
+
+      <div className="me-main home-account">
+        <AccountSection />
+      </div>
     </div>
+    </AppShell>
   );
 }

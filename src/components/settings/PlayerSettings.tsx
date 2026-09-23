@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AppHeader } from "@/components/nav/AppHeader";
 
@@ -19,6 +20,7 @@ type Props = {
 
 export function PlayerSettings({ userId, email, displayName: initName, phone: initPhone, venmo: initVenmo, memberId, leagueName, leagueCode, isCommissioner }: Props) {
   const supabase = createClient();
+  const router = useRouter();
 
   const [displayName, setDisplayName] = useState(initName);
   const [phone, setPhone] = useState(initPhone);
@@ -40,17 +42,14 @@ export function PlayerSettings({ userId, email, displayName: initName, phone: in
     const err = userRes.error ?? (memberRes as { error: unknown }).error;
     setSaving(false);
     setMsg(err ? { ok: false, text: String(err) } : { ok: true, text: "Settings saved." });
+    // Display name shows in the nav/ME page — refresh the persistent layout.
+    if (!err) router.refresh();
     setTimeout(() => setMsg(null), 3000);
   }
 
   return (
     <div className="sett-shell pp-gridbg">
-      <AppHeader
-        leagueCode={leagueCode || undefined}
-        leagueName={leagueName || undefined}
-        contextLabel="SETTINGS"
-        isCommissioner={isCommissioner}
-      />
+      <AppHeader contextLabel="SETTINGS" />
 
       <div className="sett-main">
         <div className="sett-hero">
@@ -83,7 +82,7 @@ export function PlayerSettings({ userId, email, displayName: initName, phone: in
           <div className="dash-card-header">
             <div>
               <div className="dash-card-title">League Info</div>
-              <div className="dash-card-sub">visible to your commissioner</div>
+              <div className="dash-card-sub">{leagueName ? `${leagueName} · ` : ""}visible to your commissioner</div>
             </div>
           </div>
           <div className="sett-body">

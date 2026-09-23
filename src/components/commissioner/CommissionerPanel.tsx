@@ -3,6 +3,7 @@ import { AppHeader } from "@/components/nav/AppHeader";
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Member = {
@@ -166,6 +167,7 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
   const [settingsMsg, setSettingsMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const supabase = createClient();
+  const router = useRouter();
   const paidCount = members.filter((m) => m.isPaid).length;
   const totalCollected = paidCount * settings.entry_fee_cents;
 
@@ -202,6 +204,8 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
       .eq("id", league.id);
     setSettingsSaving(false);
     setSettingsMsg(error ? { ok: false, text: error.message } : { ok: true, text: "Settings saved." });
+    // League name/format show in the persistent nav (chip, eyebrow, badge).
+    if (!error) router.refresh();
     setTimeout(() => setSettingsMsg(null), 3000);
   }
 
@@ -264,13 +268,7 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
   return (
     <div className="comm-shell pp-gridbg">
 
-      <AppHeader
-        leagueCode={leagueCode}
-        leagueName={settings.name}
-        contextLabel="COMMISSIONER"
-        isCommissioner
-        action={<Link href="/support" className="ps-nav-back">Help</Link>}
-      />
+      <AppHeader contextLabel="COMMISSIONER" />
 
       {/* Hero */}
       <div className="comm-hero pp-hero-grad">

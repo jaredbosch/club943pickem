@@ -206,7 +206,7 @@ export function LeagueNotes({ leagueId, initialPosts, isCommissioner, currentUse
 
   return (
     <div className="notes-panel">
-      <div className="notes-header">League Board</div>
+      <h2 className="notes-header">Chat</h2>
 
       <div className="notes-feed">
         {posts.length === 0 && (

@@ -1,5 +1,4 @@
 import { AppHeader } from "@/components/nav/AppHeader";
-import Link from "next/link";
 import { NFL_COLORS } from "@/lib/nfl-colors";
 import type { ProfileStats } from "@/lib/profile-stats";
 import type { ScoringType } from "@/lib/scoring";
@@ -30,8 +29,6 @@ type TeamTendency = {
 
 type Props = {
   displayName: string;
-  leagueName: string;
-  leagueCode: string;
   seasonYear: number;
   seasonPoints: number;
   correctPicks: number;
@@ -68,8 +65,6 @@ function TeamBadge({ abbr, size = 32 }: { abbr: string; size?: number }) {
 
 export function PlayerProfile({
   displayName,
-  leagueName,
-  leagueCode,
   seasonYear,
   seasonPoints,
   correctPicks,
@@ -105,16 +100,7 @@ export function PlayerProfile({
     <div className="prof-shell pp-gridbg">
 
       {/* Nav */}
-      <AppHeader
-        leagueCode={leagueCode}
-        leagueName={leagueName}
-        contextLabel="PLAYER PROFILE"
-        action={
-          isCurrentUser ? (
-            <Link href={`/league/${leagueCode}/picks`} className="dash-picks-btn">Make Picks →</Link>
-          ) : undefined
-        }
-      />
+      <AppHeader contextLabel="PLAYER PROFILE" />
 
       {/* Hero */}
       <div className="prof-hero pp-hero-grad">

@@ -1,115 +1,36 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { LeagueSwitcher } from "@/components/nav/LeagueSwitcher";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { SignOutButton } from "@/components/ui/SignOutButton";
+import { NavTabs } from "@/components/nav/NavTabs";
+import { useNav } from "@/components/nav/NavProvider";
 
 type Props = {
-  leagueCode?: string;
-  leagueName?: string;
-  /** Mono eyebrow under the league name, e.g. "WEEK 8 · CONFIDENCE" */
+  /** Mono eyebrow under the league chip, e.g. "WEEK 8 · CONFIDENCE". Defaults to the nav's own. */
   contextLabel?: string;
-  /** For the My Profile menu link */
-  currentUserId?: string;
-  /** Page-specific primary action (e.g. Make Picks →). Save Picks never goes here — it lives in the sticky bottom bar. */
-  action?: React.ReactNode;
-  /** Status badges (SCHEDULE ONLY, save errors) */
+  /** Status badges only (SCHEDULE ONLY, save errors). Never actions — Save Picks lives in the sticky bottom bar. */
   extra?: React.ReactNode;
-  /** Shows the Commissioner menu item */
-  isCommissioner?: boolean;
 };
 
-export function AppHeader({ leagueCode, leagueName, contextLabel, currentUserId, action, extra, isCommissioner }: Props) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
-
-  const close = () => setOpen(false);
+/**
+ * The one app header (DESIGN.md → Navigation). Everything but the eyebrow and
+ * status badges comes from NavProvider, so the header is identical on every
+ * screen. Desktop: logo · league chip · four tabs · badges. Mobile: logo +
+ * league chip only; the tabs live in the bottom TabBar.
+ */
+export function AppHeader({ contextLabel, extra }: Props) {
+  const nav = useNav();
+  const logoHref = nav?.code ? `/league/${nav.code}/dashboard` : "/home";
 
   return (
     <header className="app-nav">
-      <Link href="/home" className="app-nav-logo" title="My leagues">
-        <div className="app-nav-badge">TPP</div>
-        <span className="app-nav-name">thepickempool</span>
+      <Link href={logoHref} className="app-nav-logo" aria-label="thepickempool — league home">
+        <div className="app-nav-badge" aria-hidden>TPP</div>
       </Link>
-      {leagueCode && leagueName && (
-        <div className="app-nav-league">
-          <LeagueSwitcher currentLeagueCode={leagueCode} currentLeagueName={leagueName} />
-          {contextLabel && <div className="app-nav-context">{contextLabel}</div>}
-        </div>
-      )}
+      <LeagueSwitcher contextLabel={contextLabel} />
+      <NavTabs variant="header" />
       <div className="app-nav-spacer" />
       {extra}
-      {action}
-      {leagueCode && (
-        <Link
-          href={`/league/${leagueCode}/grid`}
-          className="app-icon-btn"
-          title="The Grid"
-          aria-label="The Grid"
-        >
-          ▦
-        </Link>
-      )}
-      <div className="app-menu-wrap" ref={ref}>
-        <button
-          type="button"
-          className="app-icon-btn"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Menu"
-          aria-expanded={open}
-        >
-          ⋯
-        </button>
-        {open && (
-          <div className="app-menu">
-            <Link className="app-menu-item" href="/home" onClick={close}>
-              ← My Leagues
-            </Link>
-            {leagueCode && (
-              <Link className="app-menu-item" href={`/league/${leagueCode}/dashboard`} onClick={close}>
-                Standings
-              </Link>
-            )}
-            {leagueCode && (
-              <Link className="app-menu-item" href={`/league/${leagueCode}/picks`} onClick={close}>
-                Make Picks
-              </Link>
-            )}
-            {leagueCode && currentUserId && (
-              <Link className="app-menu-item" href={`/league/${leagueCode}/picks/${currentUserId}`} onClick={close}>
-                My Profile
-              </Link>
-            )}
-            <Link className="app-menu-item" href="/settings" onClick={close}>
-              Settings
-            </Link>
-            {leagueCode && isCommissioner && (
-              <Link className="app-menu-item" href={`/league/${leagueCode}/commissioner`} onClick={close}>
-                ⚙ Commissioner
-              </Link>
-            )}
-            <div className="app-menu-divider" />
-            <div className="app-menu-row">
-              <span>Theme</span>
-              <ThemeToggle />
-            </div>
-            <div className="app-menu-row">
-              <SignOutButton />
-            </div>
-          </div>
-        )}
-      </div>
     </header>
   );
 }

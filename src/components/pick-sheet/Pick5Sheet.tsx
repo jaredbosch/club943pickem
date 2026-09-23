@@ -1,5 +1,6 @@
 "use client";
 import { AppHeader } from "@/components/nav/AppHeader";
+import { useNav } from "@/components/nav/NavProvider";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -175,6 +176,19 @@ export function Pick5Sheet({
 
   const pickCount = picks.size;
   const atLimit = pickCount >= MAX_PICKS;
+
+  // Keep the PICKS tab badge in step with this sheet between server refreshes
+  // (own sheet, current week only — same rule as getNavData's count).
+  const setLiveUnpicked = useNav()?.setLiveUnpickedCount;
+  const reportsBadge = !editingFor && week === activeWeek;
+  const openUnpicked = games.filter((g) => {
+    const kickoff = new Date(g.kickoffTime).getTime();
+    return !picks.has(g.id) && g.status === "scheduled" && (isNaN(kickoff) || kickoff - 5 * 60_000 > nowMs);
+  }).length;
+  const liveUnpicked = isDeadlinePassed ? 0 : Math.max(0, Math.min(MAX_PICKS - pickCount, openUnpicked));
+  useEffect(() => {
+    if (setLiveUnpicked && reportsBadge) setLiveUnpicked(liveUnpicked);
+  }, [setLiveUnpicked, reportsBadge, liveUnpicked]);
   const unrankedCount = confidenceEnabled
     ? [...picks.keys()].filter(id => !ranks.has(id)).length
     : 0;
@@ -320,8 +334,6 @@ export function Pick5Sheet({
         {/* Sticky header */}
         <div className="ps-sticky-header">
           <AppHeader
-            leagueCode={leagueCode}
-            leagueName={leagueName}
             contextLabel={editingFor ? `WEEK ${week} · EDITING ${editingFor.name.toUpperCase()}` : `WEEK ${week}`}
             extra={
               <>

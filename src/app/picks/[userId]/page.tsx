@@ -1,26 +1,14 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getLastLeague } from "@/lib/nav-data";
 
 export default async function PlayerProfileRedirect({
   params,
 }: {
   params: { userId: string };
 }) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/sign-in");
+  const last = await getLastLeague();
+  if (last === "signed-out") redirect("/sign-in");
+  if (!last) redirect("/league");
 
-  const { data: membership } = await supabase
-    .from("league_members")
-    .select("leagues(invite_code)")
-    .eq("user_id", user.id)
-    .limit(1)
-    .maybeSingle();
-
-  if (!membership) redirect("/league");
-
-  const code = (membership.leagues as unknown as { invite_code: string } | null)?.invite_code;
-  if (!code) redirect("/league");
-
-  redirect(`/league/${code}/picks/${params.userId}`);
+  redirect(`/league/${last.code}/picks/${params.userId}`);
 }

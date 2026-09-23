@@ -69,6 +69,8 @@ export function LeagueSetup() {
     }
 
     setInviteCode(league.invite_code);
+    // New membership — refresh server data so the nav's league list includes it.
+    router.refresh();
   }
 
   async function copyInviteCode() {
@@ -94,7 +96,10 @@ export function LeagueSetup() {
       return;
     }
 
+    // Membership changed: refresh so the persistent nav layout (league
+    // switcher, tabs) picks up the new league.
     router.push(`/league/${code.trim().toUpperCase()}/picks`);
+    router.refresh();
   }
 
   if (inviteCode) {

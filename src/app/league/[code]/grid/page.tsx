@@ -183,7 +183,6 @@ export default async function GridPage({
 
   return (
     <WeeklyGrid
-      leagueName={league.name}
       leagueCode={leagueCode}
       week={currentWeek}
       seasonYear={seasonYear}
