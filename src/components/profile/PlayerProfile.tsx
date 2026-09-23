@@ -2,7 +2,7 @@ import { AppHeader } from "@/components/nav/AppHeader";
 import { NFL_COLORS } from "@/lib/nfl-colors";
 import type { ProfileStats } from "@/lib/profile-stats";
 import type { ScoringType } from "@/lib/scoring";
-import { isAtsFormat, isConfidenceFormat, isPick5Format } from "@/lib/scoring";
+import { formatPoints, isAtsFormat, isConfidenceFormat, isPick5Format } from "@/lib/scoring";
 
 type WeekStat = {
   week: number;
@@ -16,7 +16,7 @@ type PickItem = {
   pickedTeam: string;
   opponent: string;
   confidence: number | null;
-  result: "won" | "lost" | "pending";
+  result: "won" | "lost" | "push" | "pending";
   pointsEarned: number | null;
 };
 
@@ -207,14 +207,15 @@ export function PlayerProfile({
                             className="prof-pick-conf-fill"
                             style={{
                               width: `${confPct}%`,
-                              background: p.result === "won" ? "var(--good)" : p.result === "lost" ? "var(--bad)" : "var(--accent)",
+                              background: p.result === "won" ? "var(--good)" : p.result === "lost" ? "var(--bad)" : p.result === "push" ? "var(--warn)" : "var(--accent)",
                             }}
                           />
                         </div>
                         <span className="prof-pick-conf-num">conf {p.confidence ?? "—"}</span>
                       </div>
                       <div className={`prof-pick-chip ${p.result}`}>
-                        {p.result === "won" && `✓ +${p.pointsEarned ?? p.confidence}`}
+                        {p.result === "won" && `✓ +${formatPoints(p.pointsEarned ?? p.confidence ?? 0)}`}
+                        {p.result === "push" && `PUSH${p.pointsEarned ? ` +${formatPoints(p.pointsEarned)}` : ""}`}
                         {p.result === "lost" && "✗ LOST"}
                         {p.result === "pending" && "◌ PENDING"}
                       </div>

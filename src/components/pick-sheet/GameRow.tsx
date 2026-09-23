@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Game, SlotStatus, PickResult } from "./types";
 import { teamColor } from "@/lib/nfl-colors";
+import { formatPoints } from "@/lib/scoring";
 import { KalshiPanel } from "./KalshiPanel";
 
 type GlobalPct = { awayPct: number; homePct: number; total: number };
@@ -122,6 +123,7 @@ export function GameRow({
 
   const resultCls = game.result === "correct" ? " result-correct"
     : game.result === "incorrect" ? " result-incorrect"
+    : game.result === "push" ? " result-push"
     : "";
   const warnCls = hasPick && conf === null && !game.result ? " warn-no-conf" : "";
 
@@ -250,7 +252,10 @@ export function GameRow({
             })()}
             <span className="pp-pick-meta-spacer" />
             {!isOpen && game.result === "correct" && (
-              <span className="pp-pick-meta-won">+{game.pointsEarned ?? conf} pts</span>
+              <span className="pp-pick-meta-won">+{formatPoints(game.pointsEarned ?? conf ?? 0)} pts</span>
+            )}
+            {!isOpen && game.result === "push" && (
+              <span className="pp-pick-meta-push">{game.pointsEarned ? `${formatPoints(game.pointsEarned)} push` : "push"}</span>
             )}
             {!isOpen && game.result === "incorrect" && (
               <span className="pp-pick-meta-lost">0 pts</span>

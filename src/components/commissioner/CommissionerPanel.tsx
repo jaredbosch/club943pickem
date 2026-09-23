@@ -1,7 +1,7 @@
 "use client";
 import { AppHeader } from "@/components/nav/AppHeader";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -18,7 +18,7 @@ type Member = {
   joinedAt: string;
 };
 
-import { type ScoringType, type Pick5LockMode, SCORING_OPTIONS, isPick5Format } from "@/lib/scoring";
+import { type ScoringType, type Pick5LockMode, SCORING_OPTIONS, isConfidenceFormat, isPick5Format } from "@/lib/scoring";
 type WeeklyPotType = "percentage" | "fixed";
 
 type LeagueSettings = {
@@ -36,6 +36,7 @@ type LeagueSettings = {
   registration_locked: boolean;
   pick5_lock_mode: Pick5LockMode;
   pick5_confidence: boolean;
+  push_half_points: boolean;
 };
 
 type Props = {
@@ -162,8 +163,11 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
     registration_locked: league.registration_locked,
     pick5_lock_mode: league.pick5_lock_mode ?? "thursday",
     pick5_confidence: league.pick5_confidence ?? false,
+    push_half_points: league.push_half_points ?? false,
   });
   const [settingsSaving, setSettingsSaving] = useState(false);
+  // Last-saved push rule: flipping it re-scores the season server-side.
+  const savedPushHalf = useRef(league.push_half_points ?? false);
   const [settingsMsg, setSettingsMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const supabase = createClient();
@@ -200,10 +204,15 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
         registration_locked: settings.registration_locked,
         pick5_lock_mode: settings.pick5_lock_mode,
         pick5_confidence: settings.pick5_confidence,
+        push_half_points: settings.push_half_points,
       })
       .eq("id", league.id);
     setSettingsSaving(false);
-    setSettingsMsg(error ? { ok: false, text: error.message } : { ok: true, text: "Settings saved." });
+    const rescored = !error && settings.push_half_points !== savedPushHalf.current;
+    if (!error) savedPushHalf.current = settings.push_half_points;
+    setSettingsMsg(error
+      ? { ok: false, text: error.message }
+      : { ok: true, text: rescored ? "Settings saved. Season re-scored." : "Settings saved." });
     // League name/format show in the persistent nav (chip, eyebrow, badge).
     if (!error) router.refresh();
     setTimeout(() => setSettingsMsg(null), 3000);
@@ -579,6 +588,19 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
                   <span className="comm-toggle-label">{settings.playoffs_enabled ? "Yes — weeks 19–22" : "No — regular season only"}</span>
                 </button>
               </div>
+              {isConfidenceFormat(settings.scoring_type) && (
+                <div className="comm-settings-row">
+                  <label className="comm-settings-label">Push = half points</label>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+                    <button type="button" className={`comm-toggle${settings.push_half_points ? " on" : ""}`}
+                      onClick={() => setSetting("push_half_points", !settings.push_half_points)}>
+                      <span className="comm-toggle-knob" />
+                      <span className="comm-toggle-label">{settings.push_half_points ? "On — push pays half the confidence" : "Off — push pays 0"}</span>
+                    </button>
+                    <span className="comm-settings-suffix">A push pays half your confidence points. Changing this re-scores the whole season.</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Registration */}
