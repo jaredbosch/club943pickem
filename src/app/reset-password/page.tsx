@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -10,6 +11,15 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  // null while checking; false when the reset link didn't produce a session
+  // (expired, already used) — submitting would only fail with "Auth session missing!"
+  const [hasSession, setHasSession] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => setHasSession(!!data.user));
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,7 +36,11 @@ export default function ResetPasswordPage() {
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
-      setError(error.message);
+      if (error.name === "AuthSessionMissingError") {
+        setHasSession(false);
+      } else {
+        setError(error.message);
+      }
       setLoading(false);
     } else {
       router.push("/");
@@ -51,6 +65,17 @@ export default function ResetPasswordPage() {
           <div className="tag" style={{ marginTop: 6 }}>choose a new password to continue</div>
         </div>
 
+        {hasSession === false ? (
+          <>
+            <p style={{ fontSize: 14, color: "var(--ink2)", lineHeight: 1.6 }}>
+              This reset link has expired or was already used. Request a fresh one and
+              open the newest email.
+            </p>
+            <Link href="/forgot-password" className="auth-btn" style={{ display: "block", textAlign: "center", textDecoration: "none" }}>
+              Send a New Link →
+            </Link>
+          </>
+        ) : (
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="auth-field">
             <label className="auth-label" htmlFor="password">New Password</label>
@@ -81,10 +106,11 @@ export default function ResetPasswordPage() {
 
           {error && <p className="auth-error">{error}</p>}
 
-          <button type="submit" disabled={loading} className="auth-btn">
+          <button type="submit" disabled={loading || hasSession === null} className="auth-btn">
             {loading ? "Saving…" : "Set New Password →"}
           </button>
         </form>
+        )}
       </div>
     </main>
   );

@@ -28,7 +28,13 @@ export async function GET(request: NextRequest) {
         },
       },
     );
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    // Fails when the link is opened in a different browser than the one that
+    // requested it (no code_verifier cookie), or when the code was already used.
+    // Don't drop a password-reset user on a form that can only error out.
+    if (error && next === "/reset-password") {
+      return NextResponse.redirect(new URL("/forgot-password?error=link_invalid", request.url));
+    }
   }
 
   return NextResponse.redirect(new URL(next, request.url));

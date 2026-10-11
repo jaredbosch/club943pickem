@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
@@ -9,6 +9,14 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // /auth/confirm and /auth/callback bounce here when a reset link is
+  // expired, already used, or opened in a browser that can't redeem it.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("error") === "link_invalid") {
+      setError("That reset link has expired or was already used. Request a new one below.");
+    }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,7 +57,8 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <p style={{ fontSize: 14, color: "var(--ink2)", lineHeight: 1.6 }}>
             If an account exists for <strong style={{ color: "var(--ink)" }}>{email}</strong>,
-            a reset link is on its way. Open it on this device to set a new password.
+            a reset link is on its way. Only the newest link works — if you request
+            more than one, use the latest email.
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="auth-form">
