@@ -1874,7 +1874,10 @@ body {
   .pp-pick-conf.high .pp-pick-conf-tag { color: rgba(0,0,0,0.6); }
 
   /* Center block */
-  .pp-pick-center { display: flex; flex-direction: column; }
+  /* min-width: 0 — a grid item defaults to min-content width, so a long meta
+     strip (pct · line move · market) would widen the row and push the home
+     team off-screen on phones. */
+  .pp-pick-center { display: flex; flex-direction: column; min-width: 0; }
 
   /* Meta strip */
   .pp-pick-meta {
@@ -5164,6 +5167,8 @@ body {
   .pp-pick-side { padding: 10px 10px; gap: 7px; }
   .pp-pick-logo { width: 34px; height: 34px; font-size: 10px; }
   .pp-pick-at { width: 54px; }
+  /* Wrap meta chips onto a second line instead of clipping them */
+  .pp-pick-meta { flex-wrap: wrap; row-gap: 4px; }
 
   /* Confidence picker portal: full width on mobile */
   .pp-conf-picker {
