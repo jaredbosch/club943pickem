@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { LeagueEmailCard, type LeagueEmailConfig } from "./LeagueEmailCard";
 
 type Member = {
   memberId: string;
@@ -16,6 +17,8 @@ type Member = {
   isPaid: boolean;
   paidAt: string | null;
   joinedAt: string;
+  emailOptOut: boolean;
+  hasUnpicked: boolean;
 };
 
 import { type ScoringType, type Pick5LockMode, SCORING_OPTIONS, isConfidenceFormat, isPick5Format } from "@/lib/scoring";
@@ -47,6 +50,7 @@ type Props = {
   paidCount: number;
   entryFeeDollars: string;
   totalCollectedCents: number;
+  email: LeagueEmailConfig;
 };
 
 const HELP_ITEMS = [
@@ -60,6 +64,10 @@ const HELP_ITEMS = [
       {
         q: "How do I lock registration so no new players can join?",
         a: "In League Settings, toggle on Lock Registration. Once locked, the invite code stops working and no new members can join.",
+      },
+      {
+        q: "How do I email my league?",
+        a: "Use Email the League below the member roster. Send to everyone, just the players who haven't paid, or the ones who still owe picks this week. Each player gets their own copy, replies come straight to your inbox, and you get a copy too. Players can unsubscribe from your league's emails with one click; they're marked in the roster.",
       },
       {
         q: "How do I track who has paid?",
@@ -139,7 +147,7 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export function CommissionerPanel({ league, leagueCode, members: initialMembers, currentUserId, entryFeeDollars }: Props) {
+export function CommissionerPanel({ league, leagueCode, members: initialMembers, currentUserId, entryFeeDollars, email }: Props) {
   const [members, setMembers] = useState(initialMembers);
   const [editing, setEditing] = useState<Record<string, { phone: string; venmo: string }>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
@@ -357,7 +365,12 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
                         </span>
                       </div>
                     </td>
-                    <td className="comm-td comm-td-mono">{m.email}</td>
+                    <td className="comm-td comm-td-mono">
+                      {m.email}
+                      {m.emailOptOut && (
+                        <span className="pp-chip comm-optout-chip" title="Unsubscribed from league emails">unsubscribed</span>
+                      )}
+                    </td>
                     <td className="comm-td comm-td-mono">
                       {isEditing ? (
                         <input className="comm-input" value={ed.phone}
@@ -427,6 +440,13 @@ export function CommissionerPanel({ league, leagueCode, members: initialMembers,
             </tbody>
           </table>
         </div>
+
+        <LeagueEmailCard
+          leagueId={league.id}
+          currentUserId={currentUserId}
+          members={members}
+          config={email}
+        />
 
         {/* League Settings */}
         <div className="dash-card comm-settings-card">

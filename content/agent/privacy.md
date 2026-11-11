@@ -1,10 +1,10 @@
 # thepickempool Privacy Policy (Summary)
 
-Last updated: May 15, 2026. Full policy: [thepickempool.com/privacy](https://thepickempool.com/privacy)
+Last updated: November 11, 2026. Full policy: [thepickempool.com/privacy](https://thepickempool.com/privacy)
 
 ## What we collect
 
-- **Account information** — email address and display name, used for authentication and service emails
+- **Account information** — email address and display name, used for authentication, service emails, and league emails your commissioner sends (unsubscribe per league from any of them)
 - **Gameplay data** — picks, confidence points, results, standings, tiebreaker guesses
 - **Optional profile info** — phone number or Venmo handle, voluntary, visible to your league commissioner
 - **Usage data** — aggregated Google Analytics (pages visited, session duration, device type)
@@ -15,7 +15,7 @@ To run the pick'em pool service, calculate standings, send account emails, impro
 
 ## Sharing
 
-We do not sell personal information. Data is shared only with: Supabase (database/auth provider, US), Google (analytics and ads), your league commissioner (display name, picks, voluntary profile info), and other league members (picks become visible after games kick off, as part of the core service).
+We do not sell personal information. Data is shared only with: Supabase (database/auth provider, US), Resend (email delivery, US), Google (analytics and ads), your league commissioner (display name, picks, voluntary profile info), and other league members (picks become visible after games kick off, as part of the core service).
 
 ## Retention and rights
 

@@ -4760,6 +4760,136 @@ body {
     margin-right: 20px;
     margin-bottom: 8px;
   }
+
+  /* Email the League */
+  .comm-email-card { margin-top: 20px; }
+  .comm-email-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 20px 20px;
+  }
+  .comm-email-field { display: flex; flex-direction: column; gap: 8px; }
+  .comm-email-eyebrow {
+    font-family: var(--font-code);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink2);
+  }
+  .comm-email-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .comm-email-count {
+    font-family: var(--font-code);
+    font-size: 11px;
+    color: var(--ink2);
+    font-variant-numeric: tabular-nums;
+  }
+  .comm-email-audiences { display: flex; flex-wrap: wrap; gap: 8px; }
+  .comm-email-aud {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 14px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink2);
+    background: var(--bg3);
+    border: 1px solid var(--line2);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .comm-email-aud:hover { color: var(--ink); border-color: var(--accent-ink); }
+  .comm-email-aud.active { background: var(--accent); border-color: var(--accent); color: #000; }
+  .comm-email-aud-count {
+    font-family: var(--font-code);
+    font-size: 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .comm-email-note { font-size: 13px; color: var(--ink2); }
+  .comm-email-input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: 10px 12px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--bg3);
+    border: 1px solid var(--line2);
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .comm-email-input:focus { border-color: var(--accent-ink); }
+  .comm-email-input::placeholder { color: var(--ink3); }
+  .comm-email-textarea { min-height: 140px; resize: vertical; }
+  .comm-email-footer { flex-wrap: wrap; }
+  .comm-email-confirm { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .comm-email-confirm-text { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .comm-email-send {
+    min-height: 44px;
+    padding: 0 20px;
+    font-family: var(--font-disp);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #000;
+    background: var(--accent);
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .comm-email-send:hover:not(:disabled) { background: var(--accent2); }
+  .comm-email-send:disabled { opacity: 0.45; cursor: default; }
+  .comm-email-cancel {
+    min-height: 44px;
+    padding: 0 14px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--ink2);
+    background: none;
+    border: 1px solid var(--line2);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .comm-email-recent { padding: 14px 20px 18px; border-top: 1px solid var(--line); }
+  .comm-email-recent-list { list-style: none; margin: 8px 0 0; padding: 0; }
+  .comm-email-recent-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: baseline;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .comm-email-recent-row:first-child { border-top: none; }
+  .comm-email-recent-when {
+    font-family: var(--font-code);
+    font-size: 11px;
+    color: var(--ink2);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .comm-email-recent-subject { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .comm-email-recent-meta { color: var(--ink2); white-space: nowrap; }
+  .comm-email-recent-num { font-family: var(--font-code); font-variant-numeric: tabular-nums; }
+  .comm-optout-chip { margin-left: 8px; }
+
+  @media (max-width: 767px) {
+    .comm-email-body { padding: 14px; }
+    .comm-email-recent { padding: 12px 14px 14px; }
+    .comm-email-aud { flex: 1 1 auto; justify-content: space-between; }
+    .comm-email-recent-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .comm-email-recent-when { grid-column: 1 / -1; }
+  }
 }
 
 /* ── Player Settings page ─────────────────────────────────────── */
@@ -5284,6 +5414,25 @@ body {
 }
 .legal-ul li { margin-bottom: 6px; }
 .legal-link { color: var(--accent-ink); text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--accent) 40%, transparent); }
+/* League-email unsubscribe page (reuses the legal shell) */
+.unsub-form { margin-top: 24px; }
+.unsub-btn {
+  min-height: 44px;
+  padding: 0 24px;
+  font-family: var(--font-disp);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #000;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.unsub-btn:hover { background: var(--accent2); }
+.unsub-btn.secondary { color: var(--ink); background: transparent; border-color: var(--line2); }
+.unsub-btn.secondary:hover { border-color: var(--accent-ink); background: transparent; }
 .legal-footer {
   display: flex;
   align-items: center;

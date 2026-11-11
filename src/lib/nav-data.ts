@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { nflWeek } from "@/lib/nfl/week";
 import { isPick5Format, type ScoringType } from "@/lib/scoring";
+import { countOpenUnpicked } from "@/lib/picks/unpicked";
 
 /** Cookie the middleware sets on every /league/[code]/... request. */
 export const LAST_LEAGUE_COOKIE = "tpp_last_league";
@@ -39,11 +40,6 @@ type MembershipRow = {
     pick5_lock_mode: string | null;
   } | null;
 };
-
-// Picks RLS refuses writes within 5 minutes of kickoff (PickSheet LOCK_LEAD_MS).
-const LOCK_LEAD_MS = 5 * 60_000;
-const PICK5_MAX = 5;
-const SUNDAY_SLOTS = new Set(["sunday_early", "sunday_late", "sunday_night"]);
 
 function formatLabel(t: ScoringType): string {
   switch (t) {
@@ -186,24 +182,11 @@ async function countUnpicked(args: {
     .in("game_id", games.map((g) => g.id));
   const picked = new Set((picks ?? []).filter((p) => p.picked_team).map((p) => p.game_id));
 
-  // Open = still 'scheduled' and more than 5 minutes before kickoff — the
-  // same test PickSheet uses before it sends a write.
-  const isOpen = (g: { status: string; kickoff_time: string }) => {
-    const kickoff = Date.parse(g.kickoff_time);
-    return g.status === "scheduled" && (isNaN(kickoff) || kickoff - LOCK_LEAD_MS > nowMs);
-  };
-  const openUnpicked = games.filter((g) => isOpen(g) && !picked.has(g.id)).length;
-
-  if (!isPick5Format(scoringType)) return openUnpicked;
-
-  // Pick 5: the weekly deadline (mirrors public.pick_window_open()) locks the
-  // whole sheet; before it, the badge is the picks still owed, capped by the
-  // games you could still take.
-  const deadlines = games
-    .filter((g) => (lockMode === "sunday" ? SUNDAY_SLOTS.has(g.time_slot) : g.time_slot === "thursday"))
-    .map((g) => Date.parse(g.kickoff_time))
-    .filter((t) => !isNaN(t));
-  const deadlineMs = deadlines.length ? Math.min(...deadlines) : null;
-  if (deadlineMs !== null && nowMs >= deadlineMs) return 0;
-  return Math.max(0, Math.min(PICK5_MAX - picked.size, openUnpicked));
+  return countOpenUnpicked({
+    games,
+    pickedGameIds: picked,
+    pick5: isPick5Format(scoringType),
+    lockMode,
+    nowMs,
+  });
 }

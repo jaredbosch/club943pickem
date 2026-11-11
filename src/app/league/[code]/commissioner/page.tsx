@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CommissionerPanel } from "@/components/commissioner/CommissionerPanel";
+import { activePickWeek, usersWithUnpickedGames } from "@/lib/email/league-members";
+import { emailLinkSecret } from "@/lib/email/league-email";
 
 export default async function CommissionerPage({
   params,
@@ -32,11 +34,28 @@ export default async function CommissionerPage({
 
   // users.email is no longer readable by the authenticated role (email privacy
   // migration) — commissioner is verified above, so use the admin client here.
-  const { data: members } = await createAdminClient()
-    .from("league_members")
-    .select("id, user_id, is_paid, paid_at, joined_at, phone, venmo, users(display_name, email)")
-    .eq("league_id", league.id)
-    .order("joined_at", { ascending: true });
+  const admin = createAdminClient();
+  const [{ data: members }, { data: recentEmails }] = await Promise.all([
+    admin
+      .from("league_members")
+      .select("id, user_id, is_paid, paid_at, joined_at, phone, venmo, email_opt_out, users(display_name, email)")
+      .eq("league_id", league.id)
+      .order("joined_at", { ascending: true }),
+    admin
+      .from("league_emails")
+      .select("id, audience, subject, recipient_count, created_at")
+      .eq("league_id", league.id)
+      .order("created_at", { ascending: false })
+      .limit(5),
+  ]);
+
+  const now = new Date();
+  let unpicked = new Set<string>();
+  try {
+    unpicked = await usersWithUnpickedGames(admin, league, (members ?? []).map((m) => m.user_id), now);
+  } catch {
+    // Audience count only — the send route recomputes it.
+  }
 
   const rows = (members ?? []).map((m) => {
     const u = m.users as unknown as { display_name: string | null; email: string } | null;
@@ -50,8 +69,11 @@ export default async function CommissionerPage({
       isPaid: m.is_paid,
       paidAt: m.paid_at,
       joinedAt: m.joined_at,
+      emailOptOut: m.email_opt_out ?? false,
+      hasUnpicked: unpicked.has(m.user_id),
     };
   });
+  const commissionerEmail = rows.find((r) => r.userId === user.id)?.email || user.email || "";
 
   const paidCount = rows.filter((r) => r.isPaid).length;
   const entryFeeDollars = (league.entry_fee_cents / 100).toFixed(0);
@@ -66,6 +88,18 @@ export default async function CommissionerPage({
       paidCount={paidCount}
       entryFeeDollars={entryFeeDollars}
       totalCollectedCents={totalCollected}
+      email={{
+        enabled: !!process.env.RESEND_API_KEY && !!emailLinkSecret(),
+        replyTo: commissionerEmail,
+        week: activePickWeek(league.season_year, now),
+        recent: (recentEmails ?? []).map((e) => ({
+          id: e.id,
+          audience: e.audience,
+          subject: e.subject,
+          recipientCount: e.recipient_count,
+          createdAt: e.created_at,
+        })),
+      }}
     />
   );
 }

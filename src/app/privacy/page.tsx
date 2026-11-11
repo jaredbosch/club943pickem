@@ -19,7 +19,7 @@ export default function PrivacyPage() {
 
       <main className="legal-body">
         <h1 className="legal-title">Privacy Policy</h1>
-        <p className="legal-meta">Last updated: May 15, 2026</p>
+        <p className="legal-meta">Last updated: November 11, 2026</p>
 
         <p className="legal-p">
           thepickempool.com (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) operates the website at thepickempool.com, an NFL ATS confidence pick&apos;em platform for private leagues. This Privacy Policy explains how we collect, use, and share information about you when you use our service.
@@ -28,7 +28,7 @@ export default function PrivacyPage() {
         <h2 className="legal-h2">Information We Collect</h2>
 
         <h3 className="legal-h3">Account information</h3>
-        <p className="legal-p">When you create an account, we collect your email address and any display name you choose. Your email is used solely for authentication and service-related communications.</p>
+        <p className="legal-p">When you create an account, we collect your email address and any display name you choose. Your email is used for authentication, service-related communications, and league emails your commissioner sends through the platform. Commissioner emails go to each player individually, so other players never see your address, and every one includes a link to unsubscribe from that league&apos;s emails.</p>
 
         <h3 className="legal-h3">Gameplay data</h3>
         <p className="legal-p">We store the picks you submit (team selections and confidence points), your weekly results, standings, and tiebreaker guesses as part of the core service.</p>
@@ -66,6 +66,7 @@ export default function PrivacyPage() {
           <li>To provide and operate the pick&apos;em pool service</li>
           <li>To calculate standings, scores, and weekly results</li>
           <li>To send account-related emails (e.g., password reset)</li>
+          <li>To deliver emails your league commissioner sends to the league (you can unsubscribe per league)</li>
           <li>To improve the site through aggregated analytics</li>
           <li>To display relevant advertising</li>
         </ul>
@@ -74,6 +75,7 @@ export default function PrivacyPage() {
         <p className="legal-p">We do not sell your personal information. We share data only with:</p>
         <ul className="legal-ul">
           <li><strong>Supabase</strong> — our database and authentication provider, located in the United States.</li>
+          <li><strong>Resend</strong> — our email delivery provider, located in the United States. It receives your email address and the content of emails we send you.</li>
           <li><strong>Google</strong> — for analytics and advertising services.</li>
           <li><strong>Your league commissioner</strong> — your display name, picks, and any profile information you voluntarily provide are visible within your league.</li>
           <li><strong>Other league members</strong> — your picks are visible to other members after games kick off, as part of the core service.</li>
