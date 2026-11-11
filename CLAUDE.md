@@ -17,3 +17,11 @@ In QA mode, flag any code that doesn't match DESIGN.md.
   project ref unless passed `--force-prod`. Safe to re-run locally; cleans
   its own data.
 - Design audit (Phase 1, 2026-06-10): docs/design-audit-2026-06-10.md
+- PostgREST caps every response at 1000 rows (`max_rows`) and truncates
+  silently. Any select that can grow with players × games/weeks/seasons must
+  go through `fetchAll` (`src/lib/supabase/fetch-all.ts`) or aggregate
+  server-side. Don't raise `max_rows` instead.
+- Big-league test data: `node scripts/seed-large-league.mjs` (same env as
+  above; refuses prod outright) seeds league `BIGLGE` with 70 players and a
+  synthetic 2099 season — 1,120 picks per Grid week. Sign in as
+  `bigleague.01@example.com` / `SeedUser2026!!`. `--clean` removes it.

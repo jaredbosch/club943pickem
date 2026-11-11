@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/supabase/fetch-all";
 import { LeagueDashboard } from "@/components/league/LeagueDashboard";
 import { nflSeasonYear } from "@/lib/nfl/week";
 
@@ -31,12 +32,14 @@ export default async function DashboardPage({
 
   if (!membership) redirect("/league");
 
-  const { data: seasonRows } = await supabase
-    .from("standings")
-    .select("season_year")
-    .eq("league_id", league.id)
-    .eq("week", 0)
-    .order("season_year", { ascending: false });
+  // One season-total row per player per season — grows every year, so page.
+  const { data: seasonRows } = await fetchAll(() =>
+    supabase
+      .from("standings")
+      .select("season_year")
+      .eq("league_id", league.id)
+      .eq("week", 0),
+  );
 
   const availableSeasons = [...new Set((seasonRows ?? []).map((r) => r.season_year))].sort((a, b) => b - a);
 
@@ -54,13 +57,16 @@ export default async function DashboardPage({
     .eq("season_year", viewingSeason)
     .order("rank", { ascending: true });
 
-  const { data: weeklyStandings } = await supabase
-    .from("standings")
-    .select("user_id, week, total_points, correct_picks, rank")
-    .eq("league_id", league.id)
-    .eq("season_year", viewingSeason)
-    .gt("week", 0)
-    .order("week", { ascending: false });
+  // Players × weeks rows (150 × 18 = 2,700 by season's end) — past
+  // PostgREST's 1000-row cap, which would silently drop the earliest weeks.
+  const { data: weeklyStandings } = await fetchAll(() =>
+    supabase
+      .from("standings")
+      .select("user_id, week, total_points, correct_picks, rank")
+      .eq("league_id", league.id)
+      .eq("season_year", viewingSeason)
+      .gt("week", 0),
+  );
 
   const { data: pickSummary } = await supabase
     .rpc("get_league_pick_summary", { p_league_id: league.id, p_season_year: viewingSeason });

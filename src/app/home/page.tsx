@@ -12,34 +12,37 @@ export default async function HomePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in");
 
-  // All leagues this user belongs to
+  // All leagues this user belongs to. Member counts are aggregated by
+  // PostgREST (`league_members(count)`) rather than by fetching every member
+  // row of every league — that list is leagues × players and would hit the
+  // 1000-row response cap for anyone in a handful of big leagues.
   const { data: memberships } = await supabase
     .from("league_members")
-    .select("is_commissioner, is_paid, leagues(id, name, invite_code, season_year, scoring_type, status, max_players)")
+    .select("is_commissioner, is_paid, leagues(id, name, invite_code, season_year, scoring_type, status, max_players, league_members(count))")
     .eq("user_id", user.id)
     .order("joined_at", { ascending: false });
 
-  const leagues = (memberships ?? []).map((m) => ({
-    ...(m.leagues as unknown as {
+  const leagues = (memberships ?? []).map((m) => {
+    const { league_members: memberAgg, ...league } = m.leagues as unknown as {
       id: string; name: string; invite_code: string;
       season_year: number; scoring_type: string; status: string; max_players: number;
-    }),
-    isCommissioner: m.is_commissioner,
-    isPaid: m.is_paid,
-  }));
+      league_members: { count: number }[];
+    };
+    return {
+      ...league,
+      memberCount: memberAgg?.[0]?.count ?? 0,
+      isCommissioner: m.is_commissioner,
+      isPaid: m.is_paid,
+    };
+  });
 
   // If only one league, go straight there
   if (leagues.length === 1) {
     redirect(`/league/${leagues[0].invite_code}/dashboard`);
   }
 
-  // Get member counts + user standings for each league
+  // User standings for each league
   const leagueIds = leagues.map((l) => l.id);
-
-  const { data: memberCounts } = await supabase
-    .from("league_members")
-    .select("league_id")
-    .in("league_id", leagueIds);
 
   const { data: standings } = await supabase
     .from("standings")
@@ -47,11 +50,6 @@ export default async function HomePage() {
     .eq("user_id", user.id)
     .eq("week", 0)
     .in("league_id", leagueIds);
-
-  const countMap = new Map<string, number>();
-  for (const m of memberCounts ?? []) {
-    countMap.set(m.league_id, (countMap.get(m.league_id) ?? 0) + 1);
-  }
 
   const standingsMap = new Map<string, { rank: number | null; total_points: number }>();
   for (const s of standings ?? []) {
@@ -79,7 +77,7 @@ export default async function HomePage() {
 
       <div className="home-cards">
         {leagues.map((league) => {
-          const memberCount = countMap.get(league.id) ?? 0;
+          const memberCount = league.memberCount;
           const standing = standingsMap.get(league.id);
           const format = scoringTypeHeroLabel(league.scoring_type as ScoringType);
 
