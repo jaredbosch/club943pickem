@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/supabase/fetch-all";
 import { WeeklyGrid } from "@/components/grid/WeeklyGrid";
 import { nflSeasonYear, nflWeek } from "@/lib/nfl/week";
 import { formatClock } from "@/lib/picks/transform";
@@ -75,12 +76,16 @@ export default async function GridPage({
   // commissioner turned on 1–5 ranking.
   const usesConfidence = isConfidenceFormat(scoringType) || (isPick5 && (league.pick5_confidence ?? false));
 
+  // A week of picks is players × games rows (63 × 16 = 1,008) — past
+  // PostgREST's 1000-row cap, which drops the overflow silently. Page it.
   const { data: allPicks } = gameIds.length
-    ? await supabase
-        .from("picks")
-        .select("user_id, game_id, picked_team, is_correct, points_earned, confidence")
-        .eq("league_id", league.id)
-        .in("game_id", gameIds)
+    ? await fetchAll(() =>
+        supabase
+          .from("picks")
+          .select("user_id, game_id, picked_team, is_correct, points_earned, confidence")
+          .eq("league_id", league.id)
+          .in("game_id", gameIds),
+      )
     : { data: [] };
 
   const { data: members } = await supabase
@@ -92,6 +97,7 @@ export default async function GridPage({
     .from("standings")
     .select("user_id, total_points, correct_picks, rank")
     .eq("league_id", league.id)
+    .eq("season_year", seasonYear)
     .eq("week", currentWeek);
 
   const standingsMap = new Map((weekStandings ?? []).map((s) => [s.user_id, s]));

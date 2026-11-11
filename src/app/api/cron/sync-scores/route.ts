@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { fetchAll } from "@/lib/supabase/fetch-all";
 import { syncScores } from "@/lib/espn/sync-scores";
 import { syncGames } from "@/lib/odds/sync-games";
 import { nflSeasonYear } from "@/lib/nfl/week";
@@ -91,7 +92,9 @@ export async function GET(request: NextRequest) {
     if (scoreStats.finalGames > 0) {
       const now = new Date();
       const p_season_year = now.getMonth() >= 2 ? now.getFullYear() : now.getFullYear() - 1;
-      const { data: leagues } = await supabase.from("leagues").select("id");
+      // Every league on the platform — paged so grading can't silently skip
+      // leagues once there are more than PostgREST's 1000-row cap.
+      const { data: leagues } = await fetchAll(() => supabase.from("leagues").select("id"));
       for (const league of leagues ?? []) {
         const { data, error } = await supabase.rpc("grade_and_sync_standings", {
           p_league_id: league.id,

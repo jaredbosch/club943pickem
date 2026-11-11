@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/supabase/fetch-all";
 import { PlayerProfile } from "@/components/profile/PlayerProfile";
 import { computeProfileStats } from "@/lib/profile-stats";
 import { isGradedPush } from "@/lib/scoring";
@@ -84,11 +85,15 @@ export default async function PlayerProfilePage({
 
   const gameMap = new Map((allGames ?? []).map((g) => [g.id, g]));
 
-  const { data: allPicks } = await supabase
-    .from("picks")
-    .select("game_id, picked_team, confidence, is_correct, points_earned, week")
-    .eq("user_id", params.userId)
-    .eq("league_id", league.id);
+  // Every season this player has been in the league (~285 picks a season),
+  // so it outgrows PostgREST's 1000-row cap within a few seasons. Page it.
+  const { data: allPicks } = await fetchAll(() =>
+    supabase
+      .from("picks")
+      .select("game_id, picked_team, confidence, is_correct, points_earned, week")
+      .eq("user_id", params.userId)
+      .eq("league_id", league.id),
+  );
 
   const recentPicks = (allPicks ?? [])
     .map((p) => {
